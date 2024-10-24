@@ -5,7 +5,7 @@ import chalk from 'chalk';
 
 const app = express();
 
-ViteExpress.config({mode:"development"});
+ViteExpress.config({mode:"production"});
 
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
