@@ -27,6 +27,11 @@ const router = createRouter({
       name: 'register',
       component: () => import('../views/Register.vue'),
     },
+    {
+      path: '/transcribe',
+      name: 'transcribe',
+      component: () => import('../views/Transcribe.vue'),
+    },
   ],
 })
 

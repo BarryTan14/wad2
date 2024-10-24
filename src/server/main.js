@@ -5,14 +5,17 @@ import chalk from 'chalk';
 
 const app = express();
 
-ViteExpress.config({mode:"production"});
+ViteExpress.config({mode:"development"});
 
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 //app.use(express.multipart());
 
-import userHandlerRouter from './userhandler/userhandler.js';
+import userHandlerRouter from './routes/userhandler.js';
 app.use('/user', userHandlerRouter);
+
+import transcribeHandlerRouter from './routes/transcribehandler.js';
+app.use('/transcribe', transcribeHandlerRouter);
 
 logger.token('status', function (req, res) {
     var status = res.statusCode;
