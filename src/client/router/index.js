@@ -28,9 +28,9 @@ const router = createRouter({
       component: () => import('../views/Register.vue'),
     },
     {
-      path: '/transcribe',
-      name: 'transcribe',
-      component: () => import('../views/Transcribe.vue'),
+      path: '/classPart',
+      name: 'classPart',
+      component: () => import('../views/ClassParticipation.vue'),
     },
   ],
 })
