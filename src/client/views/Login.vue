@@ -5,50 +5,39 @@
       <div class="mb-3">
         <label for="exampleInputEmail1" class="form-label">Username</label>
         <input type="text" class="form-control form-input" id="exampleInputEmail1" aria-describedby="emailHelp"
-               v-model="username">
+               v-model="formData.username" :disabled="loginDisabled">
         <div id="emailHelp" class="form-text">We'll never share your username with anyone else.</div>
       </div>
       <div class="mb-3">
         <label for="exampleInputPassword1" class="form-label">Password</label>
-        <input type="password" class="form-control form-input" id="exampleInputPassword1" v-model="password">
+        <input type="password" class="form-control form-input" id="exampleInputPassword1" v-model="formData.password" :disabled="loginDisabled">
       </div>
-      <button class="btn btn-primary form-input" @click="login" id="loginBtn">Login<span
-          class="spinner-border spinner-border-sm ms-3" id="loginBtnSpn" hidden></span></button>
+      <button class="btn btn-primary form-input" @click="login" id="loginBtn" :disabled="loginDisabled">Login<span
+          class="spinner-border spinner-border-sm ms-3" id="loginBtnSpn" :hidden="!loginDisabled"></span></button>
     </form>
   </div>
 </template>
 <script setup lang="js">
-let username = null;
-let password = null;
-let loginDisabled = false;
+import {ref, reactive} from "vue";
+
+const formData = reactive({
+  username:'',
+  password:'',
+})
+const loginDisabled = ref(false);
 
 function login() {
-  toggleMultipleDisabled('form-input')
-  toggleSingleHidden('loginBtnSpn')
+  loginDisabled.value = true;
   // simulate loading time to test out spinner
   setTimeout(() => {
-    axios.post('user/login', {username, password}).then(response => {
+    axios.post('user/login', formData).then(response => {
       alert(response.data)
     }).catch(error => {
       alert(error.response)
     }).finally(()=>{
-      toggleMultipleDisabled('form-input')
-      toggleSingleHidden('loginBtnSpn')
+      loginDisabled.value = false;
     })
   }, 1000)
-}
-
-function toggleSingleHidden(idName) {
-  loginDisabled ? document.getElementById(idName).removeAttribute('hidden') :
-      document.getElementById(idName).setAttribute('hidden', '');
-}
-
-function toggleMultipleDisabled(className) {
-  for (var thisDocument of document.getElementsByClassName(className)) {
-    loginDisabled ? thisDocument.removeAttribute('disabled') :
-        thisDocument.setAttribute('disabled', '');
-  }
-  loginDisabled = !loginDisabled;
 }
 </script>
 <style>

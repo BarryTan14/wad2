@@ -51,7 +51,7 @@ router.post("/register", async (req, res) => {
             }
             let result = await collection.insertOne(dataToPush);
 
-            res.send(result);
+            res.send("Registered successfully");
             return
         } catch (e) {
             if(e.code === 11000){
