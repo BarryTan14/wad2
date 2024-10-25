@@ -29,7 +29,7 @@ if (!fs.existsSync('uploads')){
 
 // Initialize Google Cloud Speech client
 const client = new speech.SpeechClient({
-    keyFilename: 'key.json'
+    keyFilename: './src/server/key.json'
 });
 
 router.post('/upload', upload.single('audio'), async (req, res) => {
