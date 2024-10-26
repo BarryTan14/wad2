@@ -17,6 +17,9 @@ app.use('/user', userHandlerRouter);
 import transcribeHandlerRouter from './routes/transcribehandler.js';
 app.use('/transcribe', transcribeHandlerRouter);
 
+import groupRouter from './routes/group.js';
+app.use('/group', groupRouter);
+
 logger.token('status', function (req, res) {
     var status = res.statusCode;
     var color = status >= 500 ? '#ff0e00' // red
