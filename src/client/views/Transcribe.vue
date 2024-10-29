@@ -10,7 +10,6 @@
   </div>
 </template>
 <script setup>
-import {transcriber} from "../assets/transcriber.js";
 import {onMounted} from "vue";
 onMounted()
 </script>

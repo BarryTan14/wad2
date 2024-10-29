@@ -2,12 +2,33 @@ import express from "express";
 import ViteExpress from "vite-express";
 import logger from 'morgan';
 import chalk from 'chalk';
+import requestip from 'request-ip';
+import cookieParser from 'cookie-parser'
+import session from 'express-session';
+import { Users } from './models/Users.js'
+import { authMiddleware } from './middleware/auth.js'
+import mongoose from 'mongoose';
+
+import dotenv from 'dotenv';
+dotenv.config();
 
 const app = express();
 
-ViteExpress.config({mode:"development"});
 
-app.use(express.json());
+ViteExpress.config({mode:process.env.NODE_ENV});
+
+mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => console.error('MongoDB connection error:', err))
+
+app.use(express.json())
+app.use(cookieParser())
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'your-secret-key',
+    resave: false,
+    saveUninitialized: false
+}))
+
 app.use(express.urlencoded({extended: false}));
 //app.use(express.multipart());
 

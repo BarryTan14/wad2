@@ -3,10 +3,15 @@
     <h1 class="">Register</h1>
     <form onsubmit="return false;">
       <div class="mb-3">
-        <label for="exampleInputEmail1" class="form-label">Username</label>
+        <label for="exampleInputEmail1" class="form-label">Email</label>
         <input type="text" class="form-control form-input" id="exampleInputEmail1" aria-describedby="emailHelp" :disabled="registerDisabled"
+               v-model="formData.email">
+        <div id="emailHelp" class="form-text">We'll never share your Email with anyone else.</div>
+      </div>
+      <div class="mb-3">
+        <label for="exampleInputUsername1" class="form-label">Username</label>
+        <input type="text" class="form-control form-input" id="exampleInputUsername1" aria-describedby="usernameHelp" :disabled="registerDisabled"
                v-model="formData.username">
-        <div id="emailHelp" class="form-text">We'll never share your username with anyone else.</div>
       </div>
       <div class="mb-3">
         <label for="exampleInputPassword1" class="form-label">Password</label>
@@ -21,6 +26,7 @@
 import {reactive, ref} from "vue";
 
 const formData = reactive({
+  email:'',
   username:'',
   password:'',
 })
