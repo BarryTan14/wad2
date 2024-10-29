@@ -6,8 +6,16 @@ const path = require('path');
 const cors = require('cors');
 const session = require('express-session');
 
+const { GoogleAuth } = require('google-auth-library');
+
 // Initialize express app
 const app = express();
+
+// Replace these with your own values
+const CLIENT_SECRETS_FILE = "path/to/client_secret.json";
+const SCOPES = ['https://www.googleapis.com/auth/calendar.settings.readonly'];
+const API_SERVICE_NAME = 'calendar';
+const API_VERSION = 'v3';
 
 // Service account credentials
 const serviceAccount = require('./key.json');
@@ -20,6 +28,23 @@ const jwtClient = new google.auth.JWT(
   ['https://www.googleapis.com/auth/calendar'],
   null
 );
+
+async function authorizeServiceAccount(req, res) {
+  try {
+    const auth = new GoogleAuth({
+      credentials: require(serviceAccount),
+      scopes: SCOPES,
+    });
+
+    const calendar = google.calendar({ version: API_VERSION, auth });
+    res.json({ message: 'Service account authorized successfully!' });
+  } catch (err) {
+    console.error('Error authorizing service account:', err);
+    res.status(500).json({ error: 'Error authorizing service account' });
+  }
+}
+
+app.get('/authorize-service-account', authorizeServiceAccount);
 
 // Helper function to verify calendar access
 async function verifyCalendarAccess(calendarId, auth) {
