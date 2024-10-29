@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calendar Manager</title>
+    <style>
+        .hidden { display: none; }
+        .form-group { margin: 10px 0; }
+        .attendee-list {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .attendee-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+        .attendee-item button {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loginSection">
+        <h2>Calendar Manager</h2>
+        <div class="form-group">
+            <label for="userEmail">Email:</label>
+            <input type="email" id="userEmail" required>
+        </div>
+        <button onclick="login()">Login</button>
+    </div>
+
+    <div id="calendarSection" class="hidden">
+        <h2>Calendar for: <span id="currentEmail"></span></h2>
+        <button onclick="logout()">Logout</button>
+
+        <div class="section">
+            <h3>List Events</h3>
+            <button onclick="listEvents()">List Events</button>
+        </div>
+
+        <div class="section">
+            <h3>Event Details</h3>
+            <div class="form-group">
+                <label for="eventId">Event ID (for update/delete):</label>
+                <input type="text" id="eventId">
+            </div>
+            <div class="form-group">
+                <label for="eventSummary">Summary:</label>
+                <input type="text" id="eventSummary" required>
+            </div>
+            <div class="form-group">
+                <label for="eventLocation">Location:</label>
+                <input type="text" id="eventLocation">
+            </div>
+            <div class="form-group">
+                <label for="eventStart">Start Time:</label>
+                <input type="datetime-local" id="eventStart" required>
+            </div>
+            <div class="form-group">
+                <label for="eventEnd">End Time:</label>
+                <input type="datetime-local" id="eventEnd" required>
+            </div>
+            <div class="form-group">
+                <label for="eventDescription">Description:</label>
+                <textarea id="eventDescription" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <h4>Attendees</h4>
+                <div>
+                    <label for="attendeeEmail">Add Attendee Email:</label>
+                    <input type="email" id="attendeeEmail">
+                    <button onclick="addAttendee()">Add Attendee</button>
+                </div>
+                <div id="attendeesList" class="attendee-list"></div>
+            </div>
+            <div class="form-group">
+                <button onclick="createCalendarEvent()">Create Event</button>
+                <button onclick="updateCalendarEvent()">Update Event</button>
+                <button onclick="deleteCalendarEvent()">Delete Event</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Response</h3>
+            <pre id="response"></pre>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
