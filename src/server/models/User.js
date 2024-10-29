@@ -3,17 +3,18 @@ import bcrypt from 'bcrypt'
 import {randomUUID} from "crypto";
 
 const userSchema = new mongoose.Schema({
-    profilepic : {
+    profilePic : {
         type: String,
         default: 'avatar.png',
     },
-    displayname : {
+    displayName : {
         type: String,
         required: true,
         default: randomUUID(),
     },
     bio : {
         type: String,
+        default: '',
     },
     email: {
         type: String,
