@@ -36,7 +36,7 @@ function register() {
   registerDisabled.value=true;
   // simulate loading time to test out spinner
   setTimeout(() => {
-    axios.post('user/api/auth/register', formData).then(response => {
+    axios.put('user/api/auth/register', formData).then(response => {
       alert(response.data)
     }).catch(error => {
       alert(error.response)
