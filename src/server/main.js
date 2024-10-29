@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import requestip from 'request-ip';
 import cookieParser from 'cookie-parser'
 import session from 'express-session';
-import { Users } from './models/Users.js'
+import { User } from './models/User.js'
 import { authMiddleware } from './middleware/auth.js'
 import mongoose from 'mongoose';
 

@@ -1,9 +1,16 @@
 import mongoose from 'mongoose'
 import bcrypt from 'bcrypt'
+import {randomUUID} from "crypto";
 
-const usersSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
     profilepic : {
         type: String,
+        default: 'avatar.png',
+    },
+    displayname : {
+        type: String,
+        required: true,
+        default: randomUUID(),
     },
     bio : {
         type: String,
@@ -24,6 +31,11 @@ const usersSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
+    accountStatus: {
+        type: String,
+        required: true,
+        default: 'active',
+    },
     createdAt: {
         type: Date,
         default: Date.now
@@ -32,10 +44,10 @@ const usersSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 // Hash password before saving
-usersSchema.pre('save', async function(next) {
+userSchema.pre('save', async function(next) {
     if (!this.isModified('password')) return next()
     this.password = await bcrypt.hash(this.password, 10)
     next()
 })
 
-export const Users = mongoose.model('Users', usersSchema)
+export const User = mongoose.model('User', userSchema)

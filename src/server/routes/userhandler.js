@@ -1,7 +1,7 @@
 import express from 'express';
 import db from "../db/conn.js";
 import bcrypt from "bcrypt";
-import {Users} from "../models/Users.js";
+import {User} from "../models/User.js";
 import jwt from "jsonwebtoken";
 import config from '../config/secrets.js'
 import {authMiddleware} from "../middleware/auth.js";
@@ -24,19 +24,19 @@ router.post('/api/auth/register', async (req, res) => {
     }
 
     try {
-        const existingNameUser = await Users.findOne({username})
+        const existingNameUser = await User.findOne({username})
         if (existingNameUser) {
             return res.status(400).json({message: 'An account under that username is already registered'})
         }
-        const existingEmailUser = await Users.findOne({email})
+        const existingEmailUser = await User.findOne({email})
         if (existingEmailUser) {
             return res.status(400).json({message: 'An account under that email already registered'})
         }
 
-        const users = new Users({email, password, username})
-        await users.save()
+        const user = new User({email, password, username})
+        await user.save()
 
-        const token = generateToken(users)
+        const token = generateToken(user)
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -58,17 +58,17 @@ router.post('/api/auth/login', async (req, res) => {
     }
 
     try {
-        const users = await Users.findOne({ username })
-        if (!users) {
+        const user = await User.findOne({ username })
+        if (!user) {
             return res.status(401).json({ message: 'Invalid credentials' })
         }
 
-        const isMatch = await bcrypt.compare(password, users.password)
+        const isMatch = await bcrypt.compare(password, user.password)
         if (!isMatch) {
             return res.status(401).json({ message: 'Invalid credentials' })
         }
 
-        const token = generateToken(users)
+        const token = generateToken(user)
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -87,7 +87,7 @@ router.post('/api/auth/logout', (req, res) => {
     return res.json({ message: 'Logged out successfully' })
 })
 
-router.get('/api/profile', authMiddleware, async (req, res) => {
+router.get('/api/auth/test', authMiddleware, async (req, res) => {
     res.json({ message: 'You have access to this protected resource' })
 })
 
@@ -112,8 +112,7 @@ router.post("/login", async (req, res) => {
                 res.status(200).send("wrong login details");
         });
     } catch (e) {
-        res.status(500).send(e.message);
-        return
+        return res.status(500).send(e.message);
     }
 });
 

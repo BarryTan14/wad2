@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken'
-import { Users } from '../models/Users.js'
+import { User } from '../models/User.js'
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -11,7 +11,7 @@ export const authMiddleware = async (req, res, next) => {
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET)
-        const user = await Users.findOne({ username: decoded.username }).select('-password')
+        const user = await User.findOne({ username: decoded.username }).select('-password')
 
         if (!user) {
             return res.status(401).json({ message: 'User not found' })
