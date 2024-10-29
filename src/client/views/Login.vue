@@ -18,6 +18,7 @@
 </template>
 <script setup lang="js">
 import {ref, reactive} from "vue";
+import { useRouter } from "vue-router";
 
 const formData = reactive({
   username:'',
@@ -25,12 +26,15 @@ const formData = reactive({
 })
 const loginDisabled = ref(false);
 
+const router = useRouter();
+
 function login() {
   loginDisabled.value = true;
   // simulate loading time to test out spinner
   setTimeout(() => {
-    axios.post('user/login', formData).then(response => {
+    axios.post('user/api/auth/login', formData).then(response => {
       alert(response.data)
+      router.push('/profile');
     }).catch(error => {
       alert(error.response)
     }).finally(()=>{

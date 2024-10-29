@@ -1,6 +1,15 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 
+const checkAuth = async () => {
+  try {
+    await axios.get('/user/api/auth/test')  // Your existing profile endpoint
+    return true // User is authenticated
+  } catch (error) {
+    return false // User is not authenticated
+  }
+}
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -21,11 +30,25 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: () => import('../views/Login.vue'),
+      meta: {
+        requiresGuest:true,
+      },
     },
     {
       path: '/register',
       name: 'register',
       component: () => import('../views/Register.vue'),
+      meta: {
+        requiresGuest:true,
+      },
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: () => import('../views/Profile.vue'),
+      meta: {
+        requiresAuth:true,
+      },
     },
     {
       path: '/classPart',
@@ -43,6 +66,35 @@ const router = createRouter({
       component: () => import('../views/TranscribeFromClaude.vue'),
     },
   ],
+})
+
+router.beforeEach(async (to, from, next) => {
+  // Check if the route requires guest access
+  if (to.meta.requiresGuest) {
+    const isAuthenticated = await checkAuth()
+
+    if (isAuthenticated) {
+      // If user is authenticated, redirect to profile
+      return next('/profile')
+    } else {
+      // If user is not authenticated, allow access
+      return next()
+    }
+  } else
+  if (to.meta.requiresAuth) {
+    const isAuthenticated = await checkAuth()
+
+    if (isAuthenticated) {
+      // If user is authenticated, allow access
+      return next()
+    } else {
+      // If user is not authenticated, redirect to login
+      return next('/login')
+    }
+  } else {
+    // For non-guest routes, proceed normally
+    return next()
+  }
 })
 
 export default router

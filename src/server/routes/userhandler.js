@@ -5,6 +5,8 @@ import {User} from "../models/User.js";
 import jwt from "jsonwebtoken";
 import config from '../config/secrets.js'
 import {authMiddleware} from "../middleware/auth.js";
+import StringUtils from 'is-empty-null-undef-nan-whitespace';
+import {guestMiddleware} from "../middleware/guest.js";
 
 const router = express.Router();
 
@@ -16,7 +18,7 @@ const generateToken = (user) => {
     )
 }
 
-router.post('/api/auth/register', async (req, res) => {
+router.put('/api/auth/register', async (req, res) => {
     const {email, password, username, captcha} = req.body
 
     if (captcha !== req.session.captcha) {
@@ -88,88 +90,81 @@ router.post('/api/auth/logout', (req, res) => {
 })
 
 router.get('/api/auth/test', authMiddleware, async (req, res) => {
-    res.json({ message: 'You have access to this protected resource' })
+    res.status(200).json({ message: 'You have access to this protected resource' })
 })
 
-router.post("/login", async (req, res) => {
-    let username = req.body.username;
-    let password = req.body.password;
-    if (!username || !password) {
-        res.status(400).send("There are empty fields");
-        return;
-    }
-    try {
-        let collection = await db.collection("users");
-        let result = await collection.findOne({username: username});
-        if (!result) {
-            res.status(200).send("No user found");
-            return;
-        }
-        bcrypt.compare(password, result.password).then(result => {
-            if (result)
-                res.status(200).send("logged in")
-            else
-                res.status(200).send("wrong login details");
-        });
-    } catch (e) {
-        return res.status(500).send(e.message);
-    }
+router.get('/api/profile', authMiddleware, async (req, res) => {
+    res.status(200).json({
+        profilePic:req.user.profilePic,
+        displayName:req.user.displayName,
+        bio:req.user.bio,
+    });
 });
 
-router.post("/register", async (req, res) => {
-    let email = req.body.email;
-    let username = req.body.username;
-    let password = req.body.password;
-    if (!username || !password || !email) {
-        res.send("There are empty fields");
-        return;
+router.put('/api/profile/update', authMiddleware, async (req, res) => {
+    const { displayName, email, password, newPassword, bio, action } = req.body;
+
+    if(!action){
+        return res.status(400).json({message: 'Action required'})
     }
-
-    // TODO: check if user exists first before attempting push
-    try {
-        let collection = await db.collection("users");
-        let result = await collection.findOne({username: username});
-        if (!result) {
-            res.status(200).send("No user found");
-            return;
-        }
-        bcrypt.compare(password, result.password).then(result => {
-            if (result)
-                res.send("logged in")
-            else
-                res.send("wrong login details");
-        });
-    } catch (e) {
-        res.send(e.message);
-        return
-    }
-
-    // use salt to encrypt password
-    // unused in favour of bcrypt
-    //let salt = cryptoRandomString({length: 10, type:'ascii-printable'});
-
-    //password = password + salt;
-    bcrypt.hash(password, 10).then(async hash => {
+    switch (action) {
+        case 'generalInfo':
         try {
-            let collection = await db.collection("users");
-            let dataToPush = {
-                email: email,
-                username: username,
-                password: hash,
-            }
-            let result = await collection.insertOne(dataToPush);
-
-            res.status(201).send("Registered successfully");
-            return
+            if(!StringUtils.isEmptyOrNullOrUndefOrNanOrWhitespace(displayName))
+                req.user.displayName = displayName;
+            if(!StringUtils.isEmptyOrNullOrUndefOrNanOrWhitespace(email))
+                req.user.email = email;
+            if(!StringUtils.isEmptyOrNullOrUndefOrNanOrWhitespace(bio))
+                req.user.bio = bio;
+            req.user.save();
+            return res.status(200).json({message: 'Updated successfully'})
         } catch (e) {
-            if (e.code === 11000) {
-                res.status(409).send("An account under that email already exists");
-                return
-            }
-            res.status(500).send(e.message);
-            return
+            console.log(e);
+            return res.status(500).json({message: 'Error updating profile'})
         }
-    })
-});
+        case 'password':
+            if(StringUtils.isEmptyOrNullOrUndefOrNanOrWhitespace(password))
+                return res.status(400).json({message:"Password required"})
+            if(StringUtils.isEmptyOrNullOrUndefOrNanOrWhitespace(newPassword))
+                return res.status(400).json({message:"New Password required"})
+            try {
+                const user = await User.findOne({ userName:req.user.userName })
+                if (!user) {
+                    return res.status(401).json({ message: 'Invalid credentials' })
+                }
+                const isMatch = await bcrypt.compare(password, user.password)
+                if (!isMatch) {
+                    return res.status(401).json({ message: 'Invalid credentials' })
+                }
+                req.user.password = newPassword !== null ? newPassword : req.user.password;
+                req.user.save();
+                res.clearCookie('token')
+                return res.status(200).json({message: 'Updated successfully, log in again'});
+            } catch (e) {
+                console.log(e)
+                return res.status(500).json({message: 'Error updating password'})
+            }
+        default:
+            return res.status(400).json({message:'Invalid action'});
+    }
+})
+
+router.get('/api/profile/:id', authMiddleware, async (req, res) => {
+    let id = req.params.id
+    try {
+        const user = await User.findById(id).select('displayName bio profilePic') // Exclude password username email field
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' })
+        }
+
+        res.json(user)
+    } catch (error) {
+        if (error.kind === 'ObjectId') {
+            return res.status(400).json({ message: 'Invalid ID format' })
+        }
+        res.status(500).json({ message: 'Server error' })
+    }
+})
 
 export default router;
