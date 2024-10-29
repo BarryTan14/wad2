@@ -1,28 +1,42 @@
 <script setup>
 import groupComp from "../components/groupComponent.vue";
-import { onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
 
-const group = {
-  name: "Teammate 1",
-  role: "Developer"
-};
+const groupData = ref([]); // Initialize as an empty array to prevent null issues
+const loading = ref(true);
+const error = ref(null);
 
-async function fetchGroupData() {
-  try {
-    const response = await fetch('/group', {
-      method: 'POST',
-      body: new FormData()
+function getData() {
+  loading.value = true;
+  fetch("/group", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    }
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      groupData.value = data.data || []; // Set groupData with the fetched data
+      console.log("Received group data:", groupData.value);
+      loading.value = false;
+    })
+    .catch(err => {
+      error.value = 'Failed to load data. Please try again.';
+      console.error(err);
+      loading.value = false;
     });
-    const data = await response.json();
-    console.log('Response:', data);
-  } catch (error) {
-    console.error('Fetch error:', error);
-  }
+
 }
 
 // Trigger the fetch request when the component mounts
 onMounted(() => {
-  fetchGroupData();
+  getData();
 });
 </script>
 
@@ -31,7 +45,7 @@ onMounted(() => {
     <h1>Group Assignments</h1>
   </div>
   <div style="display: flex;">
-    <groupComp :group="group" />
+    <groupComp :group="groupData" />
   </div>
 </template>
 

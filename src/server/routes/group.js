@@ -1,5 +1,4 @@
 import express from 'express';
-import db from "../db/conn.js";
 import {Module} from "../models/Module.js";
 
 const router = express.Router();
@@ -15,16 +14,17 @@ router.post("/", async (req, res) => {
         //const documents = await database.find().toArray();
         // Optional: Fetch collection stats or count if you want to return metadata
         //console.log(database)
-        const module = await Module.find();
-        if (!module) {
+        const Task = await Module.find();
+        console.log(Task)
+        if (!Task) {
             return res.status(401).json({ message: 'No modules found' })
         }
         res.json({
             message: "Successfully retrieved documents",
-            data: module
+            data: Task
         });
         // Send a success message or some metadata
-        console.log(module)
+        console.log(Task)
     } catch (e) {
         //console.error("Error connecting to MongoDB collection:", e);
         res.status(500).send("Failed to connect to MongoDB collection: " + e.message);
