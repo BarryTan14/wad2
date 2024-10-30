@@ -1,43 +1,28 @@
 <script setup>
 import groupComp from "../components/groupComponent.vue";
 import { ref, onMounted } from 'vue';
+import axios from 'axios';
 
-// const group = {
-//   name: "Teammate 1",
-//   role: "Developer"
-// };
+const group1 = {
+  name: "Teammate 1",
+  role: "Developer"
+};
 
-// async function fetchGroupData() {
-//   try {
-//     const response = await fetch('/group', {
-//       method: 'POST',
-//       body: new FormData()
-//     }).then(data=>{
-//       return data.json()
-//     })
-//   } catch (error) {
-//     console.error('Fetch error:', error);
-//   }
-// }
+// Create a reactive variable for the group data
+const group = ref(null);
 
-let isFetching = ref(true);
-
-var group = getData()
-
-function getData(){
-  axios.post("/group")
-  .then(response=>{
-    console.log(response)
-    return response.data.data
-  })
-  .catch(error=>{
-    console.log(error)
-  })
+async function fetchGroupData() {
+  try {
+    const response = await axios.post('/group');
+    group.value = response.data.data; // Assign the response data to group
+  } catch (error) {
+    console.error('Fetch error:', error);
+  }
 }
-// Trigger the fetch request when the component mounts
+
+// Fetch the data when the component mounts
 onMounted(() => {
-  getData()
-  isFetching = false;
+  fetchGroupData();
 });
 </script>
 
@@ -45,8 +30,9 @@ onMounted(() => {
   <div class="about">
     <h1>Group Assignments</h1>
   </div>
-  <div style="display: flex;" v-if="!isFetching">
-    <groupComp view-prop="group" :group="{_id:'asdf'}" />
+  <div style="display: flex;">
+    <groupComp view-prop="group1" :group="group1" />
+    <groupComp view-prop="group" :group="group" />
   </div>
 </template>
 

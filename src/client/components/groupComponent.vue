@@ -7,6 +7,7 @@ const props = defineProps({
     required: true
   }
 });
+
 </script>
 
 <template>
@@ -19,7 +20,7 @@ const props = defineProps({
             <!-- <a href="#" class="card-link">Another link</a> -->
         </div>
         <ul class="list-group list-group-flush">
-            <li class="list-group-item">{{ group }} asdf</li>
+            <li class="list-group-item">{{ group }}</li>
             <li class="list-group-item">Teammate 2</li>
             <li class="list-group-item">Teammate 3</li>
         </ul>
