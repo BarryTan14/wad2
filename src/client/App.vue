@@ -82,19 +82,19 @@ const toggleSidebar = () => {
             <li>
               <a href="#" class="nav-link">
                 <span class="nav-icon">🎨</span>
-                User Interface Design
+                Interactive Design & Prototyping
               </a>
             </li>
             <li>
               <a href="#" class="nav-link">
-                <span class="nav-icon">📱</span>
-                Mobile App Design
+                <span class="nav-icon">🧮</span>
+                Computational Thinking
               </a>
             </li>
             <li>
               <a href="#" class="nav-link">
                 <span class="nav-icon">💻</span>
-                Web App Design
+                Web Application & Development
               </a>
             </li>
           </ul>
