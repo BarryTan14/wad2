@@ -37,9 +37,6 @@ async function fetchUserProfile() {
   } catch (err) {
     error.value = err.response?.data?.message || 'Failed to load profile'
     console.error('Error fetching profile:', err)
-    if(error.value === "Authentication required"){
-
-    }
   } finally {
     loading.value = false
   }

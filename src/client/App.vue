@@ -1,94 +1,157 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
+import { ref } from 'vue'
+import { Moon, Sun, Menu } from 'lucide-vue-next'
+import './assets/styles.css'
+import ChatWindow from './components/ChatWindow.vue'
+
+const isDarkTheme = ref(true)
+const isSidebarOpen = ref(false)
+
+const userProfile = {
+  name: 'Prof Shar',
+  role: 'WAD2 Professor!',
+  avatar: './assets/SVG%20Logo.svg'
+}
+
+const teamMembers = ref([
+  { id: 1, avatar: './assets/SVG%20Logo.svg' },
+  { id: 2, avatar: './assets/SVG%20Logo.svg' },
+  { id: 3, avatar: './assets/SVG%20Logo.svg' }
+])
+
+const toggleTheme = () => {
+  isDarkTheme.value = !isDarkTheme.value
+  document.body.setAttribute('data-bs-theme', isDarkTheme.value ? 'dark' : 'light')
+}
+
+const toggleSidebar = () => {
+  isSidebarOpen.value = !isSidebarOpen.value
+}
 </script>
+
 <template>
-  <header>
-    <img
-      alt="Vue logo"
-      class="logo"
-      src="./assets/SVG%20Logo.svg"
-      width="125"
-      height="125"
-    />
+  <div class="app-container" :class="{ 'theme-light': !isDarkTheme }">
+    <div class="layout-wrapper">
+      <ChatWindow />
+      <!-- Sidebar -->
+      <aside class="sidebar" :class="{ 'sidebar-open': isSidebarOpen }">
+        <div class="brand">
+          <img src="./assets/logo.svg" alt="CultureOS" class="logo">
+          <h1 class="brand-title">CultureOS</h1>
+        </div>
 
-    <div class="wrapper">
-<!--      <HelloWorld msg="You did it!" />-->
+        <!-- Main Navigation -->
+        <nav class="main-nav">
+          <ul class="nav-list">
+            <li>
+              <RouterLink to="/" class="nav-link" :class="{ 'active': $route.path === '/' }">
+                <span class="nav-icon">📊</span>
+                Dashboard
+              </RouterLink>
+            </li>
+            <li>
+              <RouterLink to="/classPart" class="nav-link" :class="{ 'active': $route.path === '/classPart' }">
+                <span class="nav-icon">👥</span>
+                Class Participation
+              </RouterLink>
+            </li>
+            <li>
+              <RouterLink to="/progress" class="nav-link" :class="{ 'active': $route.path === '/progress' }">
+                <span class="nav-icon">📈</span>
+                Progress
+              </RouterLink>
+            </li>
+            <li>
+              <RouterLink to="/team" class="nav-link" :class="{ 'active': $route.path === '/team' }">
+                <span class="nav-icon">👥</span>
+                Team Members
+              </RouterLink>
+            </li>
+            <li>
+              <RouterLink to="/messages" class="nav-link" :class="{ 'active': $route.path === '/messages' }">
+                <span class="nav-icon">💬</span>
+                Messages
+              </RouterLink>
+            </li>
+          </ul>
+        </nav>
 
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/group">Group</RouterLink>
-        <RouterLink to="/login">Login</RouterLink>
-        <RouterLink to="/Register">Register</RouterLink>
-        <RouterLink to="/Profile">Profile</RouterLink>
-        <RouterLink to="/classPart">Class Participation</RouterLink>
-      </nav>
+        <!-- Workspaces -->
+        <div class="workspaces">
+          <h2 class="section-title">Workspaces</h2>
+          <ul class="nav-list">
+            <li>
+              <a href="#" class="nav-link">
+                <span class="nav-icon">🎨</span>
+                Interactive Design & Prototyping
+              </a>
+            </li>
+            <li>
+              <a href="#" class="nav-link">
+                <span class="nav-icon">🧮</span>
+                Computational Thinking
+              </a>
+            </li>
+            <li>
+              <a href="#" class="nav-link">
+                <span class="nav-icon">💻</span>
+                Web Application & Development
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Theme Toggle -->
+        <div class="theme-toggle-wrapper">
+          <button @click="toggleTheme" class="theme-toggle">
+            <Sun v-if="isDarkTheme" class="icon" />
+            <Moon v-else class="icon" />
+            <span>{{ isDarkTheme ? 'Light' : 'Dark' }} Mode</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main Content Area -->
+      <div class="main-area">
+        <!-- Top Navigation -->
+        <nav class="top-nav">
+          <div class="top-nav-left">
+            <button @click="toggleSidebar" class="menu-button">
+              <Menu class="icon" />
+            </button>
+            <div class="search-container">
+              <input type="text" placeholder="Search" class="search-input">
+            </div>
+          </div>
+          <div class="top-nav-right">
+            <div class="team-members">
+              <img 
+                v-for="member in teamMembers" 
+                :key="member.id"
+                :src="member.avatar" 
+                :alt="'Team Member ' + member.id" 
+                class="team-member-avatar"
+              >
+              <button class="more-members">+2</button>
+            </div>
+            <div class="user-profile">
+              <RouterLink to="/profile">
+              <img :src="userProfile.avatar" :alt="userProfile.name" class="user-avatar">
+              <div class="user-info">
+                <div class="user-name">{{ userProfile.name }}</div>
+                <div class="user-role">{{ userProfile.role }}</div>
+              </div>
+              </RouterLink>
+            </div>
+          </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="content">
+          <RouterView />
+        </main>
+      </div>
     </div>
-  </header>
-
-  <RouterView />
+  </div>
 </template>
-
-<style scoped>
-@import'bootstrap/dist/css/bootstrap.min.css';
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
-}
-</style>

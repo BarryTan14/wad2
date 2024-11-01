@@ -1,26 +1,26 @@
 <script setup>
 import groupComp from "../components/groupComponent.vue";
-import { onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
 
-const group = {
+const group1 = {
   name: "Teammate 1",
   role: "Developer"
 };
 
+// Create a reactive variable for the group data
+const group = ref(null);
+
 async function fetchGroupData() {
   try {
-    const response = await fetch('/group', {
-      method: 'POST',
-      body: new FormData()
-    });
-    const data = await response.json();
-    console.log('Response:', data);
+    const response = await axios.post('/group');
+    group.value = response.data.data; // Assign the response data to group
   } catch (error) {
     console.error('Fetch error:', error);
   }
 }
 
-// Trigger the fetch request when the component mounts
+// Fetch the data when the component mounts
 onMounted(() => {
   fetchGroupData();
 });
@@ -31,7 +31,8 @@ onMounted(() => {
     <h1>Group Assignments</h1>
   </div>
   <div style="display: flex;">
-    <groupComp :group="group" />
+    <groupComp view-prop="group1" :group="group1" />
+    <groupComp view-prop="group" :group="group" />
   </div>
 </template>
 

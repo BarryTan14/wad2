@@ -12,6 +12,11 @@ const userSchema = new mongoose.Schema({
         required: true,
         default: randomUUID(),
     },
+    role : {
+        type: String,
+        required: true,
+        default: 'user',
+    },
     bio : {
         type: String,
         default: '',
@@ -38,6 +43,10 @@ const userSchema = new mongoose.Schema({
         default: 'active',
     },
     createdAt: {
+        type: Date,
+        default: Date.now
+    },
+    updatedAt: {
         type: Date,
         default: Date.now
     },
