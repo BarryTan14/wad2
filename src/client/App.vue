@@ -3,6 +3,7 @@ import { RouterLink, RouterView } from 'vue-router'
 import { ref } from 'vue'
 import { Moon, Sun, Menu } from 'lucide-vue-next'
 import './assets/styles.css'
+import ChatWindow from './components/ChatWindow.vue'
 
 const isDarkTheme = ref(true)
 const isSidebarOpen = ref(false)
@@ -32,6 +33,7 @@ const toggleSidebar = () => {
 <template>
   <div class="app-container" :class="{ 'theme-light': !isDarkTheme }">
     <div class="layout-wrapper">
+      <ChatWindow />
       <!-- Sidebar -->
       <aside class="sidebar" :class="{ 'sidebar-open': isSidebarOpen }">
         <div class="brand">
@@ -134,11 +136,13 @@ const toggleSidebar = () => {
               <button class="more-members">+2</button>
             </div>
             <div class="user-profile">
+              <RouterLink to="/profile">
               <img :src="userProfile.avatar" :alt="userProfile.name" class="user-avatar">
               <div class="user-info">
                 <div class="user-name">{{ userProfile.name }}</div>
                 <div class="user-role">{{ userProfile.role }}</div>
               </div>
+              </RouterLink>
             </div>
           </div>
         </nav>
