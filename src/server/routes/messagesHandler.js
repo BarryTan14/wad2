@@ -47,7 +47,7 @@ export default async function messagesHandler(io) {
                 return;
             }
             const decoded = jwt.verify(token, process.env.JWT_SECRET)
-            User.findOne({userName: decoded.userName}).select('-password').then((user) => {
+            User.findOne({_id: decoded.userId}).select('-password').then((user) => {
                 if (!user) {
                     socket.emit('chat-nouser-error', {
                         message: 'Authentication required. Please log in.'

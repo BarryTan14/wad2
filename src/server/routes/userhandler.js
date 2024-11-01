@@ -6,10 +6,12 @@ import config from '../config/secrets.js'
 import {authMiddleware} from "../middleware/auth.js";
 import StringUtils from 'is-empty-null-undef-nan-whitespace';
 import {guestMiddleware} from "../middleware/guest.js";
+import {randomUUID} from "crypto";
 
 const router = express.Router();
 
 const generateToken = (user) => {
+    console.log(user);
     return jwt.sign(
         {userId: user._id, username: user.username},
         config.jwt.secret,
@@ -57,7 +59,6 @@ router.post('/api/auth/login', async (req, res) => {
     if (captcha !== req.session.captcha) {
         return res.status(400).json({ message: 'Invalid captcha' })
     }
-
     try {
         const user = await User.findOne({ username })
         if (!user) {
@@ -70,6 +71,7 @@ router.post('/api/auth/login', async (req, res) => {
         }
 
         const token = generateToken(user)
+        console.log(token)
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
