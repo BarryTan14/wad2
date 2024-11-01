@@ -16,10 +16,45 @@
     </form>
   </div>
 </template>
-<script setup lang="js">
+<script>
 import {ref, reactive} from "vue";
 import { useRouter } from "vue-router";
 
+export default {
+  name: "Login",
+  data() {
+    return {
+      formData: {
+        username: "",
+        password: "",
+      },
+      loginDisabled: false,
+      router: null,
+    }
+  },
+  methods: {
+    login() {
+      this.loginDisabled = true;
+      setTimeout(() => {
+        axios.post('user/api/auth/login', this.formData).then(response => {
+          alert(response.data.message)
+          this.$socket.disconnect();
+          this.$socket.connect();
+          this.router.push('/profile');
+        }).catch(error => {
+          alert(error.response)
+          console.log(error)
+        }).finally(()=>{
+          this.loginDisabled = false;
+        })
+      }, 1000)
+    }
+  },
+  beforeMount() {
+    this.router = useRouter();
+  }
+}
+/*
 const formData = reactive({
   username:'',
   password:'',
@@ -41,7 +76,7 @@ function login() {
       loginDisabled.value = false;
     })
   }, 1000)
-}
+}*/
 </script>
 <style>
 @media (min-width: 1024px) {

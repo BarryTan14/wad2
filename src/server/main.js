@@ -2,24 +2,44 @@ import express from "express";
 import ViteExpress from "vite-express";
 import logger from 'morgan';
 import chalk from 'chalk';
-import requestip from 'request-ip';
 import cookieParser from 'cookie-parser'
 import session from 'express-session';
-import { User } from './models/User.js'
-import { authMiddleware } from './middleware/auth.js'
 import mongoose from 'mongoose';
+import cors from 'cors';
 
 import dotenv from 'dotenv';
+import userHandlerRouter from './routes/userhandler.js';
+import transcribeHandlerRouter from './routes/transcribehandler.js';
+import groupRouter from './routes/group.js';
+import messagesRouter from './routes/messagesHandler.js';
+
+import {Server} from 'socket.io';
+import {createServer} from "http";
+
 dotenv.config();
 
 const app = express();
 
+const httpServer = createServer(app);
 
-ViteExpress.config({mode:process.env.NODE_ENV});
+const io = new Server(httpServer, {
+    cors: {
+        origin: "http://localhost:5173",
+        methods: ["GET", "POST"]
+    }
+});
+
+ViteExpress.config({mode: process.env.NODE_ENV});
 
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('MongoDB connection error:', err))
+
+/*var corsOptions = {
+    origin: 'http://localhost:3000',
+    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
+app.use(cors(corsOptions));*/
 
 app.use(express.json())
 app.use(cookieParser())
@@ -32,14 +52,16 @@ app.use(session({
 app.use(express.urlencoded({extended: false}));
 //app.use(express.multipart());
 
-import userHandlerRouter from './routes/userhandler.js';
 app.use('/user', userHandlerRouter);
 
-import transcribeHandlerRouter from './routes/transcribehandler.js';
 app.use('/transcribe', transcribeHandlerRouter);
 
-import groupRouter from './routes/group.js';
 app.use('/group', groupRouter);
+
+messagesRouter(io);
+
+//app.use('/ws', messagesRouter);
+
 
 logger.token('status', function (req, res) {
     var status = res.statusCode;
@@ -84,8 +106,16 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });*/
+/*
 
-ViteExpress.listen(app, 3000, () =>
+const io = new Server({
+    path:"/ws",
+});
+
+
+app.set('socketio',io);*/
+
+httpServer.listen(3000, () => {
     console.log(` _    _            _       _               _   _     _       __  
 | |  | |          | |     (_)             | | | |   (_)      \\ \\ 
 | |  | | ___    __| | ___  _ _ __   __ _  | |_| |__  _ ___  (_) |
@@ -93,5 +123,20 @@ ViteExpress.listen(app, 3000, () =>
 \\  /\\  /  __/ | (_| | (_) | | | | | (_| | | |_| | | | \\__ \\  _| |
  \\/  \\/ \\___|  \\__,_|\\___/|_|_| |_|\\__, |  \\__|_| |_|_|___/ (_) |
                                     __/ |                    /_/ 
+                                   |___/`)
+});
+
+ViteExpress.bind(app, httpServer);
+
+
+/*
+var server = ViteExpress.listen(app, 3000, () =>
+    console.log(` _    _            _       _               _   _     _       __
+| |  | |          | |     (_)             | | | |   (_)      \\ \\
+| |  | | ___    __| | ___  _ _ __   __ _  | |_| |__  _ ___  (_) |
+| |/\\| |/ _ \\  / _\` |/ _ \\| | '_ \\ / _\` | | __| '_ \\| / __|   | |
+\\  /\\  /  __/ | (_| | (_) | | | | | (_| | | |_| | | | \\__ \\  _| |
+ \\/  \\/ \\___|  \\__,_|\\___/|_|_| |_|\\__, |  \\__|_| |_|_|___/ (_) |
+                                    __/ |                    /_/
                                    |___/`),
-);
+);*/

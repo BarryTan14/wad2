@@ -1,0 +1,315 @@
+<template>
+  <div class="channel-settings-modal">
+    <!-- Modal Trigger Button -->
+    <button @click="openModal" class="channel-settings-btn btn btn-dark">
+      <i class="icon-settings">⚙️</i>
+    </button>
+
+    <!-- Modal Overlay -->
+    <div v-if="isModalOpen" class="modal-overlay" @click.self="closeModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Channel Settings</h2>
+          <button @click="closeModal" class="close-btn">&times;</button>
+        </div>
+
+        <div class="modal-tabs">
+          <button
+              @click="activeTab = 'list'"
+              :class="{ 'active': activeTab === 'list' }"
+          >
+            My Channels
+          </button>
+          <button
+              @click="activeTab = 'create'"
+              :class="{ 'active': activeTab === 'create' }"
+          >
+            Create Channel
+          </button>
+          <button
+              @click="activeTab = 'join'"
+              :class="{ 'active': activeTab === 'join' }"
+          >
+            Join Channel
+          </button>
+        </div>
+
+        <!-- My Channels Tab -->
+        <div v-if="activeTab === 'list'" class="channel-list">
+          <div
+              v-for="channel in userChannels"
+              :key="channel.id"
+              class="channel-item"
+          >
+            <span>{{ channel.name }}</span>
+            <div class="channel-actions">
+              <button
+                  @click="switchToChannel(channel)"
+                  class="switch-btn"
+              >
+                Switch
+              </button>
+              <button
+                  v-if="channel.name !== 'general'"
+                  @click="leaveChannel(channel)"
+                  class="leave-btn"
+              >
+                Leave
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Create Channel Tab -->
+        <div v-if="activeTab === 'create'" class="create-channel">
+          <form @submit.prevent="createChannel">
+            <input
+                v-model="newChannelName"
+                placeholder="Channel Name"
+                required
+            >
+            <select v-model="newChannelType">
+              <option value="public">Public</option>
+              <option value="private">Private</option>
+              <option value="group">Group</option>
+            </select>
+            <textarea
+                v-model="newChannelDescription"
+                placeholder="Channel Description (Optional)"
+            ></textarea>
+            <div class="create-channel-actions">
+              <button type="submit" class="create-btn">
+                Create Channel
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Join Channel Tab -->
+        <div v-if="activeTab === 'join'" class="join-channel">
+          <form @submit.prevent="joinChannel">
+            <input
+                v-model="channelToJoin"
+                placeholder="Enter Channel Code or Name"
+                required
+            >
+            <button type="submit" class="join-btn">
+              Join Channel
+            </button>
+          </form>
+          <div class="public-channels">
+            <h3>Public Channels</h3>
+            <ul>
+              <li
+                  v-for="publicChannel in publicChannels"
+                  :key="publicChannel.id"
+                  @click="joinPublicChannel(publicChannel)"
+              >
+                {{ publicChannel.name }}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'ChannelSettingsModal',
+  data() {
+    return {
+      isModalOpen: false,
+      activeTab: 'list',
+      userChannels: [
+        { id: 1, name: 'general' },
+        { id: 2, name: 'IS442' },
+        { id: 3, name: 'IS442-G4' }
+      ],
+      publicChannels: [
+        { id: 4, name: 'Random' },
+        { id: 5, name: 'Help Desk' }
+      ],
+      newChannelName: '',
+      newChannelType: 'public',
+      newChannelDescription: '',
+      channelToJoin: ''
+    }
+  },
+  methods: {
+    openModal() {
+      this.isModalOpen = true;
+    },
+    closeModal() {
+      this.isModalOpen = false;
+      // Reset form states
+      this.newChannelName = '';
+      this.newChannelType = 'public';
+      this.newChannelDescription = '';
+      this.channelToJoin = '';
+    },
+    switchToChannel(channel) {
+      // Emit an event to parent component to switch channels
+      this.$emit('switch-channel', channel);
+      this.closeModal();
+    },
+    leaveChannel(channel) {
+      // Remove channel from user's channels
+      this.userChannels = this.userChannels.filter(c => c.id !== channel.id);
+
+      // Emit an event to backend to remove user from channel
+      this.$emit('leave-channel', channel);
+    },
+    createChannel() {
+      const newChannel = {
+        name: this.newChannelName,
+        type: this.newChannelType,
+        description: this.newChannelDescription
+      };
+
+      // Emit event to backend to create channel
+      this.$emit('create-channel', newChannel);
+
+      // Add to user channels and switch to it
+      this.userChannels.push({
+        id: this.userChannels.length + 1,
+        name: newChannel.name
+      });
+      this.switchToChannel(newChannel);
+
+      // Reset form
+      this.newChannelName = '';
+      this.newChannelType = 'public';
+      this.newChannelDescription = '';
+    },
+    joinChannel() {
+      // Emit event to backend to join channel
+      this.$emit('join-channel', this.channelToJoin);
+
+      // Reset input
+      this.channelToJoin = '';
+    },
+    joinPublicChannel(channel) {
+      // Emit event to backend to join public channel
+      this.$emit('join-channel', channel.name);
+      this.switchToChannel(channel);
+    }
+  }
+}
+</script>
+
+<style scoped>
+.channel-settings-modal {
+  position: relative;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 8px;
+  width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-tabs {
+  display: flex;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-tabs button {
+  flex-grow: 1;
+  padding: 10px;
+  background: #f4f4f4;
+  border: none;
+  cursor: pointer;
+}
+
+.modal-tabs button.active {
+  background: #007bff;
+  color: white;
+}
+
+.channel-list,
+.create-channel,
+.join-channel {
+  padding: 20px;
+}
+
+.channel-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 10px;
+  background: #f4f4f4;
+  border-radius: 4px;
+}
+
+.channel-actions button {
+  margin-left: 10px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.switch-btn {
+  background: #007bff;
+  color: white;
+}
+
+.leave-btn {
+  background: #dc3545;
+  color: white;
+}
+
+.create-channel form,
+.join-channel form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.public-channels {
+  margin-top: 20px;
+}
+
+.public-channels ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.public-channels li {
+  padding: 10px;
+  background: #f4f4f4;
+  margin-bottom: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.public-channels li:hover {
+  background: #e0e0e0;
+}
+</style>
