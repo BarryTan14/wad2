@@ -1,121 +1,115 @@
+
 <script setup lang="ts">
+import { RouterLink, RouterView } from 'vue-router'
+import '../assets/styles.css'
+
 import WelcomeItem from './WelcomeItem.vue'
-import DocumentationIcon from './icons/IconDocumentation.vue'
-import ToolingIcon from './icons/IconTooling.vue'
-import EcosystemIcon from './icons/IconEcosystem.vue'
-import CommunityIcon from './icons/IconCommunity.vue'
-import SupportIcon from './icons/IconSupport.vue'
+import ParticipationIcon from './icons/IconDocumentation.vue'
+import SchedulerIcon from './icons/IconEcosystem.vue'
+import ToDoIcon from './icons/IconCommunity.vue'
+import ProgressIcon from './icons/IconSupport.vue'
+
+// Mock Data for dashboard (to be replaced with real data or props)
+const recentParticipation = "Last: 'Discussed project goals'";
+const upcomingMeeting = "Next meeting: 12th Nov, 3 PM";
+const nextDeadline = "Project Draft Due: 15th Nov";
+
+const openScheduler = () => {
+  window.open('https://www.when2meet.com/', '_blank');
+};
+
 </script>
 
 <template>
-  <WelcomeItem>
-    <template #icon>
-      <DocumentationIcon />
-    </template>
-    <template #heading>Documentation</template>
+  <div class="dashboard-container">
+    <!-- Speech-to-Text for Class Participation -->
+    <WelcomeItem>
+      <template #heading>
+        <ParticipationIcon />
+        Class Participation
+      </template>
+      <div>
+        <RouterLink to="/classPart" class="nav-link" :class="{ 'active': $route.path === '/classPart' }">
+          🎤 Start Voice Recording
+        </RouterLink>
+      </div>
+    </WelcomeItem>
 
-    Vue’s
-    <a href="https://vuejs.org/" target="_blank" rel="noopener"
-      >official documentation</a
-    >
-    provides you with all information you need to get started.
-  </WelcomeItem>
+    <!-- Meeting Scheduler -->
+    <WelcomeItem>
+      <template #heading>
+        <SchedulerIcon />
+        Schedule Meetings using When2Meet
+      </template>
+      <div>
+        <button @click="openScheduler" class="schedule-button">
+          📅 Schedule a Meeting
+        </button>
+      </div>
+      
+    </WelcomeItem>
 
-  <WelcomeItem>
-    <template #icon>
-      <ToolingIcon />
-    </template>
-    <template #heading>Tooling</template>
+    <!-- Project To-Do List -->
+    <WelcomeItem>
+      <template #heading>
+        <ToDoIcon />
+        Project To-Do List
+      </template>
+      <div>
+        <ul>
+          <li>Random Task Assigner: Click to assign tasks randomly</li>
+          <li>Volunteer for tasks within the project</li>
+          <li>Notifications for upcoming deadlines</li>
+        </ul>
+        <p>Next Deadline: {{ nextDeadline }}</p>
+      </div>
+    </WelcomeItem>
 
-    This project is served and bundled with
-    <a
-      href="https://vite.dev/guide/features.html"
-      target="_blank"
-      rel="noopener"
-      >Vite</a
-    >. The recommended IDE setup is
-    <a href="https://code.visualstudio.com/" target="_blank" rel="noopener"
-      >VSCode</a
-    >
-    +
-    <a
-      href="https://github.com/johnsoncodehk/volar"
-      target="_blank"
-      rel="noopener"
-      >Volar</a
-    >. If you need to test your components and web pages, check out
-    <a href="https://www.cypress.io/" target="_blank" rel="noopener">Cypress</a>
-    and
-    <a href="https://on.cypress.io/component" target="_blank" rel="noopener"
-      >Cypress Component Testing</a
-    >.
-
-    <br />
-
-    More instructions are available in <code>README.md</code>.
-  </WelcomeItem>
-
-  <WelcomeItem>
-    <template #icon>
-      <EcosystemIcon />
-    </template>
-    <template #heading>Ecosystem</template>
-
-    Get official tools and libraries for your project:
-    <a href="https://pinia.vuejs.org/" target="_blank" rel="noopener">Pinia</a>,
-    <a href="https://router.vuejs.org/" target="_blank" rel="noopener"
-      >Vue Router</a
-    >,
-    <a href="https://test-utils.vuejs.org/" target="_blank" rel="noopener"
-      >Vue Test Utils</a
-    >, and
-    <a href="https://github.com/vuejs/devtools" target="_blank" rel="noopener"
-      >Vue Dev Tools</a
-    >. If you need more resources, we suggest paying
-    <a
-      href="https://github.com/vuejs/awesome-vue"
-      target="_blank"
-      rel="noopener"
-      >Awesome Vue</a
-    >
-    a visit.
-  </WelcomeItem>
-
-  <WelcomeItem>
-    <template #icon>
-      <CommunityIcon />
-    </template>
-    <template #heading>Community</template>
-
-    Got stuck? Ask your question on
-    <a href="https://chat.vuejs.org" target="_blank" rel="noopener">Vue Land</a
-    >, our official Discord server, or
-    <a
-      href="https://stackoverflow.com/questions/tagged/vue.js"
-      target="_blank"
-      rel="noopener"
-      >StackOverflow</a
-    >. You should also subscribe to
-    <a href="https://news.vuejs.org" target="_blank" rel="noopener"
-      >our mailing list</a
-    >
-    and follow the official
-    <a href="https://twitter.com/vuejs" target="_blank" rel="noopener"
-      >@vuejs</a
-    >
-    twitter account for latest news in the Vue world.
-  </WelcomeItem>
-
-  <WelcomeItem>
-    <template #icon>
-      <SupportIcon />
-    </template>
-    <template #heading>Support Vue</template>
-
-    As an independent project, Vue relies on community backing for its
-    sustainability. You can help us by
-    <a href="https://vuejs.org/sponsor/" target="_blank" rel="noopener"
-      >becoming a sponsor</a
-    >.
-  </WelcomeItem>
+    <!-- Progress Dashboard -->
+    <WelcomeItem>
+      <template #heading>
+        <ProgressIcon />
+        Progress Dashboard
+      </template>
+      <div>
+        <p>Track your progress on projects and participation.</p>
+        <div class="progress-bar">
+          <div class="progress" :style="{ width: '75%' }"></div>
+        </div>
+        <p>75% of tasks completed.</p>
+      </div>
+    </WelcomeItem>
+  </div>
 </template>
+
+<style scoped>
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1rem;
+}
+
+.microphone-button, .schedule-button {
+  background-color: #3a86ff;
+  color: white;
+  padding: 0.5em 1em;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.progress-bar {
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  height: 1em;
+  width: 100%;
+}
+
+.progress {
+  background-color: #3a86ff;
+  height: 100%;
+  border-radius: 4px;
+}
+
+</style>
