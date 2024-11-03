@@ -1,28 +1,38 @@
 <script setup>
-import { defineProps } from 'vue';
+
 
 const props = defineProps({
+  viewProp: String,
   group: {
     type: Object,
     required: true
   }
 });
-
 </script>
 
 <template>
-    <div class="card" style="width: 18rem;margin: 10px;">
-        <div class="card-body">
-            <h5 class="card-title">Group 3</h5>
-            <h6 class="card-subtitle mb-2 text-muted">IS211</h6>
-            <p class="card-text">Interaction design prototyping is useful!</p>
-            <a href="#" class="card-link">Task List</a>
-            <!-- <a href="#" class="card-link">Another link</a> -->
-        </div>
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item">{{ group }}</li>
-            <li class="list-group-item">Teammate 2</li>
-            <li class="list-group-item">Teammate 3</li>
-        </ul>
+  <div>
+
+    <div class="card" style="width: 18rem;">
+      
+      <div class="card-body" v-if="group && group.length > 0">
+        <h5 class="card-title">{{ group[1].module_name || 'Module name not available' }}</h5>
+      </div>
+      <div class="card-body" v-else>
+        <h5>Loading module data...</h5> <!-- Fallback if data is not yet available -->
+      </div>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item">Cras justo odio</li>
+        <li class="list-group-item">Dapibus ac facilisis in</li>
+        <li class="list-group-item">Vestibulum at eros</li>
+      </ul>
+      <div class="card-body">
+        <a href="#" class="card-link">Card link</a>
+        <a href="#" class="card-link">Another link</a>
+      </div>
     </div>
+
+
+
+  </div>
 </template>

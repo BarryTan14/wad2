@@ -2,16 +2,9 @@ import { ObjectId } from 'mongodb'
 import mongoose from 'mongoose'
 
 const moduleSchema = new mongoose.Schema({
-    // groupid : {
-    //     type: String,
-    // },
-    // modulename : {
-    //     type: String,
-    // },
-    _id: {
-        type: ObjectId,
-    },
-    // Add any other user fields you need
+    module_name: { type: String, required: true },
+    module_id: { type: String, required: true },
+    description: { type: String, required: true }
 }, { timestamps: true })
 
 export const Module = mongoose.model('task', moduleSchema)

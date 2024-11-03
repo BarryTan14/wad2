@@ -30,5 +30,31 @@ router.post("/", async (req, res) => {
         res.status(500).send("Failed to connect to MongoDB collection: " + e.message);
     }
 });
+router.post("/add", async (req, res) => {
+    try {
+        const { module_name, module_id, description } = req.body;
+
+        // Check if all required fields are provided
+        if (!module_name || !module_id || !description) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+
+        // Create a new document in MongoDB
+        const newModule = new Module({
+            module_name,
+            module_id,
+            description
+        });
+
+        const savedModule = await newModule.save();
+        res.status(201).json({
+            message: "Successfully added new module",
+            data: savedModule
+        });
+    } catch (e) {
+        console.error("Error adding new module:", e);
+        res.status(500).send("Failed to add new module: " + e.message);
+    }
+});
 
 export default router;
