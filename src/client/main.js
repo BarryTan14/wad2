@@ -10,7 +10,7 @@ import {useToastStore} from "./stores/toast.js";
 const app = createApp(App)
 const pinia = createPinia()
 
-app.config.globalProperties.$socket = io('http://localhost:3000');
+app.config.globalProperties.$socket = io();
 
 app.use(pinia)
 app.use(router)

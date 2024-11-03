@@ -97,7 +97,7 @@ router.put('/api/auth/register', validateRegistration, asyncHandler(async (req, 
 
     res.status(201).json({
         message: 'Registration successful',
-        user: pick(user, ['_id', 'username', 'email']) // Only send safe user data
+        user: pick(user, ['_id', 'displayName', 'profilePic', 'bio', 'role']) // Only send safe user data
     });
 }));
 
@@ -118,7 +118,7 @@ router.post('/api/auth/login', validateLogin, asyncHandler(async (req, res) => {
 
     res.json({
         message: 'Login successful',
-        user: pick(user, ['_id', 'username', 'email'])
+        user: pick(user, ['_id', 'displayName', 'profilePic', 'bio', 'role'])
     });
 }));
 

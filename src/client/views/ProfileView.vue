@@ -88,6 +88,10 @@ export default {
       try {
         this.loading = true
         this.error = null
+        if(this.authStore.currentUser._id === this.userId) {
+          this.toastStore.warning('You have been redirected to your own profile');
+          return this.router.push('/profile')
+        }
         const response = await axios.get(`/user/api/profile/${this.userId}`)
         this.userData = response.data
       } catch (err) {
@@ -104,13 +108,13 @@ export default {
   },
 
   mounted() {
-  },
-
-  beforeMount() {
-    this.fetchProfile()
     this.router = useRouter()
     this.authStore = useAuthStore()
     this.toastStore = useToastStore();
+    this.fetchProfile()
+  },
+
+  beforeMount() {
   },
 
   // Reload when userId changes

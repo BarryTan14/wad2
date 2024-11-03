@@ -24,6 +24,7 @@ const ChatRoomSchema = new mongoose.Schema({
     },
     createdBy: {
         type: ObjectId,
+        ref: 'User',
     },
     moderatedBy : {
         type: Array,

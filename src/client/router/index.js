@@ -53,6 +53,9 @@ const router = createRouter({
           component: UserProfile
         }
       ],
+      meta: {
+        requiresAuth:true,
+      },
     },
     {
       path: '/logout',

@@ -108,12 +108,7 @@ export default async function messagesHandler(io) {
             await defaultRoom.save();
         }
 
-        // Load room history
-        const history = await ChatMessage.find({ saidIn: defaultRoom._id })
-            .sort({ createdAt: -1 })
-            .limit(MAX_HISTORY_LENGTH)
-            .lean();
-
+        const history = await loadRoomHistory(defaultRoom._id);
         roomHistories.set(defaultRoom._id.toString(), history);
         return defaultRoom;
     }
@@ -158,17 +153,14 @@ export default async function messagesHandler(io) {
 
         // Send room-info to socket
         socket.emit('room-info', {
-            _id:room._id,
-            name:room.name,
-            description:room.description,
-            });
+            _id: room._id,
+            name: room.name,
+            description: room.description,
+        });
 
         // Initialize room history if not exists
         if (!roomHistories.has(roomId.toString())) {
-            const history = await ChatMessage.find({ saidIn: roomId })
-                .sort({ createdAt: -1 })
-                .limit(MAX_HISTORY_LENGTH)
-                .lean();
+            const history = await loadRoomHistory(roomId);
             roomHistories.set(roomId.toString(), history);
         }
 
@@ -229,7 +221,6 @@ export default async function messagesHandler(io) {
         // Create and save message
         const chatMessage = new ChatMessage({
             saidBy: user._id,
-            displayName: user.displayName,
             saidIn: roomId,
             message: message,
             createdAt: new Date()
@@ -240,10 +231,13 @@ export default async function messagesHandler(io) {
         const messageData = {
             _id: chatMessage._id,
             message: chatMessage.message,
-            displayName: user.displayName || 'Anonymous',
+            saidBy: {
+                _id: user._id,
+                displayName: user.displayName,
+                profilePic: user.profilePic
+            },
             createdAt: chatMessage.createdAt.toISOString(),
-            roomId: roomId.toString(),
-            userId: user._id.toString()
+            roomId: roomId.toString()
         };
 
         // Update room history
@@ -256,6 +250,25 @@ export default async function messagesHandler(io) {
 
         // Broadcast to room
         io.to(roomId.toString()).emit('new-message', messageData);
+    }
+
+    async function loadRoomHistory(roomId) {
+        const history = await ChatMessage.find({ saidIn: roomId })
+            .sort({ createdAt: 1 })
+            .limit(MAX_HISTORY_LENGTH)
+            .populate('saidBy', 'displayName profilePic')
+            .lean();
+        return history.map(msg => ({
+            _id: msg._id,
+            message: msg.message,
+            saidBy: {
+                _id: msg.saidBy._id,
+                displayName: msg.saidBy.displayName,
+                profilePic: msg.saidBy.profilePic
+            },
+            createdAt: msg.createdAt.toISOString(),
+            roomId: msg.saidIn.toString()
+        }));
     }
 
     async function cleanupRoom(roomId) {

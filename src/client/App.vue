@@ -5,6 +5,7 @@ import './assets/styles.css'
 import ChatWindow from './components/ChatWindow.vue'
 import ToastContainer from "./components/ToastContainer.vue"
 import { useAuthStore } from './stores/auth.js'
+import AuthDropdown from './components/AuthDropdown.vue'
 
 export default {
   name: 'App',
@@ -16,7 +17,8 @@ export default {
     Sun,
     Menu,
     RouterLink,
-    RouterView
+    RouterView,
+    AuthDropdown,
   },
 
   data() {
@@ -41,7 +43,7 @@ export default {
         { id: 2, profilePic: './assets/SVG%20Logo.svg' },
         { id: 3, profilePic: './assets/SVG%20Logo.svg' }
       ],
-      fallbackImage: '/src/client/assets/profilepicture/avatar.png',
+      fallbackImage: 'avatar.png',
     }
   },
 
@@ -50,9 +52,9 @@ export default {
       const authStore = useAuthStore()
       console.log(authStore.currentUser);
       return authStore.currentUser || {
-        displayName: 'Prof Shar',
-        role: 'WAD2 Professor!',
-        profilePic: './assets/SVG%20Logo.svg'
+        displayName: 'Anonymous',
+        role: 'Guest',
+        profilePic: this.fallbackImage
       }
     }
   },
@@ -167,13 +169,14 @@ export default {
               >
               <button class="more-members">+2</button>
             </div>
-            <RouterLink to="/profile" class="user-profile">
+<!--            <RouterLink to="/profile" class="user-profile">
               <img :src="`/src/client/assets/profilepicture/`+userProfile.profilePic" :alt="userProfile.displayName" class="user-avatar">
               <div class="user-info">
                 <div class="user-name">{{ userProfile.displayName }}</div>
                 <div class="user-role">{{ userProfile.role }}</div>
               </div>
-            </RouterLink>
+            </RouterLink>-->
+            <AuthDropdown/>
           </div>
         </nav>
 

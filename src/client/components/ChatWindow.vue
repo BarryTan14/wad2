@@ -6,9 +6,10 @@
     </div>
 
     <div v-if="!isMinimized" class="chat-content">
-      <div class="messages mw-100" ref="messagesContainer">
+      <div class="messages" ref="messagesContainer">
         <div v-for="msg in messages" :key="msg._id" class="message text-break">
-          <span class="displayName">{{ msg.displayName }}:</span>
+          <img @click="router.push('/profile/'+msg.saidBy._id)" :src="'/src/client/assets/profilepicture/' + msg.saidBy.profilePic" class="rounded-circle chat-avatar">
+          <span @click="router.push('/profile/'+msg.saidBy._id)" class="displayName">{{ msg.saidBy.displayName }}:</span>
           <span class="text">{{ msg.message }}</span>
           <span class="timestamp text-break">{{ formatTime(msg.createdAt) }}</span>
         </div>
@@ -34,6 +35,7 @@
 
 <script>
 import ChannelSettingsModal from './ChatSettingsModal.vue'
+import { useRouter } from 'vue-router'
 
 export default {
   name: 'ChatWindow',
@@ -43,7 +45,7 @@ export default {
     return {
       messages: [],
       newMessage: '',
-      isMinimized: true,
+      isMinimized: false,
       currentRoom: null,
       MAX_MESSAGE_LENGTH: 500,
       connectionEstablished: false,
@@ -55,7 +57,8 @@ export default {
         'chat-not-member-error': 'You are not a member of this room',
         'chat-cannot-leave-error': 'Cannot leave the default room',
         'chat-invalid-room-error': 'Invalid room ID'
-      }
+      },
+      router:null,
     }
   },
 
@@ -116,7 +119,10 @@ export default {
         _id: Date.now(),
         message: error,
         createdAt: Date.now(),
-        displayName: "ERROR",
+        saidBy: {
+          displayName: "ERROR",
+          profilePic: 'server.png'
+        }
       });
       this.$nextTick(this.scrollToBottom);
     },
@@ -132,6 +138,7 @@ export default {
   },
 
   mounted() {
+    this.router = useRouter()
     // Socket connection events
     this.$socket.on('connect', () => {
       this.connectionEstablished = true;
@@ -210,6 +217,11 @@ export default {
   cursor: pointer;
 }
 
+.chat-avatar {
+  width: 7.5%;
+  cursor: pointer;
+}
+
 .chat-content {
   height: 400px;
   display: flex;
@@ -232,6 +244,7 @@ export default {
   font-weight: bold;
   margin-right: 5px;
   color: #007bff;
+  cursor:pointer;
 }
 
 .timestamp {
