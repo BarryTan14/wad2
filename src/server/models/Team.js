@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 import {ObjectId} from "mongodb";
 import {randomUUID} from "crypto";
 
-const ChatRoomSchema = new mongoose.Schema({
+const TeamSchema = new mongoose.Schema({
     name: {
         type: String,
         default: randomUUID(),
@@ -10,7 +10,7 @@ const ChatRoomSchema = new mongoose.Schema({
     },
     description: {
         type: String,
-        default: 'A New Chatroom',
+        default: 'A New Team',
     },
     status : {
         type: String,
@@ -38,4 +38,4 @@ const ChatRoomSchema = new mongoose.Schema({
     },
 }, {timestamps: true})
 
-export const ChatRoom =  mongoose.model('chatRoom', ChatRoomSchema)
+export const Team =  mongoose.model('team', TeamSchema)

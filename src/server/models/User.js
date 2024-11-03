@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
     },
     bio : {
         type: String,
-        default: '',
+        default: 'Hello There',
     },
     email: {
         type: String,
@@ -36,6 +36,9 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
+    },
+    joinedChatrooms: {
+        type: Array,
     },
     accountStatus: {
         type: String,
