@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Sender</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .email-form {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .preview-panel {
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        #htmlPreview {
+            min-height: 200px;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container">
+        <div class="email-form bg-white">
+            <h1 class="text-center mb-4">
+                <i class="fas fa-envelope-open-text text-primary"></i>
+                Email Sender
+            </h1>
+            
+            <form id="emailForm" class="needs-validation" novalidate>
+                <!-- Recipient Email -->
+                <div class="mb-3">
+                    <label for="recipient" class="form-label">Recipient Email</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-user"></i>
+                        </span>
+                        <input type="email" class="form-control" id="recipient" required>
+                        <div class="invalid-feedback">
+                            Please enter a valid email address.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subject -->
+                <div class="mb-3">
+                    <label for="subject" class="form-label">Subject</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-heading"></i>
+                        </span>
+                        <input type="text" class="form-control" id="subject" required>
+                        <div class="invalid-feedback">
+                            Please enter a subject.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Text Content -->
+                <div class="mb-3">
+                    <label for="textContent" class="form-label">Plain Text Content</label>
+                    <textarea class="form-control" id="textContent" rows="4" required></textarea>
+                    <div class="invalid-feedback">
+                        Please enter the email content.
+                    </div>
+                </div>
+
+                <!-- HTML Content -->
+                <div class="mb-3">
+                    <label for="htmlContent" class="form-label">HTML Content</label>
+                    <textarea class="form-control" id="htmlContent" rows="6" required></textarea>
+                    <div class="invalid-feedback">
+                        Please enter the HTML content.
+                    </div>
+                </div>
+
+                <!-- Preview Panel -->
+                <div class="preview-panel">
+                    <h5>HTML Preview</h5>
+                    <div id="htmlPreview" class="border"></div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>
+                        Send Email
+                    </button>
+                </div>
+            </form>
+
+            <!-- Toast Notification -->
+            <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+                <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-header">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong class="me-auto" id="toastTitle">Notification</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body" id="toastMessage"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('emailForm');
+            const htmlContent = document.getElementById('htmlContent');
+            const htmlPreview = document.getElementById('htmlPreview');
+            const toast = new bootstrap.Toast(document.getElementById('toast'));
+
+            // Update HTML preview
+            htmlContent.addEventListener('input', function() {
+                htmlPreview.innerHTML = this.value;
+            });
+
+            // Form submission
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                if (!form.checkValidity()) {
+                    e.stopPropagation();
+                    form.classList.add('was-validated');
+                    return;
+                }
+
+                const emailData = {
+                    to: document.getElementById('recipient').value,
+                    subject: document.getElementById('subject').value,
+                    text: document.getElementById('textContent').value,
+                    html: document.getElementById('htmlContent').value
+                };
+
+                try {
+                    const response = await fetch('/send-email', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(emailData)
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        showToast('Success', 'Email sent successfully!', 'success');
+                        form.reset();
+                        form.classList.remove('was-validated');
+                        htmlPreview.innerHTML = '';
+                    } else {
+                        throw new Error(result.message || 'Failed to send email');
+                    }
+                } catch (error) {
+                    showToast('Error', error.message, 'error');
+                }
+            });
+
+            function showToast(title, message, type) {
+                const toastEl = document.getElementById('toast');
+                document.getElementById('toastTitle').textContent = title;
+                document.getElementById('toastMessage').textContent = message;
+                
+                toastEl.className = 'toast';
+                if (type === 'success') {
+                    toastEl.classList.add('bg-success', 'text-white');
+                } else {
+                    toastEl.classList.add('bg-danger', 'text-white');
+                }
+                
+                toast.show();
+            }
+        });
+    </script>
+</body>
+</html>

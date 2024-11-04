@@ -6,16 +6,8 @@ const path = require('path');
 const cors = require('cors');
 const session = require('express-session');
 
-const { GoogleAuth } = require('google-auth-library');
-
 // Initialize express app
 const app = express();
-
-// Replace these with your own values
-const CLIENT_SECRETS_FILE = "path/to/client_secret.json";
-const SCOPES = ['https://www.googleapis.com/auth/calendar.settings.readonly'];
-const API_SERVICE_NAME = 'calendar';
-const API_VERSION = 'v3';
 
 // Service account credentials
 const serviceAccount = require('./key.json');
@@ -28,23 +20,6 @@ const jwtClient = new google.auth.JWT(
   ['https://www.googleapis.com/auth/calendar'],
   null
 );
-
-async function authorizeServiceAccount(req, res) {
-  try {
-    const auth = new GoogleAuth({
-      credentials: require(serviceAccount),
-      scopes: SCOPES,
-    });
-
-    const calendar = google.calendar({ version: API_VERSION, auth });
-    res.json({ message: 'Service account authorized successfully!' });
-  } catch (err) {
-    console.error('Error authorizing service account:', err);
-    res.status(500).json({ error: 'Error authorizing service account' });
-  }
-}
-
-app.get('/authorize-service-account', authorizeServiceAccount);
 
 // Helper function to verify calendar access
 async function verifyCalendarAccess(calendarId, auth) {
@@ -130,7 +105,17 @@ app.get('/events', validateUser, async (req, res) => {
     if (!hasAccess) {
       return res.status(403).json({ 
         error: 'Calendar access denied',
-        details: `Please share your calendar with ${serviceAccount.client_email} and grant "Make changes and manage sharing" permission.`
+        details: `Please share your calendar with ${serviceAccount.client_email} and grant "Make changes and manage sharing" permission.`,
+        setupInstructions: [
+          '1. Go to Google Calendar (calendar.google.com)',
+          '2. Find your calendar in the left sidebar',
+          '3. Click the three dots next to your calendar and select "Settings and sharing"',
+          '4. Scroll down to "Share with specific people"',
+          '5. Click "+ Add people"',
+          `6. Add the service account email: ${serviceAccount.client_email}`,
+          '7. Set the permission to "Make changes and manage sharing"',
+          '8. Click "Send"'
+        ]
       });
     }
 
@@ -186,7 +171,17 @@ app.post('/events', validateUser, async (req, res) => {
     if (!hasAccess) {
       return res.status(403).json({ 
         error: 'Calendar access denied',
-        details: `Please share your calendar with ${serviceAccount.client_email} and grant "Make changes and manage sharing" permission.`
+        details: `Please share your calendar with ${serviceAccount.client_email} and grant "Make changes and manage sharing" permission.`,
+        setupInstructions: [
+          '1. Go to Google Calendar (calendar.google.com)',
+          '2. Find your calendar in the left sidebar',
+          '3. Click the three dots next to your calendar and select "Settings and sharing"',
+          '4. Scroll down to "Share with specific people"',
+          '5. Click "+ Add people"',
+          `6. Add the service account email: ${serviceAccount.client_email}`,
+          '7. Set the permission to "Make changes and manage sharing"',
+          '8. Click "Send"'
+        ]
       });
     }
 
@@ -271,7 +266,17 @@ app.put('/events/:eventId', validateUser, async (req, res) => {
     if (!hasAccess) {
       return res.status(403).json({ 
         error: 'Calendar access denied',
-        details: `Please share your calendar with ${serviceAccount.client_email} and grant "Make changes and manage sharing" permission.`
+        details: `Please share your calendar with ${serviceAccount.client_email} and grant "Make changes and manage sharing" permission.`,
+        setupInstructions: [
+          '1. Go to Google Calendar (calendar.google.com)',
+          '2. Find your calendar in the left sidebar',
+          '3. Click the three dots next to your calendar and select "Settings and sharing"',
+          '4. Scroll down to "Share with specific people"',
+          '5. Click "+ Add people"',
+          `6. Add the service account email: ${serviceAccount.client_email}`,
+          '7. Set the permission to "Make changes and manage sharing"',
+          '8. Click "Send"'
+        ]
       });
     }
 
@@ -346,7 +351,17 @@ app.delete('/events/:eventId', validateUser, async (req, res) => {
     if (!hasAccess) {
       return res.status(403).json({ 
         error: 'Calendar access denied',
-        details: `Please share your calendar with ${serviceAccount.client_email} and grant "Make changes and manage sharing" permission.`
+        details: `Please share your calendar with ${serviceAccount.client_email} and grant "Make changes and manage sharing" permission.`,
+        setupInstructions: [
+          '1. Go to Google Calendar (calendar.google.com)',
+          '2. Find your calendar in the left sidebar',
+          '3. Click the three dots next to your calendar and select "Settings and sharing"',
+          '4. Scroll down to "Share with specific people"',
+          '5. Click "+ Add people"',
+          `6. Add the service account email: ${serviceAccount.client_email}`,
+          '7. Set the permission to "Make changes and manage sharing"',
+          '8. Click "Send"'
+        ]
       });
     }
 
