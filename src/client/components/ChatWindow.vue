@@ -114,18 +114,19 @@ export default {
   bottom: 0;
   right: 20px;
   width: 50%;
+  max-width: 400px;
   background: #1a1d20;
   border: 1px solid #ddd;
   border-radius: 8px 8px 0 0;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
   z-index: 1000;
+  transition: width 0.3s;
 }
 
 .chat-header {
   padding: 10px;
-  background: #007bff;
-  color: white;/*
-  cursor: pointer;*/
+  background: var(--bs-purple);
+  color: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -141,7 +142,7 @@ export default {
 }
 
 .chat-content {
-  height: 400px;
+  flex: 1;
   display: flex;
   flex-direction: column;
 }
@@ -161,7 +162,7 @@ export default {
 .displayName {
   font-weight: bold;
   margin-right: 5px;
-  color: #007bff;
+  color: var(--bs-purple);
 }
 
 .timestamp {
@@ -186,7 +187,7 @@ export default {
 
 .input-area button {
   padding: 8px 16px;
-  background: #007bff;
+  background: var(--bs-purple);
   color: white;
   border: none;
   border-radius: 4px;
@@ -199,9 +200,48 @@ export default {
   transform: translateY(25px);
   transition: transform 0.25s cubic-bezier(.05,.43,.13,1.01);
 }
+
 .chat-minimized:hover {
   transition: transform 0.25s cubic-bezier(.05,.43,.13,1.01);
   transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .chat-container {
+    width: 90%;
+    right: 5%;
+  }
+
+  .chat-content {
+    height: auto;
+  }
+
+  .input-area {
+    flex-direction: column;
+  }
+
+  .input-area input {
+    margin-right: 0;
+    margin-bottom: 8px;
+  }
+
+  .minimize-btn {
+    font-size: 18px;
+  }
+
+  .chat-header h3 {
+    font-size: 1.5em;
+  }
+}
+
+@media (max-width: 480px) {
+  .chat-header h3 {
+    font-size: 1.2em;
+  }
+
+  .input-area button {
+    padding: 8px 12px;
+  }
 }
 
 .messages::-webkit-scrollbar {
