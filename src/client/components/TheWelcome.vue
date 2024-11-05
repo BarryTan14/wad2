@@ -74,24 +74,29 @@ const openScheduler = () => {
     </WelcomeItem>
 
     <!-- Project To-Do List -->
-    <WelcomeItem>
-      <template #heading>
-        <ToDoIcon />
-        Project To-Do List
-      </template>
-      <div>
-        <input type="text" v-model="newTodoText" placeholder="Add a new task" @keyup.enter="addTodo()" />
-        <ul>
-          <li v-for="(item, index) in todoItems" :key="item.id" class="todo-item">
-            <span class="task-text" :class="{ 'completed': item.completed }">{{ item.text }}</span>
-            <div class="action-buttons">
-              <button class="action-button" @click="editTodo(index)">Edit</button>
-              <button class="action-button" @click="deleteTodo(index)">Delete</button>
-            </div>
-          </li>
-        </ul>
-      </div>
-    </WelcomeItem>
+<WelcomeItem>
+  <template #heading>
+    <ToDoIcon />
+    Project To-Do List
+  </template>
+  <div>
+    <input type="text" v-model="newTodoText" placeholder="Add a new task" @keyup.enter="addTodo()" />
+    <ul>
+      <li v-for="(item, index) in todoItems" :key="item.id" class="todo-item">
+        <input
+          type="checkbox"
+          v-model="item.completed"
+          class="task-checkbox"
+        />
+        <span class="task-text" :class="{ 'completed': item.completed }">{{ item.text }}</span>
+        <div class="action-buttons">
+          <button class="action-button" @click="editTodo(index)">Edit</button>
+          <button class="action-button" @click="deleteTodo(index)">Delete</button>
+        </div>
+      </li>
+    </ul>
+  </div>
+</WelcomeItem>
 
     <!-- Progress Dashboard -->
     <WelcomeItem>

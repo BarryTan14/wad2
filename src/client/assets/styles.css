@@ -443,6 +443,10 @@
   transition: background-color 0.3s ease;
 }
 
+.button:hover {
+  background-color: #5548cc;
+}
+
 .button:disabled {
   background-color: var(--bs-gray-700);
   cursor: not-allowed;
@@ -488,6 +492,12 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
+}
+
+.microphone-button:hover,
+.schedule-button:hover,
+.action-button:hover {
+  background-color: #5548cc;
 }
 
 .progress-bar {
@@ -580,4 +590,17 @@
     padding: 0.3em 0.6em;
     font-size: 0.8rem;
   }
+}
+
+.task-checkbox {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-right: 0.5rem;
+  cursor: pointer;
+  accent-color: var(--bs-purple);
+}
+
+.task-checkbox:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(111, 66, 193, 0.5);
 }
