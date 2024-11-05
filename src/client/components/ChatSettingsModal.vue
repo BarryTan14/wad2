@@ -2,7 +2,7 @@
   <div class="channel-settings-modal">
     <!-- Modal Trigger Button -->
     <button @click="openModal" class="channel-settings-btn btn btn-dark">
-      <i class="icon-settings">⚙️</i>
+      <i class="icon-settings">Channel Settings ⚙️</i>
     </button>
 
     <!-- Modal Overlay -->
@@ -194,6 +194,9 @@ export default {
       // Emit event to backend to join public channel
       this.$emit('join-channel', channel.name);
       this.switchToChannel(channel);
+    },
+    toggleTheme() {
+      this.theme = this.theme === 'theme-dark' ? 'theme-light' : 'theme-dark';
     }
   }
 }
@@ -218,7 +221,7 @@ export default {
 }
 
 .modal-content {
-  background: white;
+  background: var(--bs-purple);
   border-radius: 8px;
   width: 500px;
   max-height: 80vh;
@@ -241,13 +244,13 @@ export default {
 .modal-tabs button {
   flex-grow: 1;
   padding: 10px;
-  background: #f4f4f4;
+  background: #9e96dd;
   border: none;
   cursor: pointer;
 }
 
 .modal-tabs button.active {
-  background: #007bff;
+  background: var(--bs-purple);
   color: white;
 }
 
@@ -263,7 +266,7 @@ export default {
   align-items: center;
   margin-bottom: 10px;
   padding: 10px;
-  background: #f4f4f4;
+  background: #9e96dd;
   border-radius: 4px;
 }
 
@@ -273,11 +276,16 @@ export default {
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  transition: background 0.3s, color 0.3s;
 }
 
 .switch-btn {
-  background: #007bff;
+  background: #2fc07c;
   color: white;
+}
+
+.switch-btn:hover {
+  background: #5548cc;
 }
 
 .leave-btn {
@@ -285,11 +293,44 @@ export default {
   color: white;
 }
 
+.leave-btn:hover {
+  background: #d32f2f;
+}
+
 .create-channel form,
 .join-channel form {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+input, select, textarea {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  width: 100%;
+  font-size: 1rem;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #6c63ff;
+  box-shadow: 0 0 5px rgba(108, 99, 255, 0.5);
+}
+
+.create-btn, .join-btn {
+  padding: 10px;
+  font-size: 1rem;
+  background: #6c63ff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.create-btn:hover, .join-btn:hover {
+  background: #5548cc;
 }
 
 .public-channels {
@@ -303,13 +344,28 @@ export default {
 
 .public-channels li {
   padding: 10px;
-  background: #f4f4f4;
+  background: #9e96dd;
   margin-bottom: 5px;
   border-radius: 4px;
   cursor: pointer;
 }
 
 .public-channels li:hover {
-  background: #e0e0e0;
+  background: #2fc07c;
 }
+
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: white;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.close-btn:hover {
+  color: #dc3545;
+  transform: scale(1.1); 
+}
+
 </style>
