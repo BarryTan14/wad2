@@ -336,3 +336,52 @@
 .theme-light .menu-button {
   color: var(--bs-dark);
 }
+
+.transcribe,
+.voice-transcription {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: var(--bs-gray-800);
+  border-radius: 1rem;
+  border: 1px solid var(--bs-gray-700);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.controls {
+  margin: 20px 0;
+}
+
+.button {
+  padding: 10px 20px;
+  margin: 5px;
+  background-color: var(--bs-purple);
+  color: var(--bs-white);
+  border: none;
+  border-radius: 0.5rem;
+  transition: background-color 0.3s ease;
+}
+
+.button:disabled {
+  background-color: var(--bs-gray-700);
+  cursor: not-allowed;
+}
+
+.status {
+  margin: 10px 0;
+  font-style: italic;
+  color: var(--bs-gray-400);
+}
+
+.transcription {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: var(--bs-gray-600);
+  border-radius: 4px;
+  color: var(--bs-light);
+}
+
+.error {
+  margin-top: 10px;
+  color: #ff0000;
+}
