@@ -2,7 +2,7 @@
 import { RouterLink, RouterView } from 'vue-router'
 import { ref } from 'vue'
 import { Moon, Sun, Menu } from 'lucide-vue-next'
-import './assets/styles.css'
+// import './assets/styles.css'
 import ChatWindow from './components/ChatWindow.vue'
 
 const isDarkTheme = ref(true)
@@ -36,10 +36,11 @@ const toggleSidebar = () => {
       <ChatWindow />
       <!-- Sidebar -->
       <aside class="sidebar" :class="{ 'sidebar-open': isSidebarOpen }">
-        <div class="brand">
-          <img src="./assets/logo.svg" alt="CultureOS" class="logo">
-          <h1 class="brand-title">CultureOS</h1>
-        </div>
+        <div class="close-button" v-if="isSidebarOpen" @click="toggleSidebar">&times;</div>
+  <div class="brand">
+    <img src="./assets/logo.svg" alt="CultureOS" class="logo">
+    <h1 class="brand-title">CultureOS</h1>
+  </div>
 
         <!-- Main Navigation -->
         <nav class="main-nav">
@@ -104,13 +105,13 @@ const toggleSidebar = () => {
 
         <!-- Theme Toggle -->
         <div class="theme-toggle-wrapper">
-          <button @click="toggleTheme" class="theme-toggle">
-            <Sun v-if="isDarkTheme" class="icon" />
-            <Moon v-else class="icon" />
-            <span>{{ isDarkTheme ? 'Light' : 'Dark' }} Mode</span>
-          </button>
-        </div>
-      </aside>
+    <button @click="toggleTheme" class="theme-toggle">
+      <Sun v-if="isDarkTheme" class="icon" />
+      <Moon v-else class="icon" />
+      <span>{{ isDarkTheme ? 'Light' : 'Dark' }} Mode</span>
+    </button>
+  </div>
+</aside>
 
       <!-- Main Content Area -->
       <div class="main-area">
