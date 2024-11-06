@@ -42,7 +42,10 @@ export default async function messagesHandler(io) {
             // Handle room joining
             socket.on('join-room', async (roomId) => {
                 if(!roomId || roomId === 'default')
+                {
                     roomId = await ChatRoom.findOne({type: 'default'}).select('_id');
+                    roomId = roomId._id
+                }
                 try {
                     if (!user) throw new Error('Authentication required');
                     if (!mongoose.Types.ObjectId.isValid(roomId)) {
@@ -88,7 +91,6 @@ export default async function messagesHandler(io) {
                 try {
                     if (!user) throw new Error('Authentication required');
                     const { roomId, message } = messageData;
-                    console.log(messageData);
                     if (!mongoose.Types.ObjectId.isValid(roomId)) {
                         throw new Error('Invalid room ID');
                     }
@@ -166,6 +168,7 @@ export default async function messagesHandler(io) {
 
     async function joinRoom(socket, roomId, userId) {
         const room = await ChatRoom.findById(roomId);
+        const user = await User.findById(userId).select('-password');
         if (!room) {
             throw new Error('Room not found');
         }
@@ -174,6 +177,10 @@ export default async function messagesHandler(io) {
         if (!room.users.includes(userId)) {
             room.users.push(userId);
             await room.save();
+        }
+        if(!user.joinedChatrooms.includes(roomId._id)) {
+            user.joinedChatrooms.push(roomId._id);
+            await user.save();
         }
 
         // Join socket room
@@ -191,7 +198,6 @@ export default async function messagesHandler(io) {
         socket.emit('previous-messages', { roomId, messages: history });
 
         // Notify room about new user
-        const user = await User.findById(userId).select('displayName');
         io.to(roomId.toString()).emit('user-joined', {
             roomId,
             user: user.displayName
@@ -264,7 +270,6 @@ export default async function messagesHandler(io) {
             createdAt: chatMessage.createdAt.toISOString(),
             roomId: roomId.toString()
         };
-
         // Broadcast to room
         io.to(roomId.toString()).emit('new-message', messageData);
     }
