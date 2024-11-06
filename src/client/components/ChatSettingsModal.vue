@@ -3,19 +3,19 @@
       @click="openModal"
       class="btn btn-info rounded-end-0 rounded-bottom-0 rounded-top-3 px-2"
   >
-    <i class="bi bi-gear">⚙</i>
+    <i class="icon-settings">⚙</i>
   </button>
 
   <!-- Bootstrap Modal -->
   <div
       v-if="isModalOpen"
-      class="position-fixed top-0 start-0 w-100 h-100 bg-black bg-opacity-50 d-flex justify-content-center align-items-center"
+      class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
       style="z-index: 1000;"
       @click.self="closeModal"
   >
-    <div class="bg-white rounded-3 w-100 max-w-lg overflow-auto mx-3" style="max-width: 500px; max-height: 80vh;">
-      <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
-        <h2 class="mb-0">Channel Settings</h2>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Channel Settings</h2>
         <button
             @click="closeModal"
             class="btn-close"
@@ -45,24 +45,24 @@
       </div>
 
       <!-- My Channels Tab -->
-      <div v-if="activeTab === 'list'" class="p-3">
+      <div v-if="activeTab === 'list'" class="channel-list">
         <div
             v-for="channel in userChannels"
             :key="channel.id"
-            class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded"
+            class="channel-item"
         >
           <span>{{ channel.name }}</span>
-          <div class="d-flex gap-2">
+          <div class="channel-actions">
             <button
                 @click="switchToChannel(channel)"
-                class="btn btn-primary btn-sm"
+                class="switch-btn"
             >
               Switch
             </button>
             <button
                 v-if="channel.name !== 'general'"
                 @click="leaveChannel(channel)"
-                class="btn btn-danger btn-sm"
+                class="leave-btn"
             >
               Leave
             </button>
@@ -71,7 +71,7 @@
       </div>
 
       <!-- Create Channel Tab -->
-      <div v-if="activeTab === 'create'" class="p-3">
+      <div v-if="activeTab === 'create'" class="create-channel">
         <form @submit.prevent="createChannel" class="d-flex flex-column gap-3">
           <input
               v-model="newChannelName"
@@ -94,7 +94,7 @@
               rows="3"
           ></textarea>
           <div class="d-flex justify-content-end">
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="create-btn">
               Create Channel
             </button>
           </div>
@@ -102,7 +102,7 @@
       </div>
 
       <!-- Join Channel Tab -->
-      <div v-if="activeTab === 'join'" class="p-3">
+      <div v-if="activeTab === 'join'" class="join-channel">
         <form @submit.prevent="joinChannel" class="d-flex gap-2 mb-4">
           <input
               v-model="channelToJoin"
@@ -110,18 +110,17 @@
               required
               class="form-control"
           >
-          <button type="submit" class="btn btn-primary">
+          <button type="submit" class="join-btn">
             Join Channel
           </button>
         </form>
         <div class="public-channels">
-          <h3 class="h5 mb-3">Public Channels</h3>
+          <h3>Public Channels</h3>
           <ul class="list-unstyled">
             <li
                 v-for="publicChannel in publicChannels"
                 :key="publicChannel.id"
                 @click="joinPublicChannel(publicChannel)"
-                class="p-2 bg-light rounded mb-2 cursor-pointer"
             >
               {{ publicChannel.name }}
             </li>
@@ -233,12 +232,12 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 15px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #9e96dd;
 }
 
 .modal-tabs {
   display: flex;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #9e96dd;
 }
 
 .modal-tabs button {
@@ -306,7 +305,7 @@ export default {
 
 input, select, textarea {
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid #9e96dd;
   border-radius: 6px;
   width: 100%;
   font-size: 1rem;
@@ -358,7 +357,7 @@ input:focus, select:focus, textarea:focus {
   background: transparent;
   border: none;
   font-size: 1.5rem;
-  color: white;
+  color: #9e96dd;
   cursor: pointer;
   transition: color 0.3s;
 }
