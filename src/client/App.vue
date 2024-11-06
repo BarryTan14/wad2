@@ -1,7 +1,7 @@
 <script>
 import { RouterLink, RouterView } from 'vue-router'
 import { Moon, Sun, Menu } from 'lucide-vue-next'
-import './assets/styles.css'
+// import './assets/styles.css'
 import ChatWindow from './components/ChatWindow.vue'
 import ToastContainer from "./components/ToastContainer.vue"
 import { useAuthStore } from './stores/auth.js'
@@ -98,10 +98,11 @@ export default {
     <div class="layout-wrapper">
       <!-- Sidebar -->
       <aside class="sidebar" :class="{ 'sidebar-open': isSidebarOpen }">
-        <div class="brand">
-          <img src="./assets/logo.svg" alt="CultureOS" class="logo">
-          <h1 class="brand-title">CultureOS</h1>
-        </div>
+        <div class="close-button" v-if="isSidebarOpen" @click="toggleSidebar">&times;</div>
+  <div class="brand">
+    <img src="./assets/logo.svg" alt="CultureOS" class="logo">
+    <h1 class="brand-title">CultureOS</h1>
+  </div>
 
         <!-- Main Navigation -->
         <nav class="main-nav">

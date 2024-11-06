@@ -336,7 +336,6 @@ export default {
   cursor: pointer;
 }
 
-/* Custom scrollbar styles - Bootstrap doesn't have equivalents */
 .overflow-auto::-webkit-scrollbar {
   width: 6px;
 }

@@ -211,18 +211,161 @@ export default {
       // Emit event to backend to join public channel
       this.$emit('join-channel', channel.name);
       this.switchToChannel(channel);
+    },
+    toggleTheme() {
+      this.theme = this.theme === 'theme-dark' ? 'theme-light' : 'theme-dark';
     }
   }
 }
 </script>
 
-
 <style scoped>
-.cursor-pointer {
+.modal-content {
+  background: var(--bs-purple);
+  border-radius: 8px;
+  width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-tabs {
+  display: flex;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-tabs button {
+  flex-grow: 1;
+  padding: 10px;
+  background: #9e96dd;
+  border: none;
   cursor: pointer;
 }
 
-.max-w-lg {
-  max-width: 500px;
+.modal-tabs button.active {
+  background: var(--bs-purple);
+  color: white;
 }
+
+.channel-list,
+.create-channel,
+.join-channel {
+  padding: 20px;
+}
+
+.channel-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 10px;
+  background: #9e96dd;
+  border-radius: 4px;
+}
+
+.channel-actions button {
+  margin-left: 10px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s;
+}
+
+.switch-btn {
+  background: #2fc07c;
+  color: white;
+}
+
+.switch-btn:hover {
+  background: #5548cc;
+}
+
+.leave-btn {
+  background: #dc3545;
+  color: white;
+}
+
+.leave-btn:hover {
+  background: #d32f2f;
+}
+
+.create-channel form,
+.join-channel form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+input, select, textarea {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  width: 100%;
+  font-size: 1rem;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #6c63ff;
+  box-shadow: 0 0 5px rgba(108, 99, 255, 0.5);
+}
+
+.create-btn, .join-btn {
+  padding: 10px;
+  font-size: 1rem;
+  background: #6c63ff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.create-btn:hover, .join-btn:hover {
+  background: #5548cc;
+}
+
+.public-channels {
+  margin-top: 20px;
+}
+
+.public-channels ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.public-channels li {
+  padding: 10px;
+  background: #9e96dd;
+  margin-bottom: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.public-channels li:hover {
+  background: #2fc07c;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: white;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.close-btn:hover {
+  color: #dc3545;
+  transform: scale(1.1); 
+}
+
 </style>

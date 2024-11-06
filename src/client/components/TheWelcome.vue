@@ -1,23 +1,48 @@
-
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import '../assets/styles.css'
+import { ref, computed } from 'vue';
+import { RouterLink } from 'vue-router';
+import '../assets/styles.css';
 
-import WelcomeItem from './WelcomeItem.vue'
-import ParticipationIcon from './icons/IconDocumentation.vue'
-import SchedulerIcon from './icons/IconEcosystem.vue'
-import ToDoIcon from './icons/IconCommunity.vue'
-import ProgressIcon from './icons/IconSupport.vue'
+import WelcomeItem from './WelcomeItem.vue';
+import ParticipationIcon from './icons/IconDocumentation.vue';
+import SchedulerIcon from './icons/IconEcosystem.vue';
+import ToDoIcon from './icons/IconCommunity.vue';
+import ProgressIcon from './icons/IconSupport.vue';
 
-// Mock Data for dashboard (to be replaced with real data or props)
-const recentParticipation = "Last: 'Discussed project goals'";
-const upcomingMeeting = "Next meeting: 12th Nov, 3 PM";
-const nextDeadline = "Project Draft Due: 15th Nov";
+const todoItems = ref([
+  { id: 1, text: 'IDP Iteration 2', completed: false },
+  { id: 2, text: 'CT Project', completed: false },
+  { id: 3, text: 'WAD2 Project', completed: false },
+]);
+
+const addTodo = () => {
+  const newItem = { id: Date.now(), text: "New Task", completed: false };
+  todoItems.value.push(newItem);
+};
+
+const editTodo = (index) => {
+  const newText = prompt("Edit task:", todoItems.value[index].text);
+  if (newText !== null) {
+    todoItems.value[index].text = newText;
+  }
+};
+
+const deleteTodo = (index) => {
+  todoItems.value.splice(index, 1);
+};
+
+const toggleComplete = (index) => {
+  todoItems.value[index].completed = !todoItems.value[index].completed;
+};
+
+const progressPercentage = () => {
+  const completedCount = todoItems.value.filter(todo => todo.completed).length;
+  return (completedCount / todoItems.value.length) * 100;
+};
 
 const openScheduler = () => {
   window.open('https://www.when2meet.com/', '_blank');
 };
-
 </script>
 
 <template>
@@ -46,24 +71,32 @@ const openScheduler = () => {
           📅 Schedule a Meeting
         </button>
       </div>
-      
     </WelcomeItem>
 
     <!-- Project To-Do List -->
-    <WelcomeItem>
-      <template #heading>
-        <ToDoIcon />
-        Project To-Do List
-      </template>
-      <div>
-        <ul>
-          <li>Random Task Assigner: Click to assign tasks randomly</li>
-          <li>Volunteer for tasks within the project</li>
-          <li>Notifications for upcoming deadlines</li>
-        </ul>
-        <p>Next Deadline: {{ nextDeadline }}</p>
-      </div>
-    </WelcomeItem>
+<WelcomeItem>
+  <template #heading>
+    <ToDoIcon />
+    Project To-Do List
+  </template>
+  <div>
+    <input type="text" v-model="newTodoText" placeholder="Add a new task" @keyup.enter="addTodo()" />
+    <ul>
+      <li v-for="(item, index) in todoItems" :key="item.id" class="todo-item">
+        <input
+          type="checkbox"
+          v-model="item.completed"
+          class="task-checkbox"
+        />
+        <span class="task-text" :class="{ 'completed': item.completed }">{{ item.text }}</span>
+        <div class="action-buttons">
+          <button class="action-button" @click="editTodo(index)">Edit</button>
+          <button class="action-button" @click="deleteTodo(index)">Delete</button>
+        </div>
+      </li>
+    </ul>
+  </div>
+</WelcomeItem>
 
     <!-- Progress Dashboard -->
     <WelcomeItem>
@@ -72,44 +105,12 @@ const openScheduler = () => {
         Progress Dashboard
       </template>
       <div>
-        <p>Track your progress on projects and participation.</p>
+        <p>Track your progress!</p>
         <div class="progress-bar">
-          <div class="progress" :style="{ width: '75%' }"></div>
+          <div class="progress" :style="{ width: progressPercentage() + '%' }"></div>
         </div>
-        <p>75% of tasks completed.</p>
+        <p>{{ progressPercentage().toFixed(0) }}% of tasks completed.</p>
       </div>
     </WelcomeItem>
   </div>
 </template>
-
-<style scoped>
-.dashboard-container {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  padding: 1rem;
-}
-
-.microphone-button, .schedule-button {
-  background-color: #3a86ff;
-  color: white;
-  padding: 0.5em 1em;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.progress-bar {
-  background-color: #e0e0e0;
-  border-radius: 4px;
-  height: 1em;
-  width: 100%;
-}
-
-.progress {
-  background-color: #3a86ff;
-  height: 100%;
-  border-radius: 4px;
-}
-
-</style>
