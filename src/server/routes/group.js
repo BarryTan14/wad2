@@ -30,6 +30,29 @@ router.post("/", async (req, res) => {
         res.status(500).send("Failed to connect to MongoDB collection: " + e.message);
     }
 });
+router.post('/:groupId', async (req, res) => {
+    const { groupId } = req.params; // Retrieve groupId from URL parameters
+    
+    try {
+        // Find all modules that match the provided groupId
+        const modules = await Module.find({ groupId: groupId });
+        console.log(groupId)
+        if (!modules || modules.length === 0) {
+            return res.status(404).json({ message: 'No modules found for the specified group ID' });
+        }
+
+        // Return the found modules as a JSON response
+        res.json({
+            message: "Successfully retrieved documents",
+            data: modules
+        });
+    } catch (error) {
+        console.error("Error fetching modules by groupId:", error);
+        res.status(500).json({ message: "Failed to fetch modules by groupId", error: error.message });
+    }
+});
+
+
 router.post("/add", async (req, res) => {
     try {
         const { module_name, module_id, description } = req.body;

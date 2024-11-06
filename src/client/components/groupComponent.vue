@@ -8,6 +8,7 @@ const props = defineProps({
     required: true
   }
 });
+
 </script>
 
 <template>
@@ -16,7 +17,7 @@ const props = defineProps({
     <div class="card" style="width: 18rem;">
       
       <div class="card-body" v-if="group && group.length > 0">
-        <h5 class="card-title">{{ group[1].module_name || 'Module name not available' }}</h5>
+        <h5 class="card-title">{{ group[0].groupId || 'Module name not available' }}</h5>
       </div>
       <div class="card-body" v-else>
         <h5>Loading module data...</h5> <!-- Fallback if data is not yet available -->
