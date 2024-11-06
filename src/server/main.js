@@ -12,6 +12,7 @@ import userHandlerRouter from './routes/userhandler.js';
 import transcribeHandlerRouter from './routes/transcribehandler.js';
 import groupRouter from './routes/group.js';
 import messagesRouter from './routes/messagesHandler.js';
+import emailRouter from './routes/email.js';
 
 import {Server} from 'socket.io';
 import {createServer} from "http";
@@ -27,6 +28,9 @@ const io = new Server(httpServer, {
         methods: ["GET", "POST"]
     }
 });
+
+// Add this in your main.js or App.vue
+
 
 ViteExpress.config({mode: process.env.NODE_ENV});
 
@@ -60,6 +64,8 @@ app.use('/user', userHandlerRouter);
 app.use('/transcribe', transcribeHandlerRouter);
 
 app.use('/group', groupRouter);
+
+app.use('/api/email', emailRouter);
 
 messagesRouter(io);
 

@@ -7,6 +7,7 @@ import {createPinia} from 'pinia'
 import {useAuthStore} from './stores/auth.js'
 import {useToastStore} from "./stores/toast.js";
 
+
 const app = createApp(App)
 const pinia = createPinia()
 

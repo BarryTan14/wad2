@@ -14,8 +14,8 @@
         <button
             @click="toggleMinimize"
             :class="[
-            'btn',
-            isMinimized ? 'btn-info px-5' : 'btn-danger px-3',
+            'btn', 'minimize-btn',
+            isMinimized ? 'px-5' : 'px-3',
             'rounded-start-0 rounded-end-3 rounded-bottom-0'
           ]"
         >
@@ -43,13 +43,13 @@
             <div class="d-flex align-items-center gap-2">
               <a
                   @click="router.push('/profile/'+msg.saidBy._id)"
-                  class="fw-bold text-decoration-none link-light cursor-pointer"
+                  class="fw-bold text-purple text-decoration-none link-light cursor-pointer"
               >
                 {{ msg.saidBy.displayName }}
               </a>
               <small class="text-secondary">{{ formatTime(msg.createdAt) }}</small>
             </div>
-            <div class="text-light text-break">{{ msg.message }}</div>
+            <div class="text-purple text-break">{{ msg.message }}</div>
           </div>
         </div>
       </div>
@@ -101,7 +101,7 @@ export default {
         'chat-cannot-leave-error': 'Cannot leave the default room',
         'chat-invalid-room-error': 'Invalid room ID'
       },
-      router:null,
+      router:useRouter(),
       timestampRefreshInterval: null, // Store interval reference
       midnightCheckTimeout: null, // Store timeout reference for next midnight
     }
@@ -244,20 +244,16 @@ export default {
   },
 
   computed: {
-    authStore() {
-      return useAuthStore()
-    },
-
     isLoggedIn() {
-      return this.authStore.currentUser !== null
+      return this.$authStore.currentUser !== null
     }
   },
 
   mounted() {
-    this.router = useRouter()
     // Socket connection events
     this.$socket.on('connect', () => {
       this.connectionEstablished = true;
+      this.$socket.emit('join-room')
     });
 
     this.$socket.on('user-profile-updated', (userData) => {
@@ -323,6 +319,60 @@ export default {
 </script>
 
 <style scoped>
+.position-fixed {
+  position: fixed;
+  bottom: 0;
+  right: 20px;
+  z-index: 1000;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  transition: width 0.3s;
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
+}
+
+.bg-dark {
+  background-color: #f3f1ff !important;
+}
+
+.modal-overlay {
+  background: rgba(158, 150, 221, 0.5);
+}
+
+.modal-content {
+  background: #ffffff;
+}
+
+.modal-tabs button {
+  background: #f3f1ff; 
+  color: #6c63ff;
+}
+
+.modal-tabs button.active {
+  background: #9e96dd;
+  color: white;
+}
+
+.btn-info {
+  background-color: #9e96dd !important;
+  border-color: #9e96dd !important;
+  color: white !important;
+}
+
+.btn-info:hover {
+  background-color: #8b84d8 !important;
+  border-color: #8b84d8 !important;
+}
+
+.bg-primary {
+  background-color: var(--bs-purple) !important;
+  color: white;
+  padding: 10px;
+}
+
+.rounded-top {
+  border-radius: 8px 8px 0 0 !important;
+}
+
 .translate-up {
   transform: translateY(25px);
   transition: transform 0.25s cubic-bezier(.05,.43,.13,1.01);
@@ -334,6 +384,22 @@ export default {
 
 .cursor-pointer {
   cursor: pointer;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.flex-grow-1 {
+  flex-grow: 1;
+}
+
+.overflow-auto {
+  overflow-y: auto;
 }
 
 .overflow-auto::-webkit-scrollbar {
@@ -348,4 +414,93 @@ export default {
   background: #888;
   border-radius: 3px;
 }
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  color: white;
+}
+
+.messages {
+  flex-grow: 1;
+  padding: 10px;
+  background: #8b84d8;
+}
+
+.message {
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.displayName {
+  font-weight: bold;
+  color: var(--bs-purple);
+}
+
+.timestamp {
+  font-size: 0.8em;
+  color: #6c757d;
+}
+
+.input-area {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid #ddd;
+}
+
+.form-control {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.btn-primary {
+  background: var(--bs-purple);
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+}
+
+.modal-tabs button {
+  background: #f3f1ff;
+  color: var(--bs-purple);
+}
+
+.modal-tabs button.active {
+  background: #9e96dd; 
+  color: white;
+}
+
+.text-purple {
+  color: var(--bs-purple) !important;
+}
+
+@media (max-width: 768px) {
+  .position-fixed {
+    width: 90%;
+    right: 5%;
+  }
+
+  .input-area {
+    flex-direction: column;
+  }
+
+  .btn {
+    font-size: 1.2em;
+  }
+}
+
+@media (max-width: 480px) {
+  .btn {
+    padding: 8px 12px;
+  }
+
+  .chat-header h3 {
+    font-size: 1.2em;
+  }
+}
 </style>
+

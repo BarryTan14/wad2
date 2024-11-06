@@ -61,3 +61,23 @@ function validateRequest(req, res, next) {
     }
     next();
 }
+
+
+export const validateEmail = [
+  body('to').isEmail().withMessage('Invalid email address'),
+  body('subject').notEmpty().withMessage('Subject is required'),
+  body('text').notEmpty().withMessage('Text content is required'),
+  body('html').notEmpty().withMessage('HTML content is required'),
+  
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Validation error', 
+        errors: errors.array() 
+      });
+    }
+    next();
+  }
+];

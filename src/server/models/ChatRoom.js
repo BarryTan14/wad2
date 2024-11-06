@@ -5,9 +5,8 @@ import {randomUUID} from "crypto";
 const ChatRoomSchema = new mongoose.Schema({
     name: {
         type: String,
-        default: randomUUID(),
+        default: 'ChatRoom' + new Date().getTime().toString(),
         required: true,
-        unique: true,
     },
     description: {
         type: String,
@@ -16,20 +15,25 @@ const ChatRoomSchema = new mongoose.Schema({
     status : {
         type: String,
         default: 'active',
+        enum: ['active', 'inactive', 'locked', 'deleted'],
     },
     type : {
         type: String,
+        default: 'user',
+        enum: ['default', 'user', 'group'],
     },
-    users : {
-        type: Array,
-    },
+    users : [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
     createdBy: {
-        type: ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     },
-    moderatedBy : {
-        type: Array,
-    },
+    moderatedBy : [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
     createdAt: {
         type: Date,
         default: Date.now
