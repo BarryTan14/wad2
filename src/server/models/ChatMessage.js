@@ -21,6 +21,7 @@ const ChatMessageSchema = new mongoose.Schema({
     status : {
         type: String,
         default: 'active',
+        enum: ['active', 'hidden', 'deleted'],
     },
     createdAt: {
         type: Date,

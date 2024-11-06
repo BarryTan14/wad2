@@ -22,10 +22,10 @@ export default async function messagesHandler(io) {
             const token = getTokenFromSocket(socket);
             const user = token ? await authenticateUser(token) : null;
 
-            if (user) {
+            /*if (user) {
                 // Always join default room
                 await joinRoom(socket, defaultRoom._id, user._id);
-            }
+            }*/
 
             // Handle room creation
             socket.on('create-room', async (roomData) => {
@@ -41,11 +41,26 @@ export default async function messagesHandler(io) {
 
             // Handle room joining
             socket.on('join-room', async (roomId) => {
+                if(!roomId || roomId === 'default')
+                    roomId = await ChatRoom.findOne({type: 'default'}).select('_id');
                 try {
                     if (!user) throw new Error('Authentication required');
                     if (!mongoose.Types.ObjectId.isValid(roomId)) {
                         throw new Error('Invalid room ID');
                     }
+                    await joinRoom(socket, roomId, user._id);
+                } catch (error) {
+                    handleError(socket, error);
+                }
+            });
+
+            // TODO: Handle group room joining
+            socket.on('join-room-group', async (roomId) => {
+                try {
+                    if (!user) throw new Error('Authentication required');
+                    /*if (!mongoose.Types.ObjectId.isValid(roomId)) {
+                        throw new Error('Invalid room ID');
+                    }*/
                     await joinRoom(socket, roomId, user._id);
                 } catch (error) {
                     handleError(socket, error);
@@ -139,12 +154,12 @@ export default async function messagesHandler(io) {
         await room.save();
 
         // Notify all users about new room
-        io.emit('room-created', {
+        /*io.emit('room-created', {
             _id: room._id,
             name: room.name,
             description: room.description,
             creator: userId
-        });
+        });*/
 
         return room;
     }
