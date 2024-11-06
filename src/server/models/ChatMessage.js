@@ -4,16 +4,19 @@ import {ObjectId} from "mongodb";
 const ChatMessageSchema = new mongoose.Schema({
     saidBy: {
         type: ObjectId,
+        ref: 'User',
     },
-    displayName: String,
     saidTo: {
         type: ObjectId,
+        ref: 'User',
     },
     saidIn: {
-        type: String,
+        type: ObjectId,
+        ref: 'ChatRoom',
     },
     message: {
         type: String,
+        required: true,
     },
     status : {
         type: String,
