@@ -34,9 +34,9 @@ export default {
         { path: '/messages', name: 'Messages', icon: '💬' }
       ],
       workspaces: [
-        { name: 'Interactive Design & Prototyping', icon: '🎨' },
-        { name: 'Computational Thinking', icon: '🧮' },
-        { name: 'Web Application & Development', icon: '💻' }
+        { name: 'Interactive Design & Prototyping', icon: '🎨', groupId: 101, path: '/group' },
+        { name: 'Computational Thinking', icon: '🧮', groupId: 102, path: '/group' },
+        { name: 'Web Application & Development', icon: '💻', groupId: 103, path: '/group' }
       ],
       teamMembers: [
         { id: 1, profilePic: './assets/SVG%20Logo.svg' },
@@ -124,11 +124,21 @@ export default {
         <div class="workspaces">
           <h2 class="section-title">Workspaces</h2>
           <ul class="nav-list">
-            <li v-for="workspace in workspaces" :key="workspace.name">
+            <!-- <li v-for="workspace in workspaces" :key="workspace.name">
               <a href="#" class="nav-link">
                 <span class="nav-icon">{{ workspace.icon }}</span>
                 {{ workspace.name }}
               </a>
+            </li> -->
+            <li v-for="workspace in workspaces" :key="workspace.groupId">
+              <RouterLink
+                  :to="workspace.path+'/'+workspace.groupId"
+                  class="nav-link"
+                  :class="{ 'active': $route.path === workspace.path+'/'+workspace.groupId }"
+              >
+                <span class="nav-icon">{{ workspace.icon }}</span>
+                {{ workspace.name }}
+              </RouterLink>
             </li>
           </ul>
         </div>

@@ -14,20 +14,14 @@ watch(
     fetchGroupData(); // Fetch new data for the updated groupId
   }
 );
-
-const group1 = {
-  name: "Teammate 1",
-  role: "Developer"
-};
 const group = ref(null);
 const moduleName = ref("");
 const moduleId = ref("");
 const description = ref("");
-const isPopupVisible = ref(false);
 
 async function fetchGroupData() {
   try {
-    console.log(groupId.value)
+    console.log(groupId.value);
     // Use groupId in the API request URL if needed
     const response = await axios.post(`/group/${groupId.value}`);
     group.value = response.data.data; // Assign the response data to group
@@ -36,53 +30,69 @@ async function fetchGroupData() {
   }
 }
 
-// Function to show the popup
+// Function to open a new window popup
 function openPopup() {
-  isPopupVisible.value = true;
-}
+  const popup = window.open(
+    "",
+    "Add New Module",
+    "width=400,height=400,scrollbars=yes,resizable=yes"
+  );
+  
+  popup.document.write(`
+    <html>
+      <head>
+        <title>Add New Module</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          label { display: block; margin-top: 10px; }
+          input, textarea { width: 100%; padding: 5px; margin-top: 5px; }
+          button { margin-top: 15px; padding: 5px 10px; }
+        </style>
+      </head>
+      <body>
+        <h2>Add New Module</h2>
+        <form id="popupForm">
+          <label>Module Name:
+            <input type="text" id="moduleName" required />
+          </label>
+          <label>Module ID:
+            <input type="text" id="moduleId" required />
+          </label>
+          <label>Description:
+            <textarea id="description" required></textarea>
+          </label>
+          <button type="submit">Submit</button>
+          <button type="button" onclick="window.close()">Cancel</button>
+        </form>
+        <script>
+          document.getElementById("popupForm").onsubmit = async function(event) {
+            event.preventDefault();
+            const moduleName = document.getElementById("moduleName").value;
+            const moduleId = document.getElementById("moduleId").value;
+            const description = document.getElementById("description").value;
 
-// Function to close the popup
-function closePopup() {
-  isPopupVisible.value = false;
-}
+            try {
+              const response = await fetch('/group/${groupId.value}/add', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  module_name: moduleName,
+                  module_id: moduleId,
+                  description: description
+                })
+              });
 
-// Function to handle form submission
-function handleSubmit() {
-  console.log("Module Name:", moduleName.value);
-  console.log("Module ID:", moduleId.value);
-  console.log("Description:", description.value);
-
-  // Example: Send data to the server (replace URL with your actual API endpoint)
-  fetch(`/group/${groupId}/add`, { // Updated URL to include groupId
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      module_name: moduleName.value,
-      module_id: moduleId.value,
-      description: description.value
-    })
-  })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Failed to add module');
-      }
-      return response.json();
-    })
-    .then(data => {
-      console.log("Response from server:", data);
-      // Handle success response, such as updating UI or showing a success message
-    })
-    .catch(error => console.error("Error:", error));
-
-  // Close the popup after submission
-  closePopup();
-
-  // Reset the form fields if needed
-  moduleName.value = "";
-  moduleId.value = "";
-  description.value = "";
+              if (!response.ok) throw new Error('Failed to add module');
+              
+              alert("Module added successfully!");
+              window.close();
+            } catch (error) {
+              alert("Error: " + error.message);
+            }
+          };
+      </body>
+    </html>
+  `);
 }
 
 // Fetch the data when the component mounts
@@ -91,44 +101,14 @@ onMounted(() => {
 });
 </script>
 
-
 <template>
-
   <div class="popup-form">
     <h2>{{ groupId }}</h2>
     <div>
       <h1>Group Assignments</h1>
       <button @click="openPopup">Add new module</button>
     </div>
-    <div v-if="isPopupVisible" class="popup-overlay">
-      <div class="popup-form">
-        <h2>Add New Module</h2>
-        <form @submit.prevent="handleSubmit">
-          <label>
-            Module Name:
-            <input type="text" v-model="moduleName" required />
-          </label>
-          <br />
-          <label>
-            Module ID:
-            <input type="text" v-model="moduleId" required />
-          </label>
-          <br />
-          <label>
-            Description:
-            <textarea v-model="description" required></textarea>
-          </label>
-          <br />
-          <button type="submit">Submit</button>
-          <button type="button" @click="closePopup">Cancel</button>
-        </form>
-      </div>
-
-
-
-    </div>
-    <div v-else style="display: flex;">
-      <groupComp view-prop="group1" :group="group1" />
+    <div style="display: flex;">
       <groupComp view-prop="group" :group="group" />
     </div>
   </div>
