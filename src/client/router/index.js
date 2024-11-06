@@ -80,6 +80,11 @@ const router = createRouter({
       name: 'transcribeFromClaude',
       component: () => import('../views/TranscribeFromClaude.vue'),
     },
+    {
+    path: '/emailsender',
+    name: 'EmailSender',
+    component: () => import('../views/EmailSender.Vue')
+  },
   ],
 })
 
