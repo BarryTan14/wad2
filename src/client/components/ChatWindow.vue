@@ -335,7 +335,36 @@ export default {
 }
 
 .bg-dark {
-  background-color: #1a1d20 !important;
+  background-color: #f3f1ff !important;
+}
+
+.modal-overlay {
+  background: rgba(158, 150, 221, 0.5);
+}
+
+.modal-content {
+  background: #ffffff;
+}
+
+.modal-tabs button {
+  background: #f3f1ff; 
+  color: #6c63ff;
+}
+
+.modal-tabs button.active {
+  background: #9e96dd;
+  color: white;
+}
+
+.btn-info {
+  background-color: #9e96dd !important;
+  border-color: #9e96dd !important;
+  color: white !important;
+}
+
+.btn-info:hover {
+  background-color: #8b84d8 !important;
+  border-color: #8b84d8 !important;
 }
 
 .bg-primary {
@@ -401,7 +430,7 @@ export default {
 .messages {
   flex-grow: 1;
   padding: 10px;
-  background: #212529;
+  background: #8b84d8;
 }
 
 .message {
@@ -437,6 +466,16 @@ export default {
   color: white;
   padding: 8px 16px;
   border-radius: 4px;
+}
+
+.modal-tabs button {
+  background: #f3f1ff;
+  color: #6c63ff;
+}
+
+.modal-tabs button.active {
+  background: #9e96dd; 
+  color: white;
 }
 
 @media (max-width: 768px) {

@@ -1,7 +1,7 @@
 <template>
   <button
       @click="openModal"
-      class="btn btn-info rounded-end-0 rounded-bottom-0 rounded-top-3 px-2"
+      class="channel-settings-btn btn btn-dark"
   >
     <i class="icon-settings">⚙</i>
   </button>
@@ -17,7 +17,7 @@
         <h2>Channel Settings</h2>
         <button
             @click="closeModal"
-            class="btn-close"
+            class="btn-close btn-dark"
             aria-label="Close"
         ></button>
       </div>
