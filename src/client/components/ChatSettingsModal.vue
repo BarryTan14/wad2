@@ -9,8 +9,7 @@
   <!-- Bootstrap Modal -->
   <div
       v-if="isModalOpen"
-      class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center"
-      style="z-index: 1000;"
+      class="modal-overlay"
       @click.self="closeModal"
   >
     <div class="modal-content">
@@ -23,7 +22,7 @@
         ></button>
       </div>
 
-      <div class="nav nav-tabs">
+      <div class="modal-tabs">
         <button
             @click="activeTab = 'list'"
             :class="['nav-link flex-grow-1', activeTab === 'list' ? 'active' : '']"
@@ -219,6 +218,23 @@ export default {
 </script>
 
 <style scoped>
+.channel-settings-modal {
+  position: relative;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
 .modal-content {
   background: var(--bs-purple);
   border-radius: 8px;
@@ -232,12 +248,12 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 15px;
-  border-bottom: 1px solid #9e96dd;
+  border-bottom: 1px solid #eee;
 }
 
 .modal-tabs {
   display: flex;
-  border-bottom: 1px solid #9e96dd;
+  border-bottom: 1px solid #eee;
 }
 
 .modal-tabs button {
@@ -246,6 +262,10 @@ export default {
   background: #9e96dd;
   border: none;
   cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 .modal-tabs button.active {
@@ -305,7 +325,7 @@ export default {
 
 input, select, textarea {
   padding: 10px;
-  border: 1px solid #9e96dd;
+  border: 1px solid #ddd;
   border-radius: 6px;
   width: 100%;
   font-size: 1rem;
@@ -357,7 +377,7 @@ input:focus, select:focus, textarea:focus {
   background: transparent;
   border: none;
   font-size: 1.5rem;
-  color: #9e96dd;
+  color: white;
   cursor: pointer;
   transition: color 0.3s;
 }
