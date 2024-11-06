@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import emailRouter from './routes/email.js';
 import config from './config/index.js';
 import dotenv from 'dotenv';
+import groupRouter from './routes/group.js';
 
 dotenv.config();
 
@@ -20,6 +21,8 @@ app.use(express.static('public'));
 
 // API routes
 app.use('/api/email', emailRouter);
+
+app.use('/group', groupRouter);
 
 // Serve the frontend
 app.get('/', (req, res) => {

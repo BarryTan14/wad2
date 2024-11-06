@@ -119,9 +119,8 @@ export default {
   methods: {
     async fetchGroupData() {
       try {
-        const response = await axios.get(`/api/${this.groupId}`);
-        console.log(response.data.data);
-        this.group = response.data.data;
+        const response = await axios.get(`/group/${this.groupId}`);
+        this.group = response;
       } catch (error) {
         console.error('Failed to fetch group data:', error);
       }
