@@ -73,7 +73,7 @@ export default {
         role: '',
       },
       fallbackImage: '/profilepicture/avatar.png',
-      router: null,
+      router: useRouter(),
     }
   },
 
@@ -111,7 +111,6 @@ export default {
   },
 
   mounted() {
-    this.router = useRouter()
     this.fetchProfile()
   },
 

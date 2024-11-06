@@ -39,16 +39,19 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
-    joinedChatrooms: {
-        type: Array,
-    },
-    joinedGroups: {
-        type: Array,
-    },
+    joinedChatrooms: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ChatRoom'
+    }],
+    joinedGroups: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Groups'
+    }],
     accountStatus: {
         type: String,
         required: true,
         default: 'active',
+        enum: ['active', 'inactive', 'banned', 'locked', 'deleted'],
     },
     createdAt: {
         type: Date,

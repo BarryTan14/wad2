@@ -14,8 +14,8 @@
         <button
             @click="toggleMinimize"
             :class="[
-            'btn',
-            isMinimized ? 'btn-info px-5' : 'btn-danger px-3',
+            'btn', 'minimize-btn',
+            isMinimized ? 'px-5' : 'px-3',
             'rounded-start-0 rounded-end-3 rounded-bottom-0'
           ]"
         >
@@ -101,7 +101,7 @@ export default {
         'chat-cannot-leave-error': 'Cannot leave the default room',
         'chat-invalid-room-error': 'Invalid room ID'
       },
-      router:null,
+      router:useRouter(),
       timestampRefreshInterval: null, // Store interval reference
       midnightCheckTimeout: null, // Store timeout reference for next midnight
     }
@@ -244,20 +244,16 @@ export default {
   },
 
   computed: {
-    authStore() {
-      return useAuthStore()
-    },
-
     isLoggedIn() {
-      return this.authStore.currentUser !== null
+      return this.$authStore.currentUser !== null
     }
   },
 
   mounted() {
-    this.router = useRouter()
     // Socket connection events
     this.$socket.on('connect', () => {
       this.connectionEstablished = true;
+      this.$socket.emit('join-room')
     });
 
     this.$socket.on('user-profile-updated', (userData) => {

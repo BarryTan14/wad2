@@ -3,7 +3,7 @@ import {Module} from "../models/Module.js";
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+router.get("/api/", async (req, res) => {
     //console.log("Connecting to the MongoDB collection...");
 
     try {
@@ -30,7 +30,7 @@ router.post("/", async (req, res) => {
         res.status(500).send("Failed to connect to MongoDB collection: " + e.message);
     }
 });
-router.post('/:groupId', async (req, res) => {
+router.get('/api/:groupId', async (req, res) => {
     const { groupId } = req.params; // Retrieve groupId from URL parameters
     
     try {
@@ -40,7 +40,6 @@ router.post('/:groupId', async (req, res) => {
         if (!modules || modules.length === 0) {
             return res.status(404).json({ message: 'No modules found for the specified group ID' });
         }
-
         // Return the found modules as a JSON response
         res.json({
             message: "Successfully retrieved documents",
@@ -53,7 +52,7 @@ router.post('/:groupId', async (req, res) => {
 });
 
 
-router.post("/add", async (req, res) => {
+router.post("/api/add", async (req, res) => {
     try {
         const { module_name, module_id, description } = req.body;
 

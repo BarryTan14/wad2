@@ -39,24 +39,15 @@ export default {
         { name: 'Web Application & Development', icon: '💻', groupId: 103, path: '/group' }
       ],
       teamMembers: [
-        { id: 1, profilePic: './assets/SVG%20Logo.svg' },
-        { id: 2, profilePic: './assets/SVG%20Logo.svg' },
-        { id: 3, profilePic: './assets/SVG%20Logo.svg' }
+        { id: 1, profilePic: 'profilepicture/avatar.png' },
+        { id: 2, profilePic: 'profilepicture/avatar.png' },
+        { id: 3, profilePic: 'profilepicture/avatar.png' }
       ],
       fallbackImage: 'avatar.png',
     }
   },
 
   computed: {
-    userProfile() {
-      const authStore = useAuthStore()
-      console.log(authStore.currentUser);
-      return authStore.currentUser || {
-        displayName: 'Anonymous',
-        role: 'Guest',
-        profilePic: this.fallbackImage
-      }
-    }
   },
 
   methods: {
