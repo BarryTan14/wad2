@@ -43,13 +43,13 @@
             <div class="d-flex align-items-center gap-2">
               <a
                   @click="router.push('/profile/'+msg.saidBy._id)"
-                  class="fw-bold text-decoration-none link-light cursor-pointer"
+                  class="fw-bold text-purple text-decoration-none link-light cursor-pointer"
               >
                 {{ msg.saidBy.displayName }}
               </a>
               <small class="text-secondary">{{ formatTime(msg.createdAt) }}</small>
             </div>
-            <div class="text-light text-break">{{ msg.message }}</div>
+            <div class="text-purple text-break">{{ msg.message }}</div>
           </div>
         </div>
       </div>
@@ -470,12 +470,16 @@ export default {
 
 .modal-tabs button {
   background: #f3f1ff;
-  color: #6c63ff;
+  color: var(--bs-purple);
 }
 
 .modal-tabs button.active {
   background: #9e96dd; 
   color: white;
+}
+
+.text-purple {
+  color: var(--bs-purple) !important;
 }
 
 @media (max-width: 768px) {
@@ -503,3 +507,4 @@ export default {
   }
 }
 </style>
+
