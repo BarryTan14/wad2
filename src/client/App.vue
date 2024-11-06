@@ -52,7 +52,7 @@ const toggleSidebar = () => {
               </RouterLink>
             </li>
             <li>
-              <RouterLink to="/classPart" class="nav-link" :class="{ 'active': $route.path === '/classPart' }">
+              <RouterLink to="/transcribefromclaude" class="nav-link" :class="{ 'active': $route.path === '/transcribefromclaude' }">
                 <span class="nav-icon">👥</span>
                 Class Participation
               </RouterLink>
@@ -83,22 +83,23 @@ const toggleSidebar = () => {
           <h2 class="section-title">Workspaces</h2>
           <ul class="nav-list">
             <li>
-              <a href="#" class="nav-link">
+              <RouterLink :to="{ name: 'group', params: { groupId: 101 }}" class="nav-link" :class="{ 'active':$route.params.groupId === '101'}" >
                 <span class="nav-icon">🎨</span>
                 Interactive Design & Prototyping
-              </a>
+              </RouterLink>
             </li>
             <li>
-              <a href="#" class="nav-link">
+              <RouterLink :to="{ name: 'group', params: { groupId: 102 }}" class="nav-link" :class="{ 'active': $route.params.groupId === '102'}" >
                 <span class="nav-icon">🧮</span>
                 Computational Thinking
-              </a>
+              </RouterLink>
             </li>
             <li>
-              <a href="#" class="nav-link">
+              <RouterLink :to="{ name: 'group', params: { groupId: 103 }}" class="nav-link" :class="{ 'active': $route.params.groupId === '103'}" >
                 <span class="nav-icon">💻</span>
                 Web Application & Development
-              </a>
+              </RouterLink>
+            
             </li>
           </ul>
         </div>

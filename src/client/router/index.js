@@ -19,7 +19,7 @@ const router = createRouter({
       component: HomeView,
     },
     {
-      path: '/group',
+      path: '/group/:groupId',
       name: 'group',
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route

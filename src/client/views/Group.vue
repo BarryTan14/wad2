@@ -1,28 +1,40 @@
 <script setup>
 import groupComp from "../components/groupComponent.vue";
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import axios from 'axios';
+
+const route = useRoute();
+const groupId = ref(route.params.groupId); // Get the groupId parameter from the URL
+
+watch(
+  () => route.params.groupId,
+  (newGroupId) => {
+    groupId.value = newGroupId; // Update the reactive `groupId`
+    fetchGroupData(); // Fetch new data for the updated groupId
+  }
+);
 
 const group1 = {
   name: "Teammate 1",
   role: "Developer"
 };
-
-// Create a reactive variable for the group data
 const group = ref(null);
 const moduleName = ref("");
 const moduleId = ref("");
 const description = ref("");
+const isPopupVisible = ref(false);
 
 async function fetchGroupData() {
   try {
-    const response = await axios.post('/group');
+    console.log(groupId.value)
+    // Use groupId in the API request URL if needed
+    const response = await axios.post(`/group/${groupId.value}`);
     group.value = response.data.data; // Assign the response data to group
   } catch (error) {
     console.error('Fetch error:', error);
   }
 }
-const isPopupVisible = ref(false);
 
 // Function to show the popup
 function openPopup() {
@@ -41,7 +53,7 @@ function handleSubmit() {
   console.log("Description:", description.value);
 
   // Example: Send data to the server (replace URL with your actual API endpoint)
-  fetch("/group/add", { // Updated URL to match the route in the server
+  fetch(`/group/${groupId}/add`, { // Updated URL to include groupId
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -64,7 +76,6 @@ function handleSubmit() {
     })
     .catch(error => console.error("Error:", error));
 
-
   // Close the popup after submission
   closePopup();
 
@@ -74,18 +85,17 @@ function handleSubmit() {
   description.value = "";
 }
 
-
-
 // Fetch the data when the component mounts
 onMounted(() => {
   fetchGroupData();
 });
 </script>
 
+
 <template>
 
   <div class="popup-form">
-    <h2>Add New Module</h2>
+    <h2>{{ groupId }}</h2>
     <div>
       <h1>Group Assignments</h1>
       <button @click="openPopup">Add new module</button>
