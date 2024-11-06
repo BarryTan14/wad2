@@ -14,85 +14,67 @@ watch(
     fetchGroupData(); // Fetch new data for the updated groupId
   }
 );
+
 const group = ref(null);
 const moduleName = ref("");
 const moduleId = ref("");
 const description = ref("");
+const isPopupVisible = ref(false); // Control visibility of the modal
 
 async function fetchGroupData() {
   try {
     console.log(groupId.value);
-    // Use groupId in the API request URL if needed
-    const response = await axios.post(`/group/${groupId.value}`);
-    group.value = response.data.data; // Assign the response data to group
+    const response = await axios.get(`/group/${groupId.value}`);
+    group.value = response.data.data;
   } catch (error) {
     console.error('Fetch error:', error);
   }
 }
 
-// Function to open a new window popup
+// Function to open the modal
 function openPopup() {
-  const popup = window.open(
-    "",
-    "Add New Module",
-    "width=400,height=400,scrollbars=yes,resizable=yes"
-  );
-  
-  popup.document.write(`
-    <html>
-      <head>
-        <title>Add New Module</title>
-        <style>
-          body { font-family: Arial, sans-serif; padding: 20px; }
-          label { display: block; margin-top: 10px; }
-          input, textarea { width: 100%; padding: 5px; margin-top: 5px; }
-          button { margin-top: 15px; padding: 5px 10px; }
-        </style>
-      </head>
-      <body>
-        <h2>Add New Module</h2>
-        <form id="popupForm">
-          <label>Module Name:
-            <input type="text" id="moduleName" required />
-          </label>
-          <label>Module ID:
-            <input type="text" id="moduleId" required />
-          </label>
-          <label>Description:
-            <textarea id="description" required></textarea>
-          </label>
-          <button type="submit">Submit</button>
-          <button type="button" onclick="window.close()">Cancel</button>
-        </form>
-        <script>
-          document.getElementById("popupForm").onsubmit = async function(event) {
-            event.preventDefault();
-            const moduleName = document.getElementById("moduleName").value;
-            const moduleId = document.getElementById("moduleId").value;
-            const description = document.getElementById("description").value;
+  isPopupVisible.value = true;
+}
 
-            try {
-              const response = await fetch('/group/${groupId.value}/add', {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  module_name: moduleName,
-                  module_id: moduleId,
-                  description: description
-                })
-              });
+// Function to close the modal
+function closePopup() {
+  isPopupVisible.value = false;
+}
 
-              if (!response.ok) throw new Error('Failed to add module');
-              
-              alert("Module added successfully!");
-              window.close();
-            } catch (error) {
-              alert("Error: " + error.message);
-            }
-          };
-      </body>
-    </html>
-  `);
+// Function to handle form submission
+async function handleSubmit() {
+  console.log("Module Name:", moduleName.value);
+
+  try {
+    const response = await fetch(`/group/${groupId.value}/add`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        module_name: moduleName.value,
+        module_id: moduleId.value,
+        description: description.value
+      })
+    });
+
+    if (!response.ok) throw new Error('Failed to add module');
+
+    const data = await response.json();
+    console.log("Response from server:", data);
+
+    // Handle success: update UI, show message, etc.
+    closePopup();
+
+    // Reset form fields if needed
+    moduleName.value = "";
+    moduleId.value = "";
+    description.value = "";
+
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Failed to add module. Please try again.");
+  }
 }
 
 // Fetch the data when the component mounts
@@ -108,6 +90,33 @@ onMounted(() => {
       <h1>Group Assignments</h1>
       <button @click="openPopup">Add new module</button>
     </div>
+
+    <!-- Modal for adding a new module -->
+    <div v-if="isPopupVisible" class="modal-overlay">
+      <div class="modal-content">
+        <h2>Add New Module</h2>
+        <form @submit.prevent="handleSubmit">
+          <label>
+            Module Name:
+            <input type="text" v-model="moduleName" required />
+          </label>
+          <br />
+          <label>
+            Module ID:
+            <input type="text" v-model="moduleId" required />
+          </label>
+          <br />
+          <label>
+            Description:
+            <textarea v-model="description" required></textarea>
+          </label>
+          <br />
+          <button type="submit">Submit</button>
+          <button type="button" @click="closePopup">Cancel</button>
+        </form>
+      </div>
+    </div>
+
     <div style="display: flex;">
       <groupComp view-prop="group" :group="group" />
     </div>
@@ -115,11 +124,53 @@ onMounted(() => {
 </template>
 
 <style>
-@media (min-width: 1024px) {
-  .about {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-  }
+/* Modal overlay styling */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Modal content styling */
+.modal-content {
+  background: grey;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content h2 {
+  margin-top: 0;
+}
+
+.modal-content label {
+  display: block;
+  margin-top: 10px;
+}
+
+.modal-content input,
+.modal-content textarea {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+}
+
+.modal-content button {
+  margin-top: 15px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.modal-content button[type="button"] {
+  margin-left: 10px;
 }
 </style>
