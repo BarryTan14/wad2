@@ -170,7 +170,7 @@ export default {
               <button class="more-members">+2</button>
             </div>
 <!--            <RouterLink to="/profile" class="user-profile">
-              <img :src="`/src/client/assets/profilepicture/`+userProfile.profilePic" :alt="userProfile.displayName" class="user-avatar">
+              <img :src="`/profilepicture/`+userProfile.profilePic" :alt="userProfile.displayName" class="user-avatar">
               <div class="user-info">
                 <div class="user-name">{{ userProfile.displayName }}</div>
                 <div class="user-role">{{ userProfile.role }}</div>

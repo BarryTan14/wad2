@@ -12,9 +12,6 @@ export default async function messagesHandler(io) {
         throw new Error('Socket.IO instance is required');
     }
 
-    // Track room histories using room IDs
-    const roomHistories = new Map();
-
     // Initialize default room
     const defaultRoom = await initializeDefaultRoom();
 
@@ -86,6 +83,26 @@ export default async function messagesHandler(io) {
                 }
             });
 
+            socket.on('profile-updated', async (userId) => {
+                try {
+                    // Fetch updated user data
+                    const updatedUser = await User.findById(userId).select('displayName profilePic');
+                    if (!updatedUser) return;
+
+                    // Create update notification
+                    const updateData = {
+                        userId: updatedUser._id,
+                        displayName: updatedUser.displayName,
+                        profilePic: updatedUser.profilePic
+                    };
+
+                    // Broadcast to all rooms
+                    io.emit('user-profile-updated', updateData);
+                } catch (error) {
+                    handleError(socket, error);
+                }
+            });
+
             // Handle disconnect
             socket.on('disconnect', () => {
                 console.log('User disconnected:', socket.id);
@@ -107,9 +124,6 @@ export default async function messagesHandler(io) {
             });
             await defaultRoom.save();
         }
-
-        const history = await loadRoomHistory(defaultRoom._id);
-        roomHistories.set(defaultRoom._id.toString(), history);
         return defaultRoom;
     }
 
@@ -123,7 +137,6 @@ export default async function messagesHandler(io) {
         });
 
         await room.save();
-        roomHistories.set(room._id.toString(), []);
 
         // Notify all users about new room
         io.emit('room-created', {
@@ -158,14 +171,8 @@ export default async function messagesHandler(io) {
             description: room.description,
         });
 
-        // Initialize room history if not exists
-        if (!roomHistories.has(roomId.toString())) {
-            const history = await loadRoomHistory(roomId);
-            roomHistories.set(roomId.toString(), history);
-        }
-
         // Send room history
-        const history = roomHistories.get(roomId.toString()) || [];
+        const history = await loadRoomHistory(roomId);
         socket.emit('previous-messages', { roomId, messages: history });
 
         // Notify room about new user
@@ -228,53 +235,46 @@ export default async function messagesHandler(io) {
 
         await chatMessage.save();
 
+        // Always fetch fresh user data
+        const currentUser = await User.findById(user._id).select('displayName profilePic');
+
         const messageData = {
             _id: chatMessage._id,
             message: chatMessage.message,
             saidBy: {
-                _id: user._id,
-                displayName: user.displayName,
-                profilePic: user.profilePic
+                _id: currentUser._id,
+                displayName: currentUser.displayName,
+                profilePic: currentUser.profilePic
             },
             createdAt: chatMessage.createdAt.toISOString(),
             roomId: roomId.toString()
         };
-
-        // Update room history
-        const history = roomHistories.get(roomId.toString()) || [];
-        history.push(messageData);
-        if (history.length > MAX_HISTORY_LENGTH) {
-            history.shift();
-        }
-        roomHistories.set(roomId.toString(), history);
 
         // Broadcast to room
         io.to(roomId.toString()).emit('new-message', messageData);
     }
 
     async function loadRoomHistory(roomId) {
-        const history = await ChatMessage.find({ saidIn: roomId })
-            .sort({ createdAt: 1 })
+        return await ChatMessage.find({ saidIn: roomId })
+            .sort({ createdAt: -1 })
             .limit(MAX_HISTORY_LENGTH)
             .populate('saidBy', 'displayName profilePic')
-            .lean();
-        return history.map(msg => ({
-            _id: msg._id,
-            message: msg.message,
-            saidBy: {
-                _id: msg.saidBy._id,
-                displayName: msg.saidBy.displayName,
-                profilePic: msg.saidBy.profilePic
-            },
-            createdAt: msg.createdAt.toISOString(),
-            roomId: msg.saidIn.toString()
-        }));
+            .sort({ createdAt: 1 })
+            .lean()
+            .then(messages => messages.map(msg => ({
+                _id: msg._id,
+                message: msg.message,
+                saidBy: {
+                    _id: msg.saidBy._id,
+                    displayName: msg.saidBy.displayName,
+                    profilePic: msg.saidBy.profilePic
+                },
+                createdAt: msg.createdAt.toISOString(),
+                roomId: msg.saidIn.toString()
+            })));
     }
 
     async function cleanupRoom(roomId) {
-        // Remove room history
-        roomHistories.delete(roomId.toString());
-
         // Remove room from database
         await ChatRoom.findByIdAndDelete(roomId);
 

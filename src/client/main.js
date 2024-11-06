@@ -12,12 +12,17 @@ const pinia = createPinia()
 
 app.config.globalProperties.$socket = io();
 
+// use global authstore and toaststore instead;
+
 app.use(pinia)
+app.config.globalProperties.$authStore = useAuthStore();
+app.config.globalProperties.$toastStore = useToastStore();
 app.use(router)
 
 // Add navigation guard for protected routes
 router.beforeEach(async (to, from, next) => {
     const authStore = useAuthStore()
+    //const authStore = this.$authStore;
     const toastStore = useToastStore();
     const hasAuthMeta = to.matched.some(record => 'requiresAuth' in record.meta)
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
@@ -66,6 +71,7 @@ router.beforeEach(async (to, from, next) => {
 
 // Initialize auth before mounting
 const authStore = useAuthStore()
-await authStore.initializeAuth()
+authStore.initializeAuth().then(()=>{
+    const vm = app.mount('#app')
+})
 
-const vm = app.mount('#app')

@@ -18,10 +18,10 @@
     <div v-else class="profile-content">
       <div class="row">
         <div class="col-12 col-md-4 mb-4 mb-md-0">
-          <div class="position-relative">
+          <div class="profile-image-container position-relative">
             <img
                 :src="profileImageUrl"
-                class="rounded-3 img-fluid mb-3"
+                class="rounded-3 img-fluid w-100 h-100 object-fit-cover position-absolute top-0 start-0"
                 :alt="userData.displayName + '\'s profile picture'"
                 @error="handleImageError"
             >
@@ -29,7 +29,7 @@
                 class="btn btn-primary btn-sm position-absolute bottom-0 end-0 m-2"
                 @click="triggerImageUpload"
             >
-              <i class="bi bi-camera-fill me-1"></i>
+              <span class="bi bi-camera-fill me-1">📷</span>
               Change Photo
             </button>
             <input
@@ -53,6 +53,15 @@
                   class="form-control"
                   @keyup.enter="saveChanges"
               >
+            </h1>
+            <h1 class="mb-0">
+              <span v-if="!isEditing">{{ userData.role }}</span>
+              <select
+                  v-else
+                  v-model="editForm.role"
+                  class="form-control">
+                <option v-for="role in roles" :key="role" :value="role">{{role}}</option>
+              </select>
             </h1>
             <button
                 class="btn btn-outline-primary"
@@ -110,8 +119,6 @@
 </template>
 
 <script>
-import { useAuthStore } from '../stores/auth.js'
-import { useToastStore } from '../stores/toast';
 import {useRouter} from "vue-router";
 
 export default {
@@ -121,10 +128,12 @@ export default {
     return {
       loading: true,
       error: null,
+      roles: ['User', 'Student', 'Professor'],
       userData: {
         profilePic: '',
         displayName: '',
-        bio: ''
+        bio: '',
+        role: '',
       },
       isEditing: false,
       isSaving: false,
@@ -132,18 +141,18 @@ export default {
         displayName: '',
         bio: '',
         action: 'generalInfo',
+        role: '',
       },
       maxBioLength: 500,
-      fallbackImage: '/src/client/assets/profilepicture/avatar.png',
+      fallbackImage: '/profilepicture/avatar.png',
       router:null,
-      authStore:null,
     }
   },
 
   computed: {
     profileImageUrl() {
       return this.userData.profilePic
-          ? `/src/client/assets/profilepicture/${this.userData.profilePic}`
+          ? `/profilepicture/${this.userData.profilePic}`
           : this.fallbackImage
     },
 
@@ -173,7 +182,8 @@ export default {
       this.editForm = {
         displayName: this.userData.displayName,
         bio: this.userData.bio,
-        action: 'generalInfo'
+        action: 'generalInfo',
+        role: this.userData.role,
       }
     },
 
@@ -191,24 +201,29 @@ export default {
 
     async saveChanges() {
       try {
-        this.isSaving = true
+        this.isSaving = true;
 
         const response = await axios.put('/user/api/profile/update', {
           displayName: this.editForm.displayName,
           bio: this.editForm.bio,
           action: this.editForm.action,
-        })
+          role: this.editForm.role,
+        });
 
-        this.userData = response.data.user
-        this.isEditing = false
+        this.userData = response.data.user;
 
-        const toastStore = useToastStore()
-        toastStore.success(response.data.message)
+        this.isEditing = false;
+
+        this.$authStore.updateProfileState();
+
+        // Emit socket event for profile update
+        this.$socket.emit('profile-updated', this.userData._id);
+
+        this.$toastStore.success(response.data.message);
       } catch (err) {
-        const toastStore = useToastStore()
-        toastStore.error(err.response?.data?.message || 'Failed to update profile')
+        this.$toastStore.error(err.response?.data?.message || 'Failed to update profile');
       } finally {
-        this.isSaving = false
+        this.isSaving = false;
       }
     },
 
@@ -217,34 +232,35 @@ export default {
     },
 
     async handleImageUpload(event) {
-      const file = event.target.files[0]
-      if (!file) return
+      const file = event.target.files[0];
+      if (!file) return;
 
-      const maxSize = 5 * 1024 * 1024 // 5MB
+      const maxSize = 5 * 1024 * 1024; // 5MB
       if (file.size > maxSize) {
-        const toastStore = useToastStore()
-        toastStore.error('Image size should be less than 5MB')
-        return
+        this.$toastStore.error('Image size should be less than 5MB');
+        return;
       }
 
       try {
-        const formData = new FormData()
-        formData.append('profilePic', file)
+        const formData = new FormData();
+        formData.append('profilePic', file);
 
         const response = await axios.post('/user/api/profile/picture', formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
-        })
+        });
 
-        this.userData.profilePic = response.data.profilePic
+        this.userData = response.data.user;
 
-        const toastStore = useToastStore()
-        this.authStore.updateProfileState();
-        toastStore.success('Profile picture updated successfully!')
+        this.$authStore.updateProfileState();
+
+        // Emit socket event for profile update
+        this.$socket.emit('profile-updated', this.userData._id);
+
+        this.$toastStore.success('Profile picture updated successfully!');
       } catch (err) {
-        const toastStore = useToastStore()
-        toastStore.error(err.response?.data?.message || 'Failed to upload image')
+        this.$toastStore.error(err.response?.data?.message || 'Failed to upload image');
       }
     },
 
@@ -256,13 +272,23 @@ export default {
   mounted() {
     this.router = useRouter()
     this.fetchUserProfile()
-    this.authStore = useAuthStore()
-    this.toastStore = useToastStore();
   }
 }
 </script>
 
 <style scoped>
+.profile-image-container {
+  aspect-ratio: 1;
+  width: 100%;
+  position: relative;
+  margin-bottom: 1rem;
+  border-radius: 0.3rem;
+  overflow: hidden;
+}
+
+.profile-image-container img {
+  border-radius: 0;
+}
 .profile {
   min-height: 50vh;
 }

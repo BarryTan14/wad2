@@ -54,10 +54,9 @@
   </div>
 </template>
 <script>
-import { useAuthStore } from '../stores/auth.js'
-import { useRouter } from 'vue-router'
 import { getCurrentInstance } from 'vue'
 import { useToastStore } from '../stores/toast';
+import {useRouter} from "vue-router";
 
 export default {
   name: "Login",
@@ -87,8 +86,8 @@ export default {
       },
       loginDisabled: false,
       router: null,
-      authStore: null,
-      toastStore: null,
+      /*authStore: null,
+      toastStore: null,*/
     }
   },
   methods: {
@@ -96,7 +95,7 @@ export default {
       this.loginDisabled = true
 
       try {
-        const response = await this.authStore.login(
+        const response = await this.$authStore.login(
             this.formData.username,
             this.formData.password
         )
@@ -129,15 +128,15 @@ export default {
       return true;
     },
     handleToastSuccess(message) {
-      this.toastStore.success(message || 'Success');
+      this.$toastStore.success(message || 'Success');
     },
     handleToastError(error) {
       if (error.errors) {
         for (const err of error.errors) {
-          this.toastStore.error(`The ${err.type} ${err.path} has an error of: ${err.msg}`);
+          this.$toastStore.error(`The ${err.type} ${err.path} has an error of: ${err.msg}`);
         }
       } else {
-        this.toastStore.error(error.message || error.msg || error);
+        this.$toastStore.error(error.message || error.msg || error);
       }
     },
   },
@@ -151,9 +150,9 @@ export default {
 
   },
   beforeMount() {
-    this.router = useRouter()
+    this.router = useRouter()/*
     this.authStore = useAuthStore()
-    this.toastStore = useToastStore();
+    this.toastStore = useToastStore();*/
   },
 }
 /*

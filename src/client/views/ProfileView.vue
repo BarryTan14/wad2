@@ -1,7 +1,5 @@
-<!-- ProfileView.vue (Read-only view of other users' profiles) -->
 <template>
   <div class="profile bg-body-tertiary rounded-4 p-4">
-    <!-- Loading/Error states -->
     <div v-if="loading" class="loading">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
@@ -20,16 +18,21 @@
     <div v-else class="profile-content">
       <div class="row">
         <div class="col-12 col-md-4 mb-4 mb-md-0">
-          <img
-              :src="profileImageUrl"
-              class="rounded-3 img-fluid mb-3"
-              :alt="userData.displayName + '\'s profile picture'"
-              @error="handleImageError"
-          >
+          <div class="profile-image-container position-relative">
+            <img
+                :src="profileImageUrl"
+                class="rounded-3 img-fluid w-100 h-100 object-fit-cover position-absolute top-0 start-0"
+                :alt="userData.displayName + '\'s profile picture'"
+                @error="handleImageError"
+            >
+          </div>
         </div>
 
         <div class="col-12 col-md-8">
-          <h1 class="mb-4">{{ userData.displayName }}</h1>
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0">{{ userData.displayName }}</h1>
+            <h1 class="mb-0">{{ userData.role }}</h1>
+          </div>
 
           <div class="card">
             <div class="card-body">
@@ -46,9 +49,8 @@
 </template>
 
 <script>
-import { useAuthStore } from '../stores/auth.js'
-import { useToastStore } from '../stores/toast';
-import {useRouter} from "vue-router";
+
+import { useRouter } from "vue-router";
 
 export default {
   name: 'ProfileView',
@@ -67,31 +69,32 @@ export default {
       userData: {
         profilePic: '',
         displayName: '',
-        bio: ''
+        bio: '',
+        role: '',
       },
-      fallbackImage: '/src/client/assets/profilepicture/avatar.png',
-      router:null,
-      authStore:null,
+      fallbackImage: '/profilepicture/avatar.png',
+      router: null,
     }
   },
 
   computed: {
     profileImageUrl() {
       return this.userData.profilePic
-          ? `/src/client/assets/profilepicture/${this.userData.profilePic}`
+          ? `/profilepicture/${this.userData.profilePic}`
           : this.fallbackImage
-    }
+    },
   },
 
   methods: {
     async fetchProfile() {
+      if (this.$authStore.currentUser._id === this.userId) {
+        this.router.push('/profile')
+        return
+      }
+
       try {
         this.loading = true
         this.error = null
-        if(this.authStore.currentUser._id === this.userId) {
-          this.toastStore.warning('You have been redirected to your own profile');
-          return this.router.push('/profile')
-        }
         const response = await axios.get(`/user/api/profile/${this.userId}`)
         this.userData = response.data
       } catch (err) {
@@ -109,15 +112,9 @@ export default {
 
   mounted() {
     this.router = useRouter()
-    this.authStore = useAuthStore()
-    this.toastStore = useToastStore();
     this.fetchProfile()
   },
 
-  beforeMount() {
-  },
-
-  // Reload when userId changes
   watch: {
     userId: {
       handler: 'fetchProfile',
@@ -128,6 +125,19 @@ export default {
 </script>
 
 <style scoped>
+.profile-image-container {
+  aspect-ratio: 1;
+  width: 100%;
+  position: relative;
+  margin-bottom: 1rem;
+  border-radius: 0.3rem;
+  overflow: hidden;
+}
+
+.profile-image-container img {
+  border-radius: 0;
+}
+
 .profile {
   min-height: 50vh;
 }

@@ -10,12 +10,14 @@ const userSchema = new mongoose.Schema({
     displayName : {
         type: String,
         required: true,
-        default: randomUUID(),
+        default: 'User' + new Date().getTime().toString(),
+        unique: true,
     },
     role : {
         type: String,
         required: true,
-        default: 'user',
+        default: 'User',
+        enum: ['User', 'Student', 'Professor', 'Mod', 'Admin'],
     },
     bio : {
         type: String,
@@ -38,6 +40,9 @@ const userSchema = new mongoose.Schema({
         unique: true,
     },
     joinedChatrooms: {
+        type: Array,
+    },
+    joinedGroups: {
         type: Array,
     },
     accountStatus: {

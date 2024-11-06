@@ -113,8 +113,6 @@
 <script>
 import { ref, reactive } from "vue";
 import { useRouter } from "vue-router";
-import { useAuthStore } from "../stores/auth.js";
-import { useToastStore } from '../stores/toast';
 
 export default {
   name: "Register",
@@ -185,8 +183,6 @@ export default {
       },
       registerDisabled: false,
       router: null,
-      authStore: null,
-      toastStore: null,
     }
   },
   computed: {
@@ -279,7 +275,7 @@ export default {
       this.registerDisabled = true;
 
       try {
-        const response = await this.authStore.register(
+        const response = await this.$authStore.register(
             this.formData.email,
             this.formData.username,
             this.formData.password
@@ -291,8 +287,7 @@ export default {
         this.$socket.disconnect();
         this.$socket.connect();
 
-        const toastStore = useToastStore();
-        toastStore.success('Registration successful!');
+        this.$toastStore.success('Registration successful!');
         this.router.push('/profile');
       } catch (error) {
         this.handleToastError(error);
@@ -304,17 +299,15 @@ export default {
     handleToastError(error) {
       if (error.errors) {
         for (const err of error.errors) {
-          this.toastStore.error(`The ${err.type} ${err.path} has an error of: ${err.msg}`);
+          this.$toastStore.error(`The ${err.type} ${err.path} has an error of: ${err.msg}`);
         }
       } else {
-        this.toastStore.error(error.message || error.msg || error, 0);
+        this.$toastStore.error(error.message || error.msg || error, 0);
       }
     }
   },
   beforeMount() {
     this.router = useRouter();
-    this.authStore = useAuthStore();
-    this.toastStore = useToastStore();
   },
   beforeDestroy() {
     // Clean up any remaining timers

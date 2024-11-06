@@ -7,6 +7,7 @@ const ChatRoomSchema = new mongoose.Schema({
         type: String,
         default: randomUUID(),
         required: true,
+        unique: true,
     },
     description: {
         type: String,

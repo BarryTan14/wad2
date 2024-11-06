@@ -11,7 +11,6 @@
   </div>
 </template>
 <script>
-import { useAuthStore } from '../stores/auth.js'
 import { useRouter } from 'vue-router'
 import { getCurrentInstance } from 'vue'
 
@@ -21,7 +20,6 @@ export default {
     return {
       logoutDisabled: false,
       router: null,
-      authStore: null,
     }
   },
   methods: {
@@ -29,7 +27,7 @@ export default {
       this.logoutDisabled = true
 
       try {
-        const response = await this.authStore.logout()
+        const response = await this.$authStore.logout()
 
         // Reconnect socket with new auth state
         this.$socket.disconnect()
@@ -49,7 +47,6 @@ export default {
   },
   beforeMount() {
     this.router = useRouter()
-    this.authStore = useAuthStore()
   },
 }
 </script>

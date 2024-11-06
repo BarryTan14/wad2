@@ -1,114 +1,131 @@
 <template>
-  <div class="channel-settings-modal">
-    <!-- Modal Trigger Button -->
-    <button @click="openModal" class="channel-settings-btn btn btn-dark">
-      <i class="icon-settings">⚙️</i>
-    </button>
+  <button
+      @click="openModal"
+      class="btn btn-info rounded-end-0 rounded-bottom-0 rounded-top-3 px-2"
+  >
+    <i class="bi bi-gear">⚙</i>
+  </button>
 
-    <!-- Modal Overlay -->
-    <div v-if="isModalOpen" class="modal-overlay" @click.self="closeModal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Channel Settings</h2>
-          <button @click="closeModal" class="close-btn">&times;</button>
+  <!-- Bootstrap Modal -->
+  <div
+      v-if="isModalOpen"
+      class="position-fixed top-0 start-0 w-100 h-100 bg-black bg-opacity-50 d-flex justify-content-center align-items-center"
+      style="z-index: 1000;"
+      @click.self="closeModal"
+  >
+    <div class="bg-white rounded-3 w-100 max-w-lg overflow-auto mx-3" style="max-width: 500px; max-height: 80vh;">
+      <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+        <h2 class="mb-0">Channel Settings</h2>
+        <button
+            @click="closeModal"
+            class="btn-close"
+            aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="nav nav-tabs">
+        <button
+            @click="activeTab = 'list'"
+            :class="['nav-link flex-grow-1', activeTab === 'list' ? 'active' : '']"
+        >
+          My Channels
+        </button>
+        <button
+            @click="activeTab = 'create'"
+            :class="['nav-link flex-grow-1', activeTab === 'create' ? 'active' : '']"
+        >
+          Create Channel
+        </button>
+        <button
+            @click="activeTab = 'join'"
+            :class="['nav-link flex-grow-1', activeTab === 'join' ? 'active' : '']"
+        >
+          Join Channel
+        </button>
+      </div>
+
+      <!-- My Channels Tab -->
+      <div v-if="activeTab === 'list'" class="p-3">
+        <div
+            v-for="channel in userChannels"
+            :key="channel.id"
+            class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded"
+        >
+          <span>{{ channel.name }}</span>
+          <div class="d-flex gap-2">
+            <button
+                @click="switchToChannel(channel)"
+                class="btn btn-primary btn-sm"
+            >
+              Switch
+            </button>
+            <button
+                v-if="channel.name !== 'general'"
+                @click="leaveChannel(channel)"
+                class="btn btn-danger btn-sm"
+            >
+              Leave
+            </button>
+          </div>
         </div>
+      </div>
 
-        <div class="modal-tabs">
-          <button
-              @click="activeTab = 'list'"
-              :class="{ 'active': activeTab === 'list' }"
+      <!-- Create Channel Tab -->
+      <div v-if="activeTab === 'create'" class="p-3">
+        <form @submit.prevent="createChannel" class="d-flex flex-column gap-3">
+          <input
+              v-model="newChannelName"
+              placeholder="Channel Name"
+              required
+              class="form-control"
           >
-            My Channels
-          </button>
-          <button
-              @click="activeTab = 'create'"
-              :class="{ 'active': activeTab === 'create' }"
+          <select
+              v-model="newChannelType"
+              class="form-select"
           >
-            Create Channel
-          </button>
-          <button
-              @click="activeTab = 'join'"
-              :class="{ 'active': activeTab === 'join' }"
+            <option value="public">Public</option>
+            <option value="private">Private</option>
+            <option value="group">Group</option>
+          </select>
+          <textarea
+              v-model="newChannelDescription"
+              placeholder="Channel Description (Optional)"
+              class="form-control"
+              rows="3"
+          ></textarea>
+          <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary">
+              Create Channel
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Join Channel Tab -->
+      <div v-if="activeTab === 'join'" class="p-3">
+        <form @submit.prevent="joinChannel" class="d-flex gap-2 mb-4">
+          <input
+              v-model="channelToJoin"
+              placeholder="Enter Channel Code or Name"
+              required
+              class="form-control"
           >
+          <button type="submit" class="btn btn-primary">
             Join Channel
           </button>
-        </div>
-
-        <!-- My Channels Tab -->
-        <div v-if="activeTab === 'list'" class="channel-list">
-          <div
-              v-for="channel in userChannels"
-              :key="channel.id"
-              class="channel-item"
-          >
-            <span>{{ channel.name }}</span>
-            <div class="channel-actions">
-              <button
-                  @click="switchToChannel(channel)"
-                  class="switch-btn"
-              >
-                Switch
-              </button>
-              <button
-                  v-if="channel.name !== 'general'"
-                  @click="leaveChannel(channel)"
-                  class="leave-btn"
-              >
-                Leave
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Create Channel Tab -->
-        <div v-if="activeTab === 'create'" class="create-channel">
-          <form @submit.prevent="createChannel">
-            <input
-                v-model="newChannelName"
-                placeholder="Channel Name"
-                required
+        </form>
+        <div class="public-channels">
+          <h3 class="h5 mb-3">Public Channels</h3>
+          <ul class="list-unstyled">
+            <li
+                v-for="publicChannel in publicChannels"
+                :key="publicChannel.id"
+                @click="joinPublicChannel(publicChannel)"
+                class="p-2 bg-light rounded mb-2 cursor-pointer"
             >
-            <select v-model="newChannelType">
-              <option value="public">Public</option>
-              <option value="private">Private</option>
-              <option value="group">Group</option>
-            </select>
-            <textarea
-                v-model="newChannelDescription"
-                placeholder="Channel Description (Optional)"
-            ></textarea>
-            <div class="create-channel-actions">
-              <button type="submit" class="create-btn">
-                Create Channel
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <!-- Join Channel Tab -->
-        <div v-if="activeTab === 'join'" class="join-channel">
-          <form @submit.prevent="joinChannel">
-            <input
-                v-model="channelToJoin"
-                placeholder="Enter Channel Code or Name"
-                required
-            >
-            <button type="submit" class="join-btn">
-              Join Channel
-            </button>
-          </form>
-          <div class="public-channels">
-            <h3>Public Channels</h3>
-            <ul>
-              <li
-                  v-for="publicChannel in publicChannels"
-                  :key="publicChannel.id"
-                  @click="joinPublicChannel(publicChannel)"
-              >
-                {{ publicChannel.name }}
-              </li>
-            </ul>
-          </div>
+              {{ publicChannel.name }}
+            </li>
+          </ul>
         </div>
       </div>
     </div>
@@ -117,7 +134,7 @@
 
 <script>
 export default {
-  name: 'ChannelSettingsModal',
+  name: 'ChatSettingsModal',
   data() {
     return {
       isModalOpen: false,
@@ -199,117 +216,13 @@ export default {
 }
 </script>
 
+
 <style scoped>
-.channel-settings-modal {
-  position: relative;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 8px;
-  width: 500px;
-  max-height: 80vh;
-  overflow-y: auto;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px;
-  border-bottom: 1px solid #eee;
-}
-
-.modal-tabs {
-  display: flex;
-  border-bottom: 1px solid #eee;
-}
-
-.modal-tabs button {
-  flex-grow: 1;
-  padding: 10px;
-  background: #f4f4f4;
-  border: none;
+.cursor-pointer {
   cursor: pointer;
 }
 
-.modal-tabs button.active {
-  background: #007bff;
-  color: white;
-}
-
-.channel-list,
-.create-channel,
-.join-channel {
-  padding: 20px;
-}
-
-.channel-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-  padding: 10px;
-  background: #f4f4f4;
-  border-radius: 4px;
-}
-
-.channel-actions button {
-  margin-left: 10px;
-  padding: 5px 10px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.switch-btn {
-  background: #007bff;
-  color: white;
-}
-
-.leave-btn {
-  background: #dc3545;
-  color: white;
-}
-
-.create-channel form,
-.join-channel form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.public-channels {
-  margin-top: 20px;
-}
-
-.public-channels ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-.public-channels li {
-  padding: 10px;
-  background: #f4f4f4;
-  margin-bottom: 5px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.public-channels li:hover {
-  background: #e0e0e0;
+.max-w-lg {
+  max-width: 500px;
 }
 </style>

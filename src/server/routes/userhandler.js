@@ -11,18 +11,35 @@ import path from "path";
 import multer from "multer";
 import crypto from 'crypto';
 import {dirname} from 'path'
+import mongoose from "mongoose";
+import {svgSanitize, svgUploadMiddleware} from "../middleware/svgSanitizer.js";
 
 const {pick} = pkg;
 
 const router = express.Router();
 
+const baseDir = process.env.NODE_ENV === 'production'
+    ? 'dist/profilepicture'
+    : 'public/profilepicture';
+
+const getUploadDir = () => {
+
+    // Create directory if it doesn't exist
+    if (!fs.existsSync(baseDir)) {
+        fs.mkdirSync(baseDir, { recursive: true });
+    }
+
+    return baseDir;
+};
+
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         // Make sure this directory exists in your project
-        cb(null, 'src/client/assets/profilepicture/');
+        cb(null, getUploadDir());
     },
     filename: function (req, file, cb) {
-        // Generate random filename while preserving the file extension
+        // Generate random filename + timestamp while preserving the file extension
         const randomName = crypto.randomBytes(16).toString('hex') + Date.now().toString();
         const fileExt = path.extname(file.originalname).toLowerCase();
         cb(null, randomName + fileExt);
@@ -46,6 +63,7 @@ const upload = multer({
     fileFilter: fileFilter
 });
 
+// jwt token encryption
 const generateToken = (user) => {
     return jwt.sign(
         {userId: user._id, username: user.username},
@@ -54,6 +72,7 @@ const generateToken = (user) => {
     );
 };
 
+// sets the cookie token of the current req
 const setCookieToken = (res, token) => {
     res.cookie('token', token, {
         httpOnly: true,
@@ -64,11 +83,14 @@ const setCookieToken = (res, token) => {
     });
 };
 
+// asyncHandler in place of async ()
 const asyncHandler = (fn) => (req, res, next) => {
     Promise.resolve(fn(req, res, next)).catch(next);
 };
 
-
+// handles register with registration validation middleware using npm package
+// automatically logs the user in after registration to save time
+// originally wanted to do verification with email but required smtp and is complex
 router.put('/api/auth/register', validateRegistration, asyncHandler(async (req, res) => {
     const {email, password, username, captcha} = req.body;
 
@@ -101,6 +123,8 @@ router.put('/api/auth/register', validateRegistration, asyncHandler(async (req, 
     });
 }));
 
+// handles login
+// sets cookie token
 router.post('/api/auth/login', validateLogin, asyncHandler(async (req, res) => {
     const {username, password, captcha} = req.body;
 
@@ -122,7 +146,8 @@ router.post('/api/auth/login', validateLogin, asyncHandler(async (req, res) => {
     });
 }));
 
-
+// handles logout requests with an auth middleware so that anybody can't just log out anyone else.
+// removes token cookie
 router.post('/api/auth/logout', authMiddleware, (req, res) => {
     res.clearCookie('token', {
         httpOnly: true,
@@ -133,14 +158,19 @@ router.post('/api/auth/logout', authMiddleware, (req, res) => {
     res.json({message: 'Logged out successfully'});
 });
 
+// Test route that was written to learn about auth middleware
+// UNUSED (maybe)
 router.get('/api/auth/test', authMiddleware, async (req, res) => {
     res.status(200).json({message: 'You have access to this protected resource',})
 })
 
+// Just checks the auth of user
 router.get('/api/auth/check', authMiddleware, async (req, res) => {
     res.status(200).json({user: pick(req.user, ['_id', 'displayName', 'profilePic', 'bio', 'role'])});
 })
 
+// Gets profile based on current user's token.
+// Only able to get profile of current user, for other users, use profile/:id
 router.get('/api/profile', authMiddleware, asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id).select('-password');
     if (!user) {
@@ -149,8 +179,10 @@ router.get('/api/profile', authMiddleware, asyncHandler(async (req, res) => {
     res.json(pick(user, ['profilePic', 'displayName', 'bio', 'role']));
 }));
 
+// Handles general info update like displayname bio and role.
+// Other types of info update in future
 const handleGeneralInfoUpdate = async (user, updates) => {
-    const allowedUpdates = ['displayName', 'bio'];
+    const allowedUpdates = ['displayName', 'bio', 'role'];
     updates = pick(updates, allowedUpdates);
 
     Object.assign(user, updates);
@@ -158,6 +190,7 @@ const handleGeneralInfoUpdate = async (user, updates) => {
     return {message: 'Profile updated successfully'};
 };
 
+// Checks input password against current password so that someone who has a token but doesn't know the password can change it.
 const handlePasswordUpdate = async (user, {currentPassword, newPassword}) => {
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
@@ -169,6 +202,10 @@ const handlePasswordUpdate = async (user, {currentPassword, newPassword}) => {
     return {message: 'Password updated successfully, please login again'};
 };
 
+// Handles updating of profile details
+// uses Auth Middleware to get token and who's trying to edit their details, makes sure another user can't edit other users without correct auth
+// validate middleware using validation package so that we don't have to write our own validator
+// TODO: handle password updating and validation
 router.put('/api/profile/update', authMiddleware, validateProfileUpdate, asyncHandler(async (req, res) => {
     const action = req.body.action;
     try {
@@ -198,7 +235,12 @@ router.put('/api/profile/update', authMiddleware, validateProfileUpdate, asyncHa
     }
 }));
 
-router.post('/api/profile/picture', authMiddleware, upload.single('profilePic'), asyncHandler(async (req, res) => {
+// Handles picture uploading for profiles.
+// Auth middleware to acquire token and who's trying to upload.
+// svgUploadMiddleware to santize and optimize svg in case the user uploads an SVG (Don't want to block svg outright)
+// Uploads profile picture as randomstring + timestamp to ensure no duplicates
+// Does not delete the old picture for "caching"
+router.post('/api/profile/picture', authMiddleware, svgUploadMiddleware, upload.single('profilePic'), asyncHandler(async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({message: 'No file uploaded'});
@@ -210,32 +252,39 @@ router.post('/api/profile/picture', authMiddleware, upload.single('profilePic'),
             return res.status(404).json({message: 'User not found'});
         }
 
-        // Delete old profile picture if it exists
-        if(user.profilePic!=="avatar.png")
-        if (user.profilePic) {
-            const oldPicPath = path.join('./src/client/assets/profilepicture/', user.profilePic);
-            try {
-                // Use fs.promises for better async handling
-                await fs.promises.unlink(oldPicPath);
-            } catch (err) {
-                console.log('Error deleting old profile picture:', err);
-                // Continue execution even if old file deletion fails
-            }
+        // check if SVG, because it's also an image
+        if(req.file.mimetype.includes('image/svg')) {
+            //console.log(req.file)
+            //await svgSanitize((req.file));
         }
 
         // Update user's profile picture in database
+        let oldPic = user.profilePic;
         user.profilePic = req.file.filename;
-        console.log(req.file.filename);
         await user.save();
+
+        // UNUSED: just look for profile pics that aren't linked to profiles on server start to delete old pics
+        /*// Mark for delete: old profile picture if it exists
+        if(oldPic!=="avatar.png")
+            if (oldPic) {
+                const oldPicPath = path.join(baseDir, oldPic);
+                try {
+                    // Use fs.promises for better async handling
+                    await fs.promises.rename(oldPicPath, baseDir+'DELETED-'+oldPic);
+                } catch (err) {
+                    console.log('Error marking old profile picture:', err);
+                    // Continue execution even if old file deletion fails
+                }
+            }*/
 
         res.status(200).json({
             message: 'Profile picture uploaded successfully',
-            profilePic: req.file.filename
+            user: pick(user, ['profilePic', 'displayName', 'bio', 'role', '_id'])
         });
     } catch (error) {
         // Delete uploaded file if database operation fails
         if (req.file) {
-            const filePath = path.join('./src/client/assets/profilepicture/', req.file.filename);
+            const filePath = path.join(baseDir, req.file.filename);
             try {
                 await fs.promises.unlink(filePath);
             } catch (err) {
@@ -246,18 +295,24 @@ router.post('/api/profile/picture', authMiddleware, upload.single('profilePic'),
     }
 }));
 
+// Profile with :id parameter to search for specific ObjectID from mongodb. Returns ['profilePic','displayName','bio','role'] as an object, not as "user"
 router.get('/api/profile/:id', authMiddleware, asyncHandler(async (req, res) => {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        return res.json({profilePic:'server.png',displayName:'Unknown',bio:'Who am I?'} );
+    }
+
     const user = await User.findById(req.params.id)
         .select('displayName bio profilePic')
         .lean();
 
     if (!user) {
-        return res.status(404).json({message: 'User not found'});
+        return res.json({profilePic:'server.png',displayName:'Unknown',bio:'An empty spot in the internet... It is so very liminal...'} );
     }
 
-    res.json(pick(user, ['profilePic', 'displayName', 'bio']));
+    res.json(pick(user, ['profilePic', 'displayName', 'bio', 'role']));
 }));
 
+// Default error handling route which sends a json of error message and status code
 router.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({

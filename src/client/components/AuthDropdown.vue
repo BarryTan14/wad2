@@ -1,9 +1,17 @@
 <!-- AuthDropdown.vue -->
 <script>
-import { useAuthStore } from '../stores/auth.js'
+import {useAuthStore} from '../stores/auth.js'
+import { useToastStore } from '../stores/toast';
 
 export default {
   name: 'AuthDropdown',
+
+  data() {
+    return {
+      toastStore: null,
+      fallbackImage: '/profilepicture/avatar.png',
+    }
+  },
 
   computed: {
     authStore() {
@@ -15,11 +23,16 @@ export default {
     }
   },
 
+  beforeMount() {
+    this.toastStore = useToastStore();
+  },
+
   methods: {
     async handleLogout() {
       await this.authStore.logout()
+      this.toastStore.success('Logged out');
       this.$router.push('/')
-    }
+    },
   }
 }
 </script>
@@ -35,8 +48,8 @@ export default {
     >
       <img
           :src="isLoggedIn
-          ? `/src/client/assets/profilepicture/${authStore.currentUser.profilePic}`
-          : '/src/client/assets/profilepicture/avatar.png'"
+          ? `/profilepicture/${authStore.currentUser.profilePic}`
+          : fallbackImage"
           :alt="isLoggedIn ? authStore.currentUser.displayName : 'Guest'"
           class="rounded-circle me-2"
           style="width: 40px; height: 40px; object-fit: cover;"
@@ -64,7 +77,9 @@ export default {
             <i class="bi bi-gear me-2"></i>Settings
           </RouterLink>
         </li>
-        <li><hr class="dropdown-divider"></li>
+        <li>
+          <hr class="dropdown-divider">
+        </li>
         <li>
           <button
               @click="handleLogout"

@@ -1,51 +1,94 @@
 <template>
-  <div class="chat-container col col-11 col-sm-6 col-md-5 col-lg-4" :class="{ 'chat-minimized': isMinimized }">
-    <div class="chat-header">
-      <h3>{{ currentRoom?.name || 'Chat' }}</h3>
-      <button @click="toggleMinimize" class="minimize-btn">{{ isMinimized ? '+' : '-' }}</button>
+  <div
+      v-if="isLoggedIn"
+      :class="[
+      'position-fixed bottom-0 end-0 bg-dark border rounded-top shadow',
+      isMinimized ? 'col-12 col-sm-6 col-md-5 col-lg-3 translate-up' : 'col-12 col-sm-6 col-md-5 col-lg-4'
+    ]"
+      style="z-index: 1000;"
+  >
+    <div class="bg-primary rounded-top d-flex justify-content-between align-items-center">
+      <h3 class="ms-2 text-white mb-0">{{ currentRoom?.name || 'Chat' }}</h3>
+      <div>
+        <ChatSettingsModal v-if="!isMinimized"/>
+        <button
+            @click="toggleMinimize"
+            :class="[
+            'btn',
+            isMinimized ? 'btn-info px-5' : 'btn-danger px-3',
+            'rounded-start-0 rounded-end-3 rounded-bottom-0'
+          ]"
+        >
+          {{ isMinimized ? '^' : 'v' }}
+        </button>
+      </div>
     </div>
 
-    <div v-if="!isMinimized" class="chat-content">
-      <div class="messages" ref="messagesContainer">
-        <div v-for="msg in messages" :key="msg._id" class="message text-break">
-          <img @click="router.push('/profile/'+msg.saidBy._id)" :src="'/src/client/assets/profilepicture/' + msg.saidBy.profilePic" class="rounded-circle chat-avatar">
-          <span @click="router.push('/profile/'+msg.saidBy._id)" class="displayName">{{ msg.saidBy.displayName }}:</span>
-          <span class="text">{{ msg.message }}</span>
-          <span class="timestamp text-break">{{ formatTime(msg.createdAt) }}</span>
+    <div v-if="!isMinimized" class="d-flex flex-column" style="height: 400px;">
+      <div class="p-3 d-flex flex-column overflow-auto flex-grow-1" ref="messagesContainer">
+        <div v-for="msg in messages" :key="msg._id" class="d-flex mb-3 gap-3">
+          <!-- Profile picture column -->
+          <div class="flex-shrink-0">
+            <img
+                @click="router.push('/profile/'+msg.saidBy._id)"
+                :src="'/profilepicture/' + msg.saidBy.profilePic"
+                class="rounded-circle cursor-pointer"
+                alt="avatar"
+                style="width: 40px; height: 40px;"
+            >
+          </div>
+
+          <!-- Message content column -->
+          <div class="flex-grow-1 d-flex flex-column">
+            <div class="d-flex align-items-center gap-2">
+              <a
+                  @click="router.push('/profile/'+msg.saidBy._id)"
+                  class="fw-bold text-decoration-none link-light cursor-pointer"
+              >
+                {{ msg.saidBy.displayName }}
+              </a>
+              <small class="text-secondary">{{ formatTime(msg.createdAt) }}</small>
+            </div>
+            <div class="text-light text-break">{{ msg.message }}</div>
+          </div>
         </div>
       </div>
 
-      <div class="input-area" v-if="isAuthenticated">
-        <input
-            v-model="newMessage"
-            @keyup.enter="sendMessage"
-            @paste="handleLarge"
-            placeholder="Type a message..."
-            type="text"
-            :maxlength="MAX_MESSAGE_LENGTH"
-        >
-        <button @click="sendMessage">Send</button>
+      <div class="p-2 border-top" v-if="isLoggedIn">
+        <div class="d-flex gap-2">
+          <input
+              v-model="newMessage"
+              @keyup.enter="sendMessage"
+              @paste="handleLarge"
+              placeholder="Type a message..."
+              type="text"
+              :maxlength="MAX_MESSAGE_LENGTH"
+              class="form-control"
+          >
+          <button @click="sendMessage" class="btn btn-primary">Send</button>
+        </div>
       </div>
-      <div v-else class="login-prompt">
-        <p>Please log in to chat</p>
+      <div v-else class="p-3 text-center">
+        <p class="mb-0">Please log in to chat</p>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import ChannelSettingsModal from './ChatSettingsModal.vue'
+import ChatSettingsModal from './ChatSettingsModal.vue'
 import { useRouter } from 'vue-router'
+import {useAuthStore} from "../stores/auth.js";
 
 export default {
   name: 'ChatWindow',
-  components: { ChannelSettingsModal },
+  components: { ChatSettingsModal },
 
   data() {
     return {
       messages: [],
       newMessage: '',
-      isMinimized: false,
+      isMinimized: true,
       currentRoom: null,
       MAX_MESSAGE_LENGTH: 500,
       connectionEstablished: false,
@@ -59,6 +102,8 @@ export default {
         'chat-invalid-room-error': 'Invalid room ID'
       },
       router:null,
+      timestampRefreshInterval: null, // Store interval reference
+      midnightCheckTimeout: null, // Store timeout reference for next midnight
     }
   },
 
@@ -101,10 +146,71 @@ export default {
     },
 
     formatTime(timestamp) {
-      return new Date(timestamp).toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      const messageDate = new Date(timestamp);
+
+      // Get today's midnight for comparison
+      const todayMidnight = new Date();
+      todayMidnight.setHours(0, 0, 0, 0);
+
+      // Get yesterday's midnight
+      const yesterdayMidnight = new Date(todayMidnight);
+      yesterdayMidnight.setDate(yesterdayMidnight.getDate() - 1);
+
+      // Get time string helper
+      const getTimeString = (date) => {
+        return date.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      };
+
+      // If message is after today's midnight
+      if (messageDate >= todayMidnight) {
+        return `Today at ${getTimeString(messageDate)}`;
+      }
+
+      // If message is after yesterday's midnight
+      if (messageDate >= yesterdayMidnight) {
+        return `Yesterday at ${getTimeString(messageDate)}`;
+      }
+
+      // If in current year
+      const currentYear = new Date().getFullYear();
+      if (messageDate.getFullYear() === currentYear) {
+        return messageDate.toLocaleDateString('en-US', {
+          month: 'long',
+          day: 'numeric'
+        }) + ` at ${getTimeString(messageDate)}`;
+      }
+
+      // Different year
+      return messageDate.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      }) + ` at ${getTimeString(messageDate)}`;
+    },
+
+    setupTimestampRefresh() {
+      // Clear any existing intervals/timeouts
+      if (this.timestampRefreshInterval) clearInterval(this.timestampRefreshInterval);
+      if (this.midnightCheckTimeout) clearTimeout(this.midnightCheckTimeout);
+
+      // Calculate time until next midnight
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+      const msUntilMidnight = tomorrow - now;
+
+      // Set timeout for next midnight
+      this.midnightCheckTimeout = setTimeout(() => {
+        // Force a refresh of the component
+        this.$forceUpdate();
+
+        // Setup the next day's check
+        this.setupTimestampRefresh();
+      }, msUntilMidnight);
     },
 
     scrollToBottom() {
@@ -137,11 +243,38 @@ export default {
     }
   },
 
+  computed: {
+    authStore() {
+      return useAuthStore()
+    },
+
+    isLoggedIn() {
+      return this.authStore.currentUser !== null
+    }
+  },
+
   mounted() {
     this.router = useRouter()
     // Socket connection events
     this.$socket.on('connect', () => {
       this.connectionEstablished = true;
+    });
+
+    this.$socket.on('user-profile-updated', (userData) => {
+      // Update messages where the user appears
+      this.messages = this.messages.map(msg => {
+        if (msg.saidBy._id === userData.userId) {
+          return {
+            ...msg,
+            saidBy: {
+              ...msg.saidBy,
+              displayName: userData.displayName,
+              profilePic: userData.profilePic
+            }
+          };
+        }
+        return msg;
+      });
     });
 
     this.$socket.on('disconnect', () => {
@@ -170,6 +303,7 @@ export default {
     this.$socket.on('room-info', (room) => {
       this.currentRoom = room;
     });
+    this.setupTimestampRefresh();
   },
 
   beforeUnmount() {
@@ -182,119 +316,36 @@ export default {
       this.$socket.off(errorType);
     });
     this.$socket.off('room-info');
+    if (this.timestampRefreshInterval) clearInterval(this.timestampRefreshInterval);
+    if (this.midnightCheckTimeout) clearTimeout(this.midnightCheckTimeout);
   }
 }
 </script>
 
 <style scoped>
-.chat-container {
-  position: fixed;
-  bottom: 0;
-  right: 20px;
-  background: #1a1d20;
-  border: 1px solid #ddd;
-  border-radius: 8px 8px 0 0;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  z-index: 1000;
-}
-
-.chat-header {
-  padding: 10px;
-  background: #007bff;
-  color: white;
-  /*cursor: pointer;*/
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-radius: 8px 8px 0 0;
-}
-
-.minimize-btn {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 20px;
-  cursor: pointer;
-}
-
-.chat-avatar {
-  width: 7.5%;
-  cursor: pointer;
-}
-
-.chat-content {
-  height: 400px;
-  display: flex;
-  flex-direction: column;
-}
-
-.messages {
-  flex-grow: 1;
-  overflow-y: auto;
-  padding: 10px;
-  background: #212529;
-}
-
-.message {
-  margin-bottom: 8px;
-  line-height: 1.4;
-}
-
-.displayName {
-  font-weight: bold;
-  margin-right: 5px;
-  color: #007bff;
-  cursor:pointer;
-}
-
-.timestamp {
-  font-size: 0.8em;
-  color: #6c757d;
-  margin-left: 5px;
-}
-
-.input-area {
-  display: flex;
-  padding: 10px;
-  border-top: 1px solid #ddd;
-}
-
-.input-area input {
-  flex-grow: 1;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  margin-right: 8px;
-}
-
-.input-area button {
-  padding: 8px 16px;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.chat-minimized {
-  height: auto;
+.translate-up {
   transform: translateY(25px);
   transition: transform 0.25s cubic-bezier(.05,.43,.13,1.01);
 }
-.chat-minimized:hover {
-  transition: transform 0.25s cubic-bezier(.05,.43,.13,1.01);
+
+.translate-up:hover {
   transform: translateY(0);
 }
 
-.messages::-webkit-scrollbar {
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Custom scrollbar styles - Bootstrap doesn't have equivalents */
+.overflow-auto::-webkit-scrollbar {
   width: 6px;
 }
 
-.messages::-webkit-scrollbar-track {
+.overflow-auto::-webkit-scrollbar-track {
   background: #f1f1f1;
 }
 
-.messages::-webkit-scrollbar-thumb {
+.overflow-auto::-webkit-scrollbar-thumb {
   background: #888;
   border-radius: 3px;
 }

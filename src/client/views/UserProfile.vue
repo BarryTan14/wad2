@@ -1,4 +1,3 @@
-<!-- UserProfile.vue (Parent/Router Component) -->
 <template>
   <div>
     <ProfileView
