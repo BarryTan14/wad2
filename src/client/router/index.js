@@ -90,6 +90,11 @@ const router = createRouter({
     name: 'CalendarManager',
     component: () => import('../views/CalendarManager.Vue')
   },
+  {
+    path: '/calendarEmailView',
+    name: 'CalendarEmailView',
+    component: () => import('../views/CalendarEmailView.Vue')
+  },
   ],
 })
 

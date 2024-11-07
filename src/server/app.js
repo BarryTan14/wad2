@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import emailRouter from './routes/email.js';
 import calendarRouter from './routes/calendar.js';
+import calendarEmailRoutes from './routes/calendaremailservice.js';
 import config from './config/index.js';
 import dotenv from 'dotenv';
 import groupRouter from './routes/group.js';
@@ -53,6 +54,7 @@ app.use(express.static('public'));
 // API routes
 app.use('/api/email', emailRouter);
 app.use('/api/calendar', calendarRouter);
+app.use('/api/calendar-email', calendarEmailRoutes);
 
 app.use('/group', groupRouter);
 
