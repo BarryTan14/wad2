@@ -2,18 +2,60 @@
   <div class="group-container">
     <!-- Left side: Group Assignments -->
     <div class="group-section">
-      
         <h1 v-if="group && group.length > 0"class="card-title">{{ group[0].moduleName|| 'Module name not available' }}</h1>
-     
         <h1 v-else>Loading module data...</h1> <!-- Fallback if data is not yet available -->
-      
       <div class="header">
         <h3 v-if="group && group.length > 0"class="card-title">{{ group[0].groupId|| 'Module name not available' }}</h3>
-     
         <h3 v-else>Loading module data...</h3> <!-- Fallback if data is not yet available -->
-        
       </div>
-    
+      <div id="app">    
+        <h2>Task Lists</h2>
+      <table class="table m-2">
+          <tr>
+              <th>S/N</th>
+              <th>Name</th>
+              <th>Members in Charge</th>
+              <th>Deadline</th>
+              <th>Done</th>
+              <th>Functions</th>
+          </tr>
+          <tr v-for="(task, indx) in tasks" :key="task.id">
+              <td>{{ indx + 1 }}</td>
+
+              <!-- Name Field: Editable if isEditing is true -->
+              <td>
+                  <input type="text" v-model="task.Name" :readonly="!task.isEditing" />
+              </td>
+
+              <!-- Members in Charge Field: Editable if isEditing is true -->
+              <td>
+                  <input 
+                      type="text" 
+                      v-model="task['Members in charge']" 
+                      :readonly="!task.isEditing" 
+                      @input="task['Members in charge'] = task['Members in charge'].split(',')" 
+                      placeholder="Separate names with commas" 
+                  />
+              </td>
+
+              <!-- Deadline Field: Editable if isEditing is true -->
+              <td>
+                  <input type="date" v-model="task.Deadline" :readonly="!task.isEditing" />
+              </td>
+
+              <!-- Checkbox for Completion Status: Always Editable -->
+              <td><input type="checkbox" v-model="task.isCompleted" :disabled="!task.isEditing" /></td>
+
+              <!-- Update/Save and Delete Buttons -->
+              <td>
+                  <button v-if="!task.isEditing" @click="enableEditing(task)" class="btn btn-sm btn-primary">Update</button>
+                  <button v-else @click="saveChanges(task)" class="btn btn-sm btn-success">Save</button>
+                  <button @click="deletePost(indx)" class="btn btn-sm btn-danger">Delete</button>
+              </td>
+          </tr>
+      </table>
+    </div>
+
     </div>
 
     <!-- Right side: Chat Window -->
@@ -96,6 +138,7 @@ export default {
 
   data() {
     return {
+      tasks: null, // array of post objects
       groupId: '',
       group: null,
       messages: [],
@@ -118,6 +161,7 @@ export default {
 
   mounted() {
     this.fetchGroupData();
+    this.fetchTaskData();
     this.setupSocketListeners();
   },
 
@@ -136,6 +180,22 @@ export default {
   },
 
   methods: {
+    // Enable edit mode for the selected post
+    enableEditing(task) {
+        task.isEditing = true;
+    },
+
+    // Save changes and disable edit mode for the selected post
+    saveChanges(task) {
+        task.isEditing = false;
+        console.log("Post updated:", task); // Optional: Log the updated post
+    },
+
+    // Delete the selected post
+    deletePost(index) {
+        this.tasks.splice(index, 1);
+        console.log("Deleted Post at index:", index);
+    },
     async fetchGroupData() {
       try {
         const response = await axios.get(`/group/${this.groupId}`);
@@ -144,7 +204,15 @@ export default {
         console.error('Failed to fetch group data:', error);
       }
     },
-
+    async fetchTaskData() {
+      try {
+        const response = await axios.get(`/task`);
+        console.log(response.data.data)
+        this.tasks = response.data.data;
+      } catch (error) {
+        console.error('Failed to fetch group data:', error);
+      }
+    },
     setupSocketListeners() {
       this.groupSocket.on('connect', () => {
         this.connectionEstablished = true;

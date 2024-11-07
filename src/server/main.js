@@ -11,6 +11,7 @@ import dotenv from 'dotenv';
 import userHandlerRouter from './routes/userhandler.js';
 import transcribeHandlerRouter from './routes/transcribehandler.js';
 import groupRouter from './routes/group.js';
+import taskRouter from './routes/task.js';
 import messagesRouter from './routes/messagesHandler.js';
 import emailRouter from './routes/email.js';
 import calendarRouter from './routes/calendar.js'
@@ -65,6 +66,8 @@ app.use('/user', userHandlerRouter);
 app.use('/transcribe', transcribeHandlerRouter);
 
 app.use('/group', groupRouter);
+
+app.use('/task', taskRouter);
 
 app.use('/api/email', emailRouter);
 

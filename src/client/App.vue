@@ -119,7 +119,8 @@ export default {
     },
     // Select a suggestion from the list
     selectSuggestion(index, suggestion) {
-      this.newWorkspace.teamMembers[index].name = suggestion;
+      this.newModule.teamMembers[index].name = suggestion.displayName;
+      
       this.showSuggestions[index] = false; // Hide suggestions after selection
     },
     // Close suggestions with a delay to allow selection click to process
@@ -296,7 +297,7 @@ export default {
 
               <!-- Suggestions Dropdown -->
               <ul v-if="showSuggestions[index]" class="suggestions-list">
-                <li v-for="suggestion in suggestions[index]" :key="suggestion"
+                <li v-for="suggestion in suggestions[index]" :key="suggestion.displayName"
                   @click="selectSuggestion(index, suggestion)">
                   {{ suggestion.displayName }}
                 </li>
@@ -385,6 +386,7 @@ input[type="text"] {
   max-height: 150px;
   overflow-y: auto;
   background: #fff;
+  color: black;
   position: absolute;
   width: 100%;
   /* Matches the input width */

@@ -13,4 +13,4 @@ const moduleSchema = new mongoose.Schema({
     // }
 }, { timestamps: true })
 
-export const Module = mongoose.model('task', moduleSchema)
+export const Module = mongoose.model('groups', moduleSchema)
