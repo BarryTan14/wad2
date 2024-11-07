@@ -499,7 +499,7 @@ export default {
 }
 
 .messages-container::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #f3f1ff;
 }
 
 .messages-container::-webkit-scrollbar-thumb {
@@ -557,7 +557,7 @@ export default {
 .input-container {
   padding: 16px;
   border-top: 1px solid #ddd;
-  background: white;
+  background: #f3f1ff;
 }
 
 .input-wrapper {

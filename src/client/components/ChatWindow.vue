@@ -422,10 +422,6 @@ export default {
   border-radius: 3px;
 }
 
-.chat-header {
-
-}
-
 .messages {
   flex-grow: 1;
   padding: 10px;
