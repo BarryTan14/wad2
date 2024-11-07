@@ -13,6 +13,7 @@ import transcribeHandlerRouter from './routes/transcribehandler.js';
 import groupRouter from './routes/group.js';
 import messagesRouter from './routes/messagesHandler.js';
 import emailRouter from './routes/email.js';
+import calendarRouter from './routes/calendar.js'
 
 import {Server} from 'socket.io';
 import {createServer} from "http";
@@ -66,6 +67,8 @@ app.use('/transcribe', transcribeHandlerRouter);
 app.use('/group', groupRouter);
 
 app.use('/api/email', emailRouter);
+
+app.use('/api/calendar', calendarRouter);
 
 messagesRouter(io);
 
