@@ -166,7 +166,7 @@ router.get('/api/auth/test', authMiddleware, async (req, res) => {
 
 // Just checks the auth of user
 router.get('/api/auth/check', authMiddleware, async (req, res) => {
-    res.status(200).json({user: pick(req.user, ['_id', 'displayName', 'profilePic', 'bio', 'role'])});
+    res.status(200).json({user: pick(req.user, ['_id', 'displayName', 'profilePic', 'bio', 'role', 'email'])});
 })
 
 // Gets profile based on current user's token.
@@ -231,6 +231,8 @@ router.put('/api/profile/update', authMiddleware, validateProfileUpdate, asyncHa
                 return res.status(400).json({message: 'Invalid action'});
         }
     } catch (error) {
+        if(error.code === 11000)
+            return res.status(400).json({message: 'That display name is already in use'});
         throw error;
     }
 }));

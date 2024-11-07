@@ -39,7 +39,7 @@ export default {
       searchQuery: '',
       navigationRoutes: [
         { path: '/', name: 'Dashboard', icon: '📊' },
-        { path: '/classPart', name: 'Class Participation', icon: '👥' },
+        { path: '/transcribe', name: 'Class Participation', icon: '👥' },
         { path: '/progress', name: 'Progress', icon: '📈' },
         { path: '/team', name: 'Team Members', icon: '👥' },
         { path: '/messages', name: 'Messages', icon: '💬' }
@@ -152,6 +152,19 @@ export default {
       // await axios.post('/api/workspaces', this.newWorkspace);
 
       this.closeModal(); // Close the modal after submission
+    },
+    beforeEnter(el) {
+      // Called before the entering element is inserted
+      console.log('Before enter')
+    },
+    enter(el, done) {
+      // Called when the entering element is inserted
+      console.log('Enter')
+      done()
+    },
+    afterEnter(el) {
+      // Called when the enter transition finishes
+      console.log('After enter')
     }
 
   },
@@ -262,7 +275,12 @@ export default {
 
         <!-- Main Content -->
         <main class="content">
-          <RouterView />
+<!--          <RouterView />-->
+          <router-view v-slot="{ Component }">
+            <transition name="fade" mode="out-in">
+              <component :is="Component" :key="$route.path" />
+            </transition>
+          </router-view>
         </main>
       </div>
     </div>
@@ -319,107 +337,45 @@ export default {
     </div>
   </div>
 </template>
-
 <style>
-/* Basic styling for modal overlay and content */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+/* Fade transition */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
 }
 
-.modal-content {
-  background: grey;
-  padding: 30px;
-  border-radius: 8px;
-  max-width: 400px;
-  width: 90%;
-  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
-  overflow-y: auto;
-  max-height: 90vh;
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
-/* Stacks all form elements vertically */
-.workspace-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+/* Slide transition (alternative) */
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform 0.3s ease;
 }
 
-.team-member-row {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  background-color: grey;
-  margin-bottom: 10px;
+.slide-enter-from {
+  transform: translateX(100%);
 }
 
-.input-wrapper {
-  position: relative;
-  /* Position relative for absolute positioning of suggestions */
-  width: 100%;
-  /* Ensures input wrapper matches input width */
+.slide-leave-to {
+  transform: translateX(-100%);
 }
 
-input[type="text"] {
-  width: 100%;
-  /* Ensures input box takes full width */
-  box-sizing: border-box;
-  /* Ensures padding is included in width */
+/* Slide fade transition (combines both) */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease;
 }
 
-.suggestions-list {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-  border: 1px solid #ddd;
-  max-height: 150px;
-  overflow-y: auto;
-  background: #fff;
-  color: black;
-  position: absolute;
-  width: 100%;
-  /* Matches the input width */
-  top: 100%;
-  /* Aligns the suggestions directly below the input */
-  left: 0;
-  /* Ensures suggestions align with the left of the input */
-  z-index: 10;
-  box-sizing: border-box;
-  /* Ensures padding is included in width */
+.slide-fade-enter-from {
+  transform: translateX(20px);
+  opacity: 0;
 }
 
-.suggestions-list li {
-  padding: 8px;
-  cursor: pointer;
-}
-
-.suggestions-list li:hover {
-  background-color: #eee;
-}
-
-button {
-  margin-top: 10px;
-  padding: 5px 10px;
-  cursor: pointer;
-}
-
-.add-member-button {
-  display: block;
-  margin: 10px auto;
-}
-
-.remove-member-button {
-  margin-top: 10px;
+.slide-fade-leave-to {
+  transform: translateX(-20px);
+  opacity: 0;
 }
 </style>

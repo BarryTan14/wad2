@@ -14,7 +14,7 @@ import groupRouter from './routes/group.js';
 import taskRouter from './routes/task.js';
 import messagesRouter from './routes/messagesHandler.js';
 import emailRouter from './routes/email.js';
-import calendarRouter from './routes/calendar.js'
+// import calendarRouter from './routes/calendar.js'
 import calendarEmailRoutes from './routes/calendarEmailRoutes.js';
 
 import {Server} from 'socket.io';
@@ -62,17 +62,20 @@ app.use(session({
 app.use(express.urlencoded({extended: false}));
 //app.use(express.multipart());
 
+// ROUTE IS /user/blahblah
 app.use('/user', userHandlerRouter);
 
+// ROUTE IS /transcribe/blahblah
 app.use('/transcribe', transcribeHandlerRouter);
 
 app.use('/api/group', groupRouter);
 
 app.use('/api/task', taskRouter);
 
+// ROUTE IS /api/email/blahblah
 app.use('/api/email', emailRouter);
 
-app.use('/api/calendar', calendarRouter);
+// app.use('/api/calendar', calendarRouter);
 
 app.use('/api/calendar-email', calendarEmailRoutes);
 

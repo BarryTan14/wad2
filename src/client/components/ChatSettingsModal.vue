@@ -1,9 +1,9 @@
 <template>
   <button
       @click="openModal"
-      class="channel-settings-btn btn btn-dark"
+      class="room-settings-btn btn btn-dark m-0 rounded-bottom-0"
   >
-    <i class="icon-settings">⚙</i>
+    <span class="icon-settings">⚙</span>
   </button>
 
   <!-- Bootstrap Modal -->
@@ -14,7 +14,7 @@
   >
     <div class="modal-content">
       <div class="modal-header">
-        <h2>Channel Settings</h2>
+        <h2>Room Settings</h2>
         <button
             @click="closeModal"
             class="btn-close btn-dark"
@@ -27,40 +27,40 @@
             @click="activeTab = 'list'"
             :class="['nav-link flex-grow-1', activeTab === 'list' ? 'active' : '']"
         >
-          My Channels
+          My rooms
         </button>
         <button
             @click="activeTab = 'create'"
             :class="['nav-link flex-grow-1', activeTab === 'create' ? 'active' : '']"
         >
-          Create Channel
+          Create room
         </button>
         <button
             @click="activeTab = 'join'"
             :class="['nav-link flex-grow-1', activeTab === 'join' ? 'active' : '']"
         >
-          Join Channel
+          Join room
         </button>
       </div>
 
-      <!-- My Channels Tab -->
-      <div v-if="activeTab === 'list'" class="channel-list">
+      <!-- My rooms Tab -->
+      <div v-if="activeTab === 'list'" class="room-list">
         <div
-            v-for="channel in userChannels"
-            :key="channel.id"
-            class="channel-item"
+            v-for="room in userRooms"
+            :key="room.id"
+            class="room-item"
         >
-          <span>{{ channel.name }}</span>
-          <div class="channel-actions">
+          <span>{{ room.name }}</span>
+          <div class="room-actions">
             <button
-                @click="switchToChannel(channel)"
+                @click="switchToroom(room)"
                 class="switch-btn"
             >
               Switch
             </button>
             <button
-                v-if="channel.name !== 'general'"
-                @click="leaveChannel(channel)"
+                v-if="room.name !== 'general'"
+                @click="leaveroom(room)"
                 class="leave-btn"
             >
               Leave
@@ -69,59 +69,59 @@
         </div>
       </div>
 
-      <!-- Create Channel Tab -->
-      <div v-if="activeTab === 'create'" class="create-channel">
-        <form @submit.prevent="createChannel" class="d-flex flex-column gap-3">
+      <!-- Create room Tab -->
+      <div v-if="activeTab === 'create'" class="create-room">
+        <form @submit.prevent="createRoom" class="d-flex flex-column gap-3">
           <input
-              v-model="newChannelName"
-              placeholder="Channel Name"
+              v-model="newRoomName"
+              placeholder="room Name"
               required
               class="form-control"
-          >
+          ><!--
           <select
-              v-model="newChannelType"
+              v-model="newroomType"
               class="form-select"
           >
             <option value="public">Public</option>
             <option value="private">Private</option>
             <option value="group">Group</option>
-          </select>
+          </select>-->
           <textarea
-              v-model="newChannelDescription"
-              placeholder="Channel Description (Optional)"
+              v-model="newRoomDescription"
+              placeholder="room Description (Optional)"
               class="form-control"
               rows="3"
           ></textarea>
           <div class="d-flex justify-content-end">
             <button type="submit" class="create-btn">
-              Create Channel
+              Create room
             </button>
           </div>
         </form>
       </div>
 
-      <!-- Join Channel Tab -->
-      <div v-if="activeTab === 'join'" class="join-channel">
-        <form @submit.prevent="joinChannel" class="d-flex gap-2 mb-4">
+      <!-- Join room Tab -->
+      <div v-if="activeTab === 'join'" class="join-room">
+        <form @submit.prevent="joinroom" class="d-flex gap-2 mb-4">
           <input
-              v-model="channelToJoin"
-              placeholder="Enter Channel Code or Name"
+              v-model="roomToJoin"
+              placeholder="Enter room Code or Name"
               required
               class="form-control"
           >
           <button type="submit" class="join-btn">
-            Join Channel
+            Join room
           </button>
         </form>
-        <div class="public-channels">
-          <h3>Public Channels</h3>
+        <div class="public-rooms">
+          <h3>Public rooms</h3>
           <ul class="list-unstyled">
             <li
-                v-for="publicChannel in publicChannels"
-                :key="publicChannel.id"
-                @click="joinPublicChannel(publicChannel)"
+                v-for="publicroom in publicrooms"
+                :key="publicroom.id"
+                @click="joinPublicroom(publicroom)"
             >
-              {{ publicChannel.name }}
+              {{ publicroom.name }}
             </li>
           </ul>
         </div>
@@ -137,78 +137,80 @@ export default {
     return {
       isModalOpen: false,
       activeTab: 'list',
-      userChannels: [
+      userRooms: [
         { id: 1, name: 'general' },
         { id: 2, name: 'IS442' },
         { id: 3, name: 'IS442-G4' }
       ],
-      publicChannels: [
+      /*publicRoomss: [
         { id: 4, name: 'Random' },
         { id: 5, name: 'Help Desk' }
-      ],
-      newChannelName: '',
-      newChannelType: 'public',
-      newChannelDescription: '',
-      channelToJoin: ''
+      ],*/
+      newRoomName: '',
+      newRoomType: 'user',
+      newRoomDescription: '',
+      roomToJoin: ''
     }
   },
   methods: {
     openModal() {
       this.isModalOpen = true;
+
+      this.$socket.emit('get-all-rooms', this.$authStore.currentUser._id);
     },
     closeModal() {
       this.isModalOpen = false;
       // Reset form states
-      this.newChannelName = '';
-      this.newChannelType = 'public';
-      this.newChannelDescription = '';
-      this.channelToJoin = '';
+      this.newroomName = '';
+      this.newroomDescription = '';
+      this.roomToJoin = '';
     },
-    switchToChannel(channel) {
-      // Emit an event to parent component to switch channels
-      this.$emit('switch-channel', channel);
+    switchToroom(room) {
+      // Emit an event to parent component to switch rooms
+      this.$socket.emit('join-room', room.name);
       this.closeModal();
     },
-    leaveChannel(channel) {
-      // Remove channel from user's channels
-      this.userChannels = this.userChannels.filter(c => c.id !== channel.id);
+    leaveroom(room) {
+      // Remove room from user's rooms
+      this.userRooms = this.userRooms.filter(c => c.id !== room.id);
 
-      // Emit an event to backend to remove user from channel
-      this.$emit('leave-channel', channel);
+      // Emit an event to backend to remove user from Room
+      this.$emit('leave-room', room);
     },
-    createChannel() {
-      const newChannel = {
-        name: this.newChannelName,
-        type: this.newChannelType,
-        description: this.newChannelDescription
+    createRoom() {
+      const newRoom = {
+        name: this.newRoomName,
+        type: 'user',
+        description: this.newRoomDescription
       };
 
-      // Emit event to backend to create channel
-      this.$emit('create-channel', newChannel);
+      console.log(newRoom);
 
-      // Add to user channels and switch to it
-      this.userChannels.push({
-        id: this.userChannels.length + 1,
-        name: newChannel.name
+      // Emit event to backend to create room
+      this.$socket.emit('create-room', newRoom);
+
+      // Add to user rooms and switch to it
+      /*this.userRooms.push({
+        id: this.userRooms.length + 1,
+        name: newRoom.name
       });
-      this.switchToChannel(newChannel);
+      this.switchToRoom(newRoom);*/
 
       // Reset form
-      this.newChannelName = '';
-      this.newChannelType = 'public';
-      this.newChannelDescription = '';
+      this.newRoomName = '';
+      this.newRoomDescription = '';
     },
-    joinChannel() {
-      // Emit event to backend to join channel
-      this.$emit('join-channel', this.channelToJoin);
+    joinRoom() {
+      // Emit event to backend to join room
+      this.$emit('join-room', this.roomToJoin);
 
       // Reset input
-      this.channelToJoin = '';
+      this.roomToJoin = '';
     },
-    joinPublicChannel(channel) {
-      // Emit event to backend to join public channel
-      this.$emit('join-channel', channel.name);
-      this.switchToChannel(channel);
+    joinPublicRoom(room) {
+      // Emit event to backend to join public room
+      this.$emit('join-room', room.name);
+      this.switchToRoom(room);
     },
     toggleTheme() {
       this.theme = this.theme === 'theme-dark' ? 'theme-light' : 'theme-dark';
@@ -218,7 +220,7 @@ export default {
 </script>
 
 <style scoped>
-.channel-settings-modal {
+.room-settings-modal {
   position: relative;
 }
 
@@ -273,13 +275,13 @@ export default {
   color: white;
 }
 
-.channel-list,
-.create-channel,
-.join-channel {
+.room-list,
+.create-room,
+.join-room {
   padding: 20px;
 }
 
-.channel-item {
+.room-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -289,7 +291,7 @@ export default {
   border-radius: 4px;
 }
 
-.channel-actions button {
+.room-actions button {
   margin-left: 10px;
   padding: 5px 10px;
   border: none;
@@ -316,8 +318,8 @@ export default {
   background: #d32f2f;
 }
 
-.create-channel form,
-.join-channel form {
+.create-room form,
+.join-room form {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -352,16 +354,16 @@ input:focus, select:focus, textarea:focus {
   background: #5548cc;
 }
 
-.public-channels {
+.public-rooms {
   margin-top: 20px;
 }
 
-.public-channels ul {
+.public-rooms ul {
   list-style-type: none;
   padding: 0;
 }
 
-.public-channels li {
+.public-rooms li {
   padding: 10px;
   background: #9e96dd;
   margin-bottom: 5px;
@@ -369,7 +371,7 @@ input:focus, select:focus, textarea:focus {
   cursor: pointer;
 }
 
-.public-channels li:hover {
+.public-rooms li:hover {
   background: #2fc07c;
 }
 
