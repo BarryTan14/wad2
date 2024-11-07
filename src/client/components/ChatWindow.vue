@@ -2,12 +2,12 @@
   <div
       v-if="isLoggedIn"
       :class="[
-      'position-fixed bottom-0 end-0 bg-dark border rounded-top shadow',
+      'position-fixed bottom-0 bg-dark border rounded-top shadow',
       isMinimized ? 'col-12 col-sm-6 col-md-5 col-lg-3 translate-up' : 'col-12 col-sm-6 col-md-5 col-lg-4'
     ]"
       style="z-index: 1000;"
   >
-    <div class="bg-primary rounded-top d-flex justify-content-between align-items-center">
+    <div class="chat-header bg-primary rounded-top d-flex justify-content-between align-items-center">
       <h3 class="ms-2 text-white mb-0">{{ currentRoom?.name || 'Chat' }}</h3>
       <div>
         <ChatSettingsModal v-if="!isMinimized"/>
@@ -24,7 +24,7 @@
       </div>
     </div>
 
-    <div v-if="!isMinimized" class="d-flex flex-column" style="height: 400px;">
+    <div v-if="!isMinimized" class="d-flex flex-column rounded-top" style="height: 400px;">
       <div class="p-3 d-flex flex-column overflow-auto flex-grow-1" ref="messagesContainer">
         <div v-for="msg in messages" :key="msg._id" class="d-flex mb-3 gap-3">
           <!-- Profile picture column -->
@@ -32,7 +32,7 @@
             <img
                 @click="router.push('/profile/'+msg.saidBy._id)"
                 :src="'/profilepicture/' + msg.saidBy.profilePic"
-                class="rounded-circle cursor-pointer"
+                class="rounded-circle cursor-pointer profile-pic"
                 alt="avatar"
                 style="width: 40px; height: 40px;"
             >
@@ -343,7 +343,7 @@ export default {
 }
 
 .modal-tabs button {
-  background: #f3f1ff; 
+  background: #f3f1ff;
   color: #6c63ff;
 }
 
@@ -402,6 +402,13 @@ export default {
   overflow-y: auto;
 }
 
+.profile-pic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 .overflow-auto::-webkit-scrollbar {
   width: 6px;
 }
@@ -416,11 +423,7 @@ export default {
 }
 
 .chat-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  color: white;
+
 }
 
 .messages {
@@ -470,7 +473,7 @@ export default {
 }
 
 .modal-tabs button.active {
-  background: #9e96dd; 
+  background: #9e96dd;
   color: white;
 }
 

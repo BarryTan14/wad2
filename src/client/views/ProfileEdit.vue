@@ -1,5 +1,6 @@
 <template>
   <div class="profile bg-body-tertiary rounded-4 p-4">
+    <!-- Previous loading and error states remain unchanged -->
     <div v-if="loading" class="loading">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
@@ -17,6 +18,7 @@
 
     <div v-else class="profile-content">
       <div class="row">
+        <!-- Profile image section remains unchanged -->
         <div class="col-12 col-md-4 mb-4 mb-md-0">
           <div class="profile-image-container position-relative">
             <img
@@ -43,18 +45,35 @@
         </div>
 
         <div class="col-12 col-md-8">
-          <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="mb-0">
-              <span v-if="!isEditing">{{ userData.displayName }}</span>
-              <input
-                  v-else
-                  type="text"
-                  v-model="editForm.displayName"
-                  class="form-control"
-                  @keyup.enter="saveChanges"
+          <div class="row">
+            <div class="m-0 col col-10">
+              <h1 class="m-0 col col-12">
+                <span v-if="!isEditing">{{ userData.displayName }}</span>
+                <div v-else class="input-group">
+                  <input
+                      type="text"
+                      v-model="editForm.displayName"
+                      class="form-control"
+                      @keyup.enter="saveChanges"
+                      :maxlength="maxDisplayNameLength"
+                  >
+                  <span class="input-group-text text-muted">
+                    {{ remainingDisplayNameChars }} remaining
+                  </span>
+                </div>
+              </h1>
+            </div>
+            <div class="col col-12 col-md-2 order-first order-md-1">
+              <button
+                  class="btn btn-outline-primary d-inline-block col-12 col"
+                  @click="toggleEditing"
               >
-            </h1>
-            <h1 class="mb-0">
+                {{ isEditing ? 'Cancel' : 'Edit Profile' }}
+              </button>
+            </div>
+          </div>
+          <div class="row">
+            <h1 class="m-0 col col-12">
               <span v-if="!isEditing">{{ userData.role }}</span>
               <select
                   v-else
@@ -63,14 +82,7 @@
                 <option v-for="role in roles" :key="role" :value="role">{{role}}</option>
               </select>
             </h1>
-            <button
-                class="btn btn-outline-primary"
-                @click="toggleEditing"
-            >
-              {{ isEditing ? 'Cancel' : 'Edit Profile' }}
-            </button>
           </div>
-
           <div class="card">
             <div class="card-body">
               <h5 class="card-title d-flex justify-content-between align-items-center">
@@ -128,7 +140,7 @@ export default {
     return {
       loading: true,
       error: null,
-      roles: ['User', 'Student', 'Professor'],
+      roles: ['User', 'Student'],
       userData: {
         profilePic: '',
         displayName: '',
@@ -144,6 +156,7 @@ export default {
         role: '',
       },
       maxBioLength: 500,
+      maxDisplayNameLength: 50,
       fallbackImage: '/profilepicture/avatar.png',
       router:null,
     }
@@ -158,6 +171,10 @@ export default {
 
     remainingBioChars() {
       return this.maxBioLength - this.editForm.bio.length
+    },
+
+    remainingDisplayNameChars() {
+      return this.maxDisplayNameLength - (this.editForm.displayName?.length || 0)
     }
   },
 
@@ -289,6 +306,7 @@ export default {
 .profile-image-container img {
   border-radius: 0;
 }
+
 .profile {
   min-height: 50vh;
 }

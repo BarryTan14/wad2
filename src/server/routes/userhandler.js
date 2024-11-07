@@ -12,7 +12,7 @@ import multer from "multer";
 import crypto from 'crypto';
 import {dirname} from 'path'
 import mongoose from "mongoose";
-import {svgSanitize, svgUploadMiddleware} from "../middleware/svgSanitizer.js";
+import {svgUploadMiddleware} from "../middleware/svgSanitizer.js";
 
 const {pick} = pkg;
 
@@ -240,60 +240,44 @@ router.put('/api/profile/update', authMiddleware, validateProfileUpdate, asyncHa
 // svgUploadMiddleware to santize and optimize svg in case the user uploads an SVG (Don't want to block svg outright)
 // Uploads profile picture as randomstring + timestamp to ensure no duplicates
 // Does not delete the old picture for "caching"
-router.post('/api/profile/picture', authMiddleware, svgUploadMiddleware, upload.single('profilePic'), asyncHandler(async (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({message: 'No file uploaded'});
-        }
-
-        // Get the user from your database
-        const user = await User.findById(req.user._id).select('-password');
-        if (!user) {
-            return res.status(404).json({message: 'User not found'});
-        }
-
-        // check if SVG, because it's also an image
-        if(req.file.mimetype.includes('image/svg')) {
-            //console.log(req.file)
-            //await svgSanitize((req.file));
-        }
-
-        // Update user's profile picture in database
-        let oldPic = user.profilePic;
-        user.profilePic = req.file.filename;
-        await user.save();
-
-        // UNUSED: just look for profile pics that aren't linked to profiles on server start to delete old pics
-        /*// Mark for delete: old profile picture if it exists
-        if(oldPic!=="avatar.png")
-            if (oldPic) {
-                const oldPicPath = path.join(baseDir, oldPic);
-                try {
-                    // Use fs.promises for better async handling
-                    await fs.promises.rename(oldPicPath, baseDir+'DELETED-'+oldPic);
-                } catch (err) {
-                    console.log('Error marking old profile picture:', err);
-                    // Continue execution even if old file deletion fails
-                }
-            }*/
-
-        res.status(200).json({
-            message: 'Profile picture uploaded successfully',
-            user: pick(user, ['profilePic', 'displayName', 'bio', 'role', '_id'])
-        });
-    } catch (error) {
-        // Delete uploaded file if database operation fails
-        if (req.file) {
-            const filePath = path.join(baseDir, req.file.filename);
-            try {
-                await fs.promises.unlink(filePath);
-            } catch (err) {
-                console.log('Error deleting file after failed upload:', err);
+router.post('/api/profile/picture',
+    authMiddleware,
+    upload.single('profilePic'),
+    svgUploadMiddleware,  // Move after upload.single()
+    asyncHandler(async (req, res) => {
+        try {
+            if (!req.file) {
+                return res.status(400).json({message: 'No file uploaded'});
             }
+
+            const user = await User.findById(req.user._id).select('-password');
+            if (!user) {
+                return res.status(404).json({message: 'User not found'});
+            }
+
+            // Update user's profile picture in database
+            let oldPic = user.profilePic;
+            user.profilePic = req.file.filename;
+            await user.save();
+
+            res.status(200).json({
+                message: 'Profile picture uploaded successfully',
+                user: pick(user, ['profilePic', 'displayName', 'bio', 'role', '_id'])
+            });
+        } catch (error) {
+            // Delete uploaded file if any operation fails
+            if (req.file) {
+                const filePath = path.join(baseDir, req.file.filename);
+                try {
+                    await fs.promises.unlink(filePath);
+                } catch (err) {
+                    console.log('Error deleting file after failed upload:', err);
+                }
+            }
+            throw error;
         }
-        throw error;
-    }
-}));
+    })
+);
 
 // Profile with :id parameter to search for specific ObjectID from mongodb. Returns ['profilePic','displayName','bio','role'] as an object, not as "user"
 router.get('/api/profile/:id', authMiddleware, asyncHandler(async (req, res) => {

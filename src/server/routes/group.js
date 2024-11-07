@@ -3,17 +3,9 @@ import {Module} from "../models/Module.js";
 
 const router = express.Router();
 
-router.get("/api/", async (req, res) => {
-    //console.log("Connecting to the MongoDB collection...");
+router.get("/", async (req, res) => {
 
     try {
-        //const user = new User({email, password, username})
-        //await user.save()
-        // Connect to the database
-        //const database = await db.collection("Module");
-        //const documents = await database.find().toArray();
-        // Optional: Fetch collection stats or count if you want to return metadata
-        //console.log(database)
         const Task = await Module.find();
         console.log(Task)
         if (!Task) {
@@ -30,13 +22,13 @@ router.get("/api/", async (req, res) => {
         res.status(500).send("Failed to connect to MongoDB collection: " + e.message);
     }
 });
-router.get('/api/:groupId', async (req, res) => {
+router.get('/:groupId', async (req, res) => {
     const { groupId } = req.params; // Retrieve groupId from URL parameters
-    
+    console.log("Here")
     try {
         // Find all modules that match the provided groupId
         const modules = await Module.find({ groupId: groupId });
-        console.log(groupId)
+        
         if (!modules || modules.length === 0) {
             return res.status(404).json({ message: 'No modules found for the specified group ID' });
         }
@@ -52,7 +44,7 @@ router.get('/api/:groupId', async (req, res) => {
 });
 
 
-router.post("/api/add", async (req, res) => {
+router.post("/add", async (req, res) => {
     try {
         const { module_name, module_id, description } = req.body;
 
