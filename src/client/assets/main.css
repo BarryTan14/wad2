@@ -1,3 +1,4 @@
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
 :root {
     --vt-c-white: #ffffff;
     --vt-c-white-soft: #f8f8f8;
@@ -15,3 +16,4 @@
     --vt-c-text-dark-1: var(--vt-c-white);
     --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
   }
+  
