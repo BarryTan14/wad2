@@ -76,11 +76,6 @@ const router = createRouter({
       component: () => import('../views/Transcribe.vue'),
     },
     {
-      path: '/transcribeFromClaude',
-      name: 'transcribeFromClaude',
-      component: () => import('../views/TranscribeFromClaude.vue'),
-    },
-    {
     path: '/emailsender',
     name: 'EmailSender',
     component: () => import('../views/EmailSender.Vue')

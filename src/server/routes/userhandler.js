@@ -231,6 +231,8 @@ router.put('/api/profile/update', authMiddleware, validateProfileUpdate, asyncHa
                 return res.status(400).json({message: 'Invalid action'});
         }
     } catch (error) {
+        if(error.code === 11000)
+            return res.status(400).json({message: 'That display name is already in use'});
         throw error;
     }
 }));

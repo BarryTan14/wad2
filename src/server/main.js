@@ -62,16 +62,21 @@ app.use(session({
 app.use(express.urlencoded({extended: false}));
 //app.use(express.multipart());
 
+// ROUTE IS /user/blahblah
 app.use('/user', userHandlerRouter);
 
+// ROUTE IS /transcribe/blahblah
 app.use('/transcribe', transcribeHandlerRouter);
 
+// ROUTE IS /group/blahblah
 app.use('/group', groupRouter);
 
 app.use('/task', taskRouter);
 
+// ROUTE IS /api/email/blahblah
 app.use('/api/email', emailRouter);
 
+// ROUTE IS /api/calendar/blahblah
 app.use('/api/calendar', calendarRouter);
 
 app.use('/api/calendar-email', calendarEmailRoutes);

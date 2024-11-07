@@ -2,12 +2,12 @@
   <div
       v-if="isLoggedIn"
       :class="[
-      'position-fixed bottom-0 bg-dark border rounded-top shadow',
+      'position-fixed bg-dark border rounded-top shadow',
       isMinimized ? 'col-12 col-sm-6 col-md-5 col-lg-3 translate-up' : 'col-12 col-sm-6 col-md-5 col-lg-4'
     ]"
       style="z-index: 1000;"
   >
-    <div class="chat-header bg-primary rounded-top d-flex justify-content-between align-items-center">
+    <div class="chat-header p-0 bg-primary rounded-top d-flex justify-content-between align-items-center">
       <h3 class="ms-2 text-white mb-0">{{ currentRoom?.name || 'Chat' }}</h3>
       <div>
         <ChatSettingsModal v-if="!isMinimized"/>
@@ -16,7 +16,7 @@
             :class="[
             'btn', 'minimize-btn',
             isMinimized ? 'px-5' : 'px-3',
-            'rounded-start-0 rounded-end-3 rounded-bottom-0'
+            'rounded-start-0 rounded-end-3 rounded-bottom-0 m-0'
           ]"
         >
           {{ isMinimized ? '^' : 'v' }}
@@ -24,7 +24,7 @@
       </div>
     </div>
 
-    <div v-if="!isMinimized" class="d-flex flex-column rounded-top" style="height: 400px;">
+    <div v-if="!isMinimized" class="d-flex flex-column messages-content" style="height: 400px;">
       <div class="p-3 d-flex flex-column overflow-auto flex-grow-1" ref="messagesContainer">
         <div v-for="msg in messages" :key="msg._id" class="d-flex mb-3 gap-3">
           <!-- Profile picture column -->
@@ -65,7 +65,7 @@
               :maxlength="MAX_MESSAGE_LENGTH"
               class="form-control"
           >
-          <button @click="sendMessage" class="btn btn-primary">Send</button>
+          <button @click="sendMessage" class="btn btn-primary m-0">Send</button>
         </div>
       </div>
       <div v-else class="p-3 text-center">
@@ -77,12 +77,11 @@
 
 <script>
 import ChatSettingsModal from './ChatSettingsModal.vue'
-import { useRouter } from 'vue-router'
-import {useAuthStore} from "../stores/auth.js";
+import {useRouter} from 'vue-router'
 
 export default {
   name: 'ChatWindow',
-  components: { ChatSettingsModal },
+  components: {ChatSettingsModal},
 
   data() {
     return {
@@ -101,7 +100,7 @@ export default {
         'chat-cannot-leave-error': 'Cannot leave the default room',
         'chat-invalid-room-error': 'Invalid room ID'
       },
-      router:useRouter(),
+      router: useRouter(),
       timestampRefreshInterval: null, // Store interval reference
       midnightCheckTimeout: null, // Store timeout reference for next midnight
     }
@@ -233,12 +232,27 @@ export default {
       this.$nextTick(this.scrollToBottom);
     },
 
+    setCookie(name, value, days) {
+      var expires = "";
+      if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+      }
+      document.cookie = name + "=" + (value || "") + expires + "; path=/";
+    },
+
     handleSocketError(errorType, error) {
       const errorMessage = this.errorMessages[errorType] || error.message;
       this.showCustomError(errorMessage);
 
       if (errorType === 'chat-noauth-error') {
         this.isAuthenticated = false;
+        return;
+      }
+      // try to return to default room
+      if (errorType === 'chat-invalid-room-error') {
+        this.$socket.emit('join-room');
       }
     }
   },
@@ -279,7 +293,7 @@ export default {
       this.showCustomError('Disconnected from chat server');
     });
 
-    this.$socket.on('previous-messages', ({ roomId, messages }) => {
+    this.$socket.on('previous-messages', ({roomId, messages}) => {
       this.messages = messages;
       this.isAuthenticated = true;  // If we get messages, we're authenticated
       this.$nextTick(this.scrollToBottom);
@@ -299,6 +313,11 @@ export default {
     this.$socket.on('room-info', (room) => {
       this.currentRoom = room;
     });
+
+    this.$socket.on('set-roomid-cookie', (roomId) => {
+      this.setCookie('roomId', roomId, 30)
+    });
+
     this.setupTimestampRefresh();
   },
 
@@ -312,6 +331,7 @@ export default {
       this.$socket.off(errorType);
     });
     this.$socket.off('room-info');
+    this.$socket.off('set-roomid-cookie');
     if (this.timestampRefreshInterval) clearInterval(this.timestampRefreshInterval);
     if (this.midnightCheckTimeout) clearTimeout(this.midnightCheckTimeout);
   }
@@ -319,19 +339,25 @@ export default {
 </script>
 
 <style scoped>
+
+.chatwindow {
+  backdrop-filter: blur(6px);
+}
+
 .position-fixed {
   position: fixed;
   bottom: 0;
   right: 20px;
   z-index: 1000;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   transition: width 0.3s;
   border-radius: 8px 8px 0 0;
   overflow: hidden;
 }
 
 .bg-dark {
-  background-color: #f3f1ff !important;
+  background-color: rgba(243, 241, 255, 100%) !important;
+  /*backdrop-filter: blur(6px);*/
 }
 
 .modal-overlay {
@@ -375,7 +401,7 @@ export default {
 
 .translate-up {
   transform: translateY(25px);
-  transition: transform 0.25s cubic-bezier(.05,.43,.13,1.01);
+  transition: transform 0.25s cubic-bezier(.05, .43, .13, 1.01);
 }
 
 .translate-up:hover {

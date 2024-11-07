@@ -302,7 +302,7 @@ export default {
           this.$toastStore.error(`The ${err.type} ${err.path} has an error of: ${err.msg}`);
         }
       } else {
-        this.$toastStore.error(error.message || error.msg || error, 0);
+        this.$toastStore.error(error.message || error.msg || error);
       }
     }
   },

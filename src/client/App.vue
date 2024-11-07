@@ -39,7 +39,7 @@ export default {
       searchQuery: '',
       navigationRoutes: [
         { path: '/', name: 'Dashboard', icon: '📊' },
-        { path: '/classPart', name: 'Class Participation', icon: '👥' },
+        { path: '/transcribe', name: 'Class Participation', icon: '👥' },
         { path: '/progress', name: 'Progress', icon: '📈' },
         { path: '/team', name: 'Team Members', icon: '👥' },
         { path: '/messages', name: 'Messages', icon: '💬' }
@@ -152,6 +152,19 @@ export default {
       // await axios.post('/api/workspaces', this.newWorkspace);
 
       this.closeModal(); // Close the modal after submission
+    },
+    beforeEnter(el) {
+      // Called before the entering element is inserted
+      console.log('Before enter')
+    },
+    enter(el, done) {
+      // Called when the entering element is inserted
+      console.log('Enter')
+      done()
+    },
+    afterEnter(el) {
+      // Called when the enter transition finishes
+      console.log('After enter')
     }
 
   },
@@ -262,7 +275,12 @@ export default {
 
         <!-- Main Content -->
         <main class="content">
-          <RouterView />
+<!--          <RouterView />-->
+          <router-view v-slot="{ Component }">
+            <transition name="fade" mode="out-in">
+              <component :is="Component" :key="$route.path" />
+            </transition>
+          </router-view>
         </main>
       </div>
     </div>
@@ -319,3 +337,45 @@ export default {
     </div>
   </div>
 </template>
+<style>
+/* Fade transition */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Slide transition (alternative) */
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform 0.3s ease;
+}
+
+.slide-enter-from {
+  transform: translateX(100%);
+}
+
+.slide-leave-to {
+  transform: translateX(-100%);
+}
+
+/* Slide fade transition (combines both) */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-fade-enter-from {
+  transform: translateX(20px);
+  opacity: 0;
+}
+
+.slide-fade-leave-to {
+  transform: translateX(-20px);
+  opacity: 0;
+}
+</style>

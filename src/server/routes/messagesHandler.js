@@ -29,6 +29,7 @@ export default async function messagesHandler(io) {
 
             // Handle room creation
             socket.on('create-room', async (roomData) => {
+                console.log(roomData);
                 try {
                     if (!user) throw new Error('Authentication required');
                     const { name, description } = roomData;
@@ -41,10 +42,14 @@ export default async function messagesHandler(io) {
 
             // Handle room joining
             socket.on('join-room', async (roomId) => {
-                if(!roomId || roomId === 'default')
+                //if no roomID, try to get from cookie, if not, join default room
+                if(!roomId)
                 {
-                    roomId = await ChatRoom.findOne({type: 'default'}).select('_id');
-                    roomId = roomId._id
+                    roomId = getRoomIdFromSocket(socket)
+                    if(!roomId) {
+                        roomId = await ChatRoom.findOne({type: 'default'}).select('_id');
+                        roomId = roomId._id
+                    }
                 }
                 try {
                     if (!user) throw new Error('Authentication required');
@@ -120,6 +125,10 @@ export default async function messagesHandler(io) {
                 }
             });
 
+            socket.on('get-all-rooms', async(userId) => {
+                await getAllRoomsOfCurrentUser(userId);
+            });
+
             // Handle disconnect
             socket.on('disconnect', () => {
                 console.log('User disconnected:', socket.id);
@@ -131,6 +140,13 @@ export default async function messagesHandler(io) {
     });
 
     // Room Management Functions
+
+
+    async function getAllRoomsOfCurrentUser(userId) {
+        const user = await User.findById(userId);
+        console.log(user.joinedChatrooms);
+    }
+
     async function initializeDefaultRoom() {
         let defaultRoom = await ChatRoom.findOne({ type: 'default' });
         if (!defaultRoom) {
@@ -174,12 +190,12 @@ export default async function messagesHandler(io) {
         }
 
         // Add user to room if not already in it
-        if (!room.users.includes(userId)) {
-            room.users.push(userId);
+        if (!room.users.includes(user._id)) {
+            room.users.push(user._id);
             await room.save();
         }
-        if(!user.joinedChatrooms.includes(roomId._id)) {
-            user.joinedChatrooms.push(roomId._id);
+        if(!user.joinedChatrooms.includes(room._id)) {
+            user.joinedChatrooms.push(room._id);
             await user.save();
         }
 
@@ -194,7 +210,7 @@ export default async function messagesHandler(io) {
         });
 
         // Send room history
-        const history = await loadRoomHistory(roomId);
+        const history = await loadRoomHistory(room._id);
         socket.emit('previous-messages', { roomId, messages: history });
 
         // Notify room about new user
@@ -202,6 +218,8 @@ export default async function messagesHandler(io) {
             roomId,
             user: user.displayName
         });
+
+        socket.emit('set-roomid-cookie', roomId);
     }
 
     async function leaveRoom(socket, roomId, userId) {
@@ -338,6 +356,17 @@ export default async function messagesHandler(io) {
         const tokenCookie = cookies
             .split('; ')
             .find(row => row.startsWith('token='));
+
+        return tokenCookie ? tokenCookie.split('=')[1] : null;
+    }
+
+    function getRoomIdFromSocket(socket) {
+        const cookies = socket.handshake.headers.cookie;
+        if (!cookies) return null;
+
+        const tokenCookie = cookies
+            .split('; ')
+            .find(row => row.startsWith('roomId='));
 
         return tokenCookie ? tokenCookie.split('=')[1] : null;
     }
