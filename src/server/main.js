@@ -15,6 +15,7 @@ import taskRouter from './routes/task.js';
 import messagesRouter from './routes/messagesHandler.js';
 import emailRouter from './routes/email.js';
 import calendarRouter from './routes/calendar.js'
+import calendarEmailRoutes from './routes/calendarEmailRoutes.js';
 
 import {Server} from 'socket.io';
 import {createServer} from "http";
@@ -72,6 +73,8 @@ app.use('/task', taskRouter);
 app.use('/api/email', emailRouter);
 
 app.use('/api/calendar', calendarRouter);
+
+app.use('/api/calendar-email', calendarEmailRoutes);
 
 messagesRouter(io);
 
