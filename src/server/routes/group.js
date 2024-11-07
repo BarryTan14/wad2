@@ -24,7 +24,6 @@ router.get("/", async (req, res) => {
 });
 router.get('/:groupId', async (req, res) => {
     const { groupId } = req.params; // Retrieve groupId from URL parameters
-    console.log("Here")
     try {
         // Find all modules that match the provided groupId
         const modules = await Module.find({ groupId: groupId });
@@ -45,19 +44,24 @@ router.get('/:groupId', async (req, res) => {
 
 
 router.post("/add", async (req, res) => {
+    console.log(req.body)
     try {
-        const { module_name, module_id, description } = req.body;
+        
+        const { groupId, groupName, moduleName, teamMembers, taskList } = req.body;
 
         // Check if all required fields are provided
-        if (!module_name || !module_id || !description) {
-            return res.status(400).json({ message: 'All fields are required' });
-        }
+        // if (!moduleName || !groupName || !teamMembers) {
+        //     return res.status(400).json({ message: 'All fields are required' });
+        // }
+
 
         // Create a new document in MongoDB
         const newModule = new Module({
-            module_name,
-            module_id,
-            description
+            groupId:"123",
+            groupName,
+            moduleName,
+            teamMembers,
+            taskList
         });
 
         const savedModule = await newModule.save();

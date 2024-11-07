@@ -29,11 +29,14 @@
         </div>
 
         <div class="col-12 col-md-8">
-          <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="mb-0">{{ userData.displayName }}</h1>
-            <h1 class="mb-0">{{ userData.role }}</h1>
+          <div class="row">
+            <div class="m-0 col col-12">
+              <h1 class="m-0">{{ userData.displayName }}</h1>
+            </div>
           </div>
-
+          <div class="row">
+            <h1 class="m-0 col col-12">{{ userData.role }}</h1>
+          </div>
           <div class="card">
             <div class="card-body">
               <h5 class="card-title">Bio</h5>
@@ -49,7 +52,6 @@
 </template>
 
 <script>
-
 import { useRouter } from "vue-router";
 
 export default {
@@ -149,5 +151,10 @@ export default {
 .error {
   text-align: center;
   padding: 1rem;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
 }
 </style>
