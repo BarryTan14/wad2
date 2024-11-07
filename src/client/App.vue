@@ -119,7 +119,8 @@ export default {
     },
     // Select a suggestion from the list
     selectSuggestion(index, suggestion) {
-      this.newWorkspace.teamMembers[index].name = suggestion;
+      this.newModule.teamMembers[index].name = suggestion.displayName;
+      
       this.showSuggestions[index] = false; // Hide suggestions after selection
     },
     // Close suggestions with a delay to allow selection click to process
@@ -296,7 +297,7 @@ export default {
 
               <!-- Suggestions Dropdown -->
               <ul v-if="showSuggestions[index]" class="suggestions-list">
-                <li v-for="suggestion in suggestions[index]" :key="suggestion"
+                <li v-for="suggestion in suggestions[index]" :key="suggestion.displayName"
                   @click="selectSuggestion(index, suggestion)">
                   {{ suggestion.displayName }}
                 </li>
@@ -318,106 +319,3 @@ export default {
     </div>
   </div>
 </template>
-
-<style>
-/* Basic styling for modal overlay and content */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: grey;
-  padding: 30px;
-  border-radius: 8px;
-  max-width: 400px;
-  width: 90%;
-  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
-  overflow-y: auto;
-  max-height: 90vh;
-}
-
-/* Stacks all form elements vertically */
-.workspace-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.team-member-row {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  background-color: grey;
-  margin-bottom: 10px;
-}
-
-.input-wrapper {
-  position: relative;
-  /* Position relative for absolute positioning of suggestions */
-  width: 100%;
-  /* Ensures input wrapper matches input width */
-}
-
-input[type="text"] {
-  width: 100%;
-  /* Ensures input box takes full width */
-  box-sizing: border-box;
-  /* Ensures padding is included in width */
-}
-
-.suggestions-list {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-  border: 1px solid #ddd;
-  max-height: 150px;
-  overflow-y: auto;
-  background: #fff;
-  position: absolute;
-  width: 100%;
-  /* Matches the input width */
-  top: 100%;
-  /* Aligns the suggestions directly below the input */
-  left: 0;
-  /* Ensures suggestions align with the left of the input */
-  z-index: 10;
-  box-sizing: border-box;
-  /* Ensures padding is included in width */
-}
-
-.suggestions-list li {
-  padding: 8px;
-  cursor: pointer;
-}
-
-.suggestions-list li:hover {
-  background-color: #eee;
-}
-
-button {
-  margin-top: 10px;
-  padding: 5px 10px;
-  cursor: pointer;
-}
-
-.add-member-button {
-  display: block;
-  margin: 10px auto;
-}
-
-.remove-member-button {
-  margin-top: 10px;
-}
-</style>
