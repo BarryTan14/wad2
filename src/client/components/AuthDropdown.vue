@@ -1,6 +1,5 @@
 <!-- AuthDropdown.vue -->
 <script>
-import {useAuthStore} from '../stores/auth.js'
 import { useToastStore } from '../stores/toast';
 
 export default {
@@ -14,12 +13,9 @@ export default {
   },
 
   computed: {
-    authStore() {
-      return useAuthStore()
-    },
 
     isLoggedIn() {
-      return this.authStore.currentUser !== null
+      return this.$authStore.currentUser !== null
     }
   },
 
@@ -29,7 +25,7 @@ export default {
 
   methods: {
     async handleLogout() {
-      await this.authStore.logout()
+      await this.$authStore.logout()
       this.toastStore.success('Logged out');
       this.$router.push('/')
     },
@@ -48,18 +44,18 @@ export default {
     >
       <img
           :src="isLoggedIn
-          ? `/profilepicture/${authStore.currentUser.profilePic}`
+          ? `/profilepicture/${$authStore.currentUser.profilePic}`
           : fallbackImage"
-          :alt="isLoggedIn ? authStore.currentUser.displayName : 'Guest'"
+          :alt="isLoggedIn ? $authStore.currentUser.displayName : 'Guest'"
           class="rounded-circle me-2"
           style="width: 40px; height: 40px; object-fit: cover;"
       >
       <div class="d-none d-sm-block"> <!-- Hide text on mobile -->
         <div class="fw-bold">
-          {{ isLoggedIn ? authStore.currentUser.displayName : 'Guest' }}
+          {{ isLoggedIn ? $authStore.currentUser.displayName : 'Guest' }}
         </div>
         <div class="text-muted small">
-          {{ isLoggedIn ? authStore.currentUser.role : 'Not logged in' }}
+          {{ isLoggedIn ? $authStore.currentUser.role : 'Not logged in' }}
         </div>
       </div>
     </div>

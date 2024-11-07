@@ -1,6 +1,6 @@
 <template>
   <div class="register row">
-    <div class="col">
+    <div class="col col-12 col-lg-6">
       <h1>Register</h1>
       <form @submit.prevent="register">
         <div class="mb-3">
@@ -88,7 +88,7 @@
         </div>
 
         <button
-            class="btn btn-primary form-input"
+            class="btn btn-primary form-input col col-12"
             type="submit"
             id="registerBtn"
             :disabled="registerDisabled || !isFormValid"
@@ -102,8 +102,8 @@
         </button>
       </form>
     </div>
-    <div class="col text-center">
-      <h2>𝓨𝓸𝓾𝓻 𝓒𝓾𝓵𝓽𝓾𝓻𝓮, 𝓞𝓹𝓮𝓻𝓪𝓽𝓲𝓷𝓰 𝓪𝓽 𝓘𝓽𝓼 𝓟𝓮𝓪𝓴</h2>
+    <div class="col mt-5 align-items-center text-center justify-content-center mb-3 col-12 col-lg-6">
+      <h2>𝓝𝓪𝓿𝓲𝓰𝓪𝓽𝓮 𝓨𝓸𝓾𝓻 𝓢𝓾𝓬𝓬𝓮𝓼𝓼</h2>
       <p class="lead">Already have an account?</p>
       <p class="lead"> Log in <a role="button" class="link-info pe-auto" @click="router.push('/login')">Here</a></p>
     </div>

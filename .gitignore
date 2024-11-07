@@ -27,3 +27,4 @@ dist-ssr
 *.sw?
 /src/server/key.json
 !/.env
+

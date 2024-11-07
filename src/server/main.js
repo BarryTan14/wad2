@@ -13,6 +13,7 @@ import transcribeHandlerRouter from './routes/transcribehandler.js';
 import groupRouter from './routes/group.js';
 import messagesRouter from './routes/messagesHandler.js';
 import emailRouter from './routes/email.js';
+import calendarRouter from './routes/calendar.js'
 
 import {Server} from 'socket.io';
 import {createServer} from "http";
@@ -66,6 +67,8 @@ app.use('/transcribe', transcribeHandlerRouter);
 app.use('/group', groupRouter);
 
 app.use('/api/email', emailRouter);
+
+app.use('/api/calendar', calendarRouter);
 
 messagesRouter(io);
 
@@ -139,12 +142,12 @@ httpServer.listen(3000, () => {
 /   /    /_______________\\
 \\  /                     /
  \\/_____________________/
-░░      ░░░  ░░░░  ░░  ░░░░░░░░        ░░  ░░░░  ░░       ░░░        ░░░      ░░░░      ░░
-▒  ▒▒▒▒  ▒▒  ▒▒▒▒  ▒▒  ▒▒▒▒▒▒▒▒▒▒▒  ▒▒▒▒▒  ▒▒▒▒  ▒▒  ▒▒▒▒  ▒▒  ▒▒▒▒▒▒▒▒  ▒▒▒▒  ▒▒  ▒▒▒▒▒▒▒
-▓  ▓▓▓▓▓▓▓▓  ▓▓▓▓  ▓▓  ▓▓▓▓▓▓▓▓▓▓▓  ▓▓▓▓▓  ▓▓▓▓  ▓▓       ▓▓▓      ▓▓▓▓  ▓▓▓▓  ▓▓▓      ▓▓
-█  ████  ██  ████  ██  ███████████  █████  ████  ██  ███  ███  ████████  ████  ████████  █
-██      ████      ███        █████  ██████      ███  ████  ██        ███      ████      ██
-•._.••´¯\`\`•.¸¸.•\`𝓨𝓸𝓾𝓻 𝓒𝓾𝓵𝓽𝓾𝓻𝓮, 𝓞𝓹𝓮𝓻𝓪𝓽𝓲𝓷𝓰 𝓪𝓽 𝓘𝓽𝓼 𝓟𝓮𝓪𝓴\`•.¸¸.•\`\`¯´••._.•
+░░      ░░░  ░░░░  ░░  ░░░░  ░░░░░░░░░      ░░░░      ░░░  ░░░░  ░░       ░░░░      ░░░░      ░░░░      ░░
+▒  ▒▒▒▒▒▒▒▒   ▒▒   ▒▒  ▒▒▒▒  ▒▒▒▒▒▒▒▒  ▒▒▒▒  ▒▒  ▒▒▒▒  ▒▒   ▒▒   ▒▒  ▒▒▒▒  ▒▒  ▒▒▒▒  ▒▒  ▒▒▒▒▒▒▒▒  ▒▒▒▒▒▒▒
+▓▓      ▓▓▓        ▓▓  ▓▓▓▓  ▓▓▓▓▓▓▓▓  ▓▓▓▓▓▓▓▓  ▓▓▓▓  ▓▓        ▓▓       ▓▓▓  ▓▓▓▓  ▓▓▓      ▓▓▓▓      ▓▓
+███████  ██  █  █  ██  ████  ████████  ████  ██  ████  ██  █  █  ██  ████████        ████████  ████████  █
+██      ███  ████  ███      ██████████      ████      ███  ████  ██  ████████  ████  ███      ████      ██
+•._.••´¯\`\`•.¸¸.•\`𝓝𝓪𝓿𝓲𝓰𝓪𝓽𝓮 𝓨𝓸𝓾𝓻 𝓢𝓾𝓬𝓬𝓮𝓼𝓼\`•.¸¸.•\`\`¯´••._.•
 `)
 });
 

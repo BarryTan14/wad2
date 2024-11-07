@@ -1,11 +1,11 @@
 <template>
   <div class="login row">
-    <div class="col align-content-center align-items-center text-center justify-content-center mb-3">
-      <h2>𝓨𝓸𝓾𝓻 𝓒𝓾𝓵𝓽𝓾𝓻𝓮, 𝓞𝓹𝓮𝓻𝓪𝓽𝓲𝓷𝓰 𝓪𝓽 𝓘𝓽𝓼 𝓟𝓮𝓪𝓴</h2>
+    <div class="col align-content-center align-items-center text-center justify-content-center mt-5 mb-3 col-12 col-lg-6">
+      <h2>  𝓝𝓪𝓿𝓲𝓰𝓪𝓽𝓮 𝓨𝓸𝓾𝓻 𝓢𝓾𝓬𝓬𝓮𝓼𝓼</h2>
       <p class="lead">Dont have an account?</p>
       <p class="lead">Register <a role="button" class="link-info pe-auto" @click="router.push('/register')">Here</a></p>
     </div>
-    <div class="col">
+    <div class="col col-12 col-lg-6 order-first order-lg-last">
       <h1 class="">Login</h1>
       <form @submit.prevent="login">
         <div class="mb-3">

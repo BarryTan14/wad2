@@ -1,69 +1,148 @@
-import {DOMParser, XMLSerializer} from 'xmldom';
-import {optimize} from "svgo";
+import { DOMParser, XMLSerializer } from 'xmldom';
+import { optimize } from "svgo";
+import { promises as fs } from 'fs';
 
-// Configuration objects using Sets for efficient lookup
+// Comprehensive set of safe SVG elements
 const allowedElements = new Set([
-    'svg', 'g', 'path', 'rect', 'circle', 'ellipse', 'line', 'polyline',
-    'polygon', 'text', 'animate', 'animateMotion', 'animateTransform',
-    'set', 'defs', 'linearGradient', 'radialGradient', 'stop',
-    'clipPath', 'mask', 'pattern', 'tspan'
+    // Root element
+    'svg',
+
+    // Container elements
+    'g', 'defs',
+
+    // Shape elements
+    'path', 'rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon',
+
+    // Text elements
+    'text', 'tspan',
+
+    // Painting elements
+    'clipPath', 'mask', 'pattern',
+
+    // Gradient elements
+    'linearGradient', 'radialGradient', 'stop',
+
+    // Animation elements
+    'animate', 'animateTransform', 'animateMotion', 'mpath', 'set'  // Added mpath
 ]);
 
+// Comprehensive set of safe SVG attributes
 const allowedAttributes = new Set([
-    // Core SVG attributes
-    'id', 'class', 'width', 'height', 'viewBox', 'fill', 'stroke',
-    'stroke-width', 'opacity', 'transform', 'x', 'y', 'cx', 'cy',
-    'r', 'rx', 'ry', 'd', 'points', 'offset', 'stop-color',
-    'stop-opacity', 'gradient-transform', 'pattern-transform',
+    // Core attributes
+    'id', 'class', 'style', 'lang', 'tabindex',
 
-    // Animation-specific attributes
-    'dur', 'repeatCount', 'begin', 'end', 'from', 'to', 'values',
-    'keyTimes', 'keySplines', 'attributeName', 'attributeType',
-    'calcMode', 'path', 'keyPoints', 'rotate', 'additive',
-    'accumulate', 'type', 'restart'
+    // Namespace declarations
+    'xmlns', 'xmlns:xlink', 'version',
+
+    // Sizing and positioning
+    'width', 'height', 'x', 'y', 'x1', 'y1', 'x2', 'y2',
+    'viewBox', 'preserveAspectRatio',
+
+    // Presentation attributes
+    'fill', 'fill-opacity', 'fill-rule',
+    'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin',
+    'stroke-opacity', 'stroke-dasharray', 'stroke-dashoffset',
+    'opacity', 'transform', 'transform-origin',
+    'clip-path', 'clip-rule', 'mask',
+    'font-family', 'font-size', 'font-weight', 'font-style',
+    'text-anchor', 'dominant-baseline',
+    'color', 'visibility', 'display',
+
+    // Shape-specific attributes
+    'd', // for path
+    'cx', 'cy', 'r', // for circle
+    'rx', 'ry', // for ellipse and rect
+    'points', // for polyline and polygon
+    'dx', 'dy', 'rotate', // for text and tspan
+    'textLength', 'lengthAdjust',
+
+    // Gradient attributes
+    'gradientUnits', 'gradientTransform',
+    'spreadMethod', 'patternUnits', 'patternTransform',
+    'offset', 'stop-color', 'stop-opacity',
+
+    // Animation attributes - Expanded
+    'attributeName', 'attributeType', 'from', 'to', 'dur',
+    'repeatCount', 'repeatDur', 'begin', 'end', 'min', 'max', 'restart',
+    'calcMode', 'keyTimes', 'keySplines', 'values', 'by',
+    'keyPoints', 'path', 'rotate', 'origin',
+    'additive', 'accumulate', 'type', 'href', 'xlink:href',  // Added href for animation references
+    'fill', 'fill-opacity', // Animation fill mode
+    'keying', 'bandwidth', // Animation timing
+    'pacing', 'snap', // Animation control
+
+    // Animation transform specific
+    'type', 'from', 'to', 'values', // Transform animation
+    'by', 'additive', 'accumulate', // Transform accumulation
+
+    // Animation motion specific
+    'path', 'keyPoints', 'rotate', 'origin', // Motion path
+    'spacing', 'mpath', // Motion control
+
+    // Clip/mask attributes
+    'clipPathUnits', 'maskUnits', 'maskContentUnits'
 ]);
 
+// Updated prohibited patterns - removed some overly restrictive patterns
 const prohibitedPatterns = [
+    // Script-based attacks
     /javascript:/i,
     /data:/i,
     /vbscript:/i,
+    /<script/i,
     /&#/i,
-    /alert\s*\(/i,
+
+    // JavaScript functions
     /eval\s*\(/i,
     /Function\s*\(/i,
     /setTimeout\s*\(/i,
     /setInterval\s*\(/i,
+
+    // Network requests
     /fetch\s*\(/i,
     /XMLHttpRequest/i,
-    /querySelector/i
+    /ajax/i,
+
+    // DOM manipulation
+    /querySelector/i,
+    /getElementById/i,
+    /getElementsBy/i,
+
+    // Event handlers
+    /^on[a-z]/i,
+
+    // Resource inclusion
+    /\bimport\b/i,
+    /\brequire\b/i,
+    /\bmodule\b/i,
+
+    // Global objects
+    /\bwindow\b/i,
+    /\bdocument\b/i,
+    /\blocation\b/i,
+
+    // Base64 and data URIs
+    /data:text/i,
+    /data:application/i
 ];
 
 class SVGSanitizer {
     static #MAX_SIZE = 5000; // pixels
     static #MAX_FILE_SIZE = 500000; // 500KB
 
-    /**
-     * Validates and adjusts SVG dimensions
-     * @param {Document} doc - The SVG document
-     * @throws {Error} If dimensions are invalid
-     */
-    static #validateSize = (doc) => {
+    static #validateSize(doc) {
         const svg = doc.documentElement;
-
-        // Parse dimensions, defaulting to 0 if not present
         let width = parseInt(svg.getAttribute('width')) || 0;
         let height = parseInt(svg.getAttribute('height')) || 0;
 
-        // Check viewBox dimensions if present
         if (svg.hasAttribute('viewBox')) {
             const [, , vbWidth, vbHeight] = svg.getAttribute('viewBox')
-                .split(' ')
+                .split(/[\s,]+/)
                 .map(Number);
-            width ||= vbWidth;
-            height ||= vbHeight;
+            width = width || vbWidth;
+            height = height || vbHeight;
         }
 
-        // Apply default or clamp dimensions
         if (!width && !height) {
             svg.setAttribute('width', '300');
             svg.setAttribute('height', '300');
@@ -71,63 +150,65 @@ class SVGSanitizer {
             if (width > this.#MAX_SIZE) svg.setAttribute('width', `${this.#MAX_SIZE}`);
             if (height > this.#MAX_SIZE) svg.setAttribute('height', `${this.#MAX_SIZE}`);
         }
-    };
+    }
 
-    /**
-     * Sanitizes a single node in the SVG
-     * @param {Node} node - The node to sanitize
-     */
-    static #sanitizeNode = (node) => {
-        // Remove comment nodes
-        if (node.nodeType === 8) {
-            node.parentNode.removeChild(node);
+    static #sanitizeNode(node) {
+        // Handle text nodes and comments
+        if (node.nodeType === 3 || node.nodeType === 8) {
             return;
         }
 
-        // Process element nodes
+        // Handle element nodes
         if (node.nodeType === 1) {
-            const tagName = node.tagName.toLowerCase();
+            const tagName = node.nodeName.toLowerCase();
 
             // Remove disallowed elements
             if (!allowedElements.has(tagName)) {
-                node.parentNode.removeChild(node);
+                if (node.parentNode) {
+                    node.parentNode.removeChild(node);
+                }
                 return;
             }
 
-            // Process attributes
-            const attributes = Array.from(node.attributes);
+            // Create a list of attributes to remove
+            const attributesToRemove = [];
 
-            // Remove all existing attributes
-            attributes.forEach(({ name, value }) => {
-                const attrName = name.toLowerCase();
+            // Safely iterate through attributes
+            if (node.attributes) {
+                for (let i = 0; i < node.attributes.length; i++) {
+                    const attr = node.attributes[i];
+                    const attrName = attr.name.toLowerCase();
+                    const attrValue = attr.value;
 
-                // Remove if not allowed or contains prohibited patterns
-                const hasProhibitedPattern = prohibitedPatterns.some(pattern =>
-                    pattern.test(value)
-                );
+                    // Check if attribute is allowed
+                    const isProhibited = prohibitedPatterns.some(pattern =>
+                        pattern.test(attrValue)
+                    );
 
-                if (!allowedAttributes.has(attrName) || hasProhibitedPattern) {
-                    node.removeAttribute(name);
+                    if (!allowedAttributes.has(attrName) || isProhibited || attrName.startsWith('on')) {
+                        attributesToRemove.push(attr.name);
+                    }
                 }
-            });
+            }
 
-            // Remove all event handlers
-            attributes
-                .filter(({ name }) => name.toLowerCase().startsWith('on'))
-                .forEach(({ name }) => node.removeAttribute(name));
+            // Remove marked attributes
+            attributesToRemove.forEach(attrName => {
+                node.removeAttribute(attrName);
+            });
         }
 
-        // Recursively process children
-        Array.from(node.childNodes).forEach(child => this.#sanitizeNode(child));
-    };
+        // Recursively process child nodes
+        if (node.childNodes) {
+            const childNodes = Array.from(node.childNodes);
+            childNodes.forEach(child => this.#sanitizeNode(child));
+        }
+    }
 
-    /**
-     * Sanitizes SVG content
-     * @param {string} svgContent - The SVG content to sanitize
-     * @returns {string} Sanitized SVG content
-     * @throws {Error} If SVG is invalid or too large
-     */
-    static sanitize = (svgContent) => {
+    static sanitize(svgContent) {
+        if (!svgContent || typeof svgContent !== 'string') {
+            throw new Error('Invalid SVG content: content must be a string');
+        }
+
         if (svgContent.length > this.#MAX_FILE_SIZE) {
             throw new Error('SVG file too large');
         }
@@ -135,9 +216,14 @@ class SVGSanitizer {
         const parser = new DOMParser();
         const doc = parser.parseFromString(svgContent, 'image/svg+xml');
 
-        // Validate the parsed document
-        if (!doc.documentElement) {
-            throw new Error('Invalid SVG content');
+        // Check for parsing errors
+        const parserErrors = Array.from(doc.getElementsByTagName('parsererror'));
+        if (parserErrors.length > 0) {
+            throw new Error('Invalid SVG content: parsing failed');
+        }
+
+        if (!doc.documentElement || doc.documentElement.nodeName !== 'svg') {
+            throw new Error('Invalid SVG content: missing SVG element');
         }
 
         this.#sanitizeNode(doc.documentElement);
@@ -151,45 +237,39 @@ class SVGSanitizer {
         }
 
         return sanitizedSVG;
-    };
+    }
 }
 
 const handleSVGUpload = async (file) => {
     try {
-        const content = await file.text();
+        const buffer = await fs.readFile(file.path);
+        const content = buffer.toString('utf8');
         return SVGSanitizer.sanitize(content);
     } catch (error) {
+        console.error('SVG processing error:', error);
         throw new Error(`SVG sanitization failed: ${error.message}`);
     }
 };
 
 const svgUploadMiddleware = async (req, res, next) => {
-    console.log(req.file);
-    return next();
     try {
-        if (!req.files?.svg) {
-            throw new Error('No SVG file provided');
+        if (!req.file || !req.file.mimetype.includes('svg')) {
+            return next();
         }
 
-        const sanitizedSVG = await handleSVGUpload(req.files.svg);
-
-        req.sanitizedSVG = sanitizedSVG;
+        const sanitizedSVG = await handleSVGUpload(req.file);
+        await fs.writeFile(req.file.path, sanitizedSVG);
         next();
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        if (req.file) {
+            try {
+                await fs.unlink(req.file.path);
+            } catch (unlinkError) {
+                console.error('Error deleting file:', unlinkError);
+            }
+        }
+        return res.status(400).json({ error: error.message });
     }
 };
 
-async function svgSanitize(file) {
-    try {
-        if (!file.mimetype.includes('image/svg')) {
-            throw new Error('No SVG file provided');
-        }
-
-        return await optimize(await handleSVGUpload(file));
-    } catch (error) {
-
-    }
-}
-
-export { SVGSanitizer, handleSVGUpload, svgUploadMiddleware, svgSanitize };
+export { SVGSanitizer, handleSVGUpload, svgUploadMiddleware };

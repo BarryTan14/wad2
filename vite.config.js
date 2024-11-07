@@ -1,13 +1,24 @@
-import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue";
+// vite.config.js
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import path from 'path'
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-      vue(),
-  ],server: {
+  plugins: [vue()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src/client')
+    }
+  },
+  server: {
     proxy: {
-      '/api': 'http://localhost:3000'
+      '/api': 'http://localhost:3000',
+      '/googleapi': {
+        target: 'https://www.googleapis.com',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/googleapi/, '')
+      }
     }
   }
-});
+})
