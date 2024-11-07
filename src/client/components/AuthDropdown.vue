@@ -26,9 +26,13 @@ export default {
   methods: {
     async handleLogout() {
       await this.$authStore.logout()
+      this.eraseCookie('roomId')
       this.toastStore.success('Logged out');
       this.$router.push('/')
     },
+    eraseCookie(name) {
+      document.cookie = name +'=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    }
   }
 }
 </script>
@@ -68,11 +72,11 @@ export default {
             <i class="bi bi-person me-2"></i>Profile
           </RouterLink>
         </li>
-        <li>
+<!--        <li>
           <RouterLink to="/settings" class="dropdown-item">
             <i class="bi bi-gear me-2"></i>Settings
           </RouterLink>
-        </li>
+        </li>-->
         <li>
           <hr class="dropdown-divider">
         </li>

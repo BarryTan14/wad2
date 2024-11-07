@@ -1,7 +1,7 @@
-import { User } from "../models/User.js";
+import {User} from "../models/User.js";
 import jwt from "jsonwebtoken";
-import { ChatRoom } from "../models/ChatRoom.js";
-import { ChatMessage } from "../models/ChatMessage.js";
+import {ChatRoom} from "../models/ChatRoom.js";
+import {ChatMessage} from "../models/ChatMessage.js";
 import mongoose from "mongoose";
 
 const MAX_MESSAGE_LENGTH = 500;
@@ -126,7 +126,8 @@ export default async function messagesHandler(io) {
             });
 
             socket.on('get-all-rooms', async(userId) => {
-                await getAllRoomsOfCurrentUser(userId);
+                const rooms = await getAllRoomsOfCurrentUser(userId);
+                socket.emit('get-all-rooms', rooms);
             });
 
             // Handle disconnect
@@ -144,7 +145,8 @@ export default async function messagesHandler(io) {
 
     async function getAllRoomsOfCurrentUser(userId) {
         const user = await User.findById(userId);
-        console.log(user.joinedChatrooms);
+
+        return await ChatRoom.find({'_id': {$in: user.joinedChatrooms}}).lean();
     }
 
     async function initializeDefaultRoom() {
@@ -223,29 +225,50 @@ export default async function messagesHandler(io) {
     }
 
     async function leaveRoom(socket, roomId, userId) {
+        // Find room and user
         const room = await ChatRoom.findById(roomId);
+        const user = await User.findById(userId).select('-password');
+
         if (!room) {
             throw new Error('Room not found');
         }
 
-        // Remove user from room
-        room.users = room.users.filter(id => id.toString() !== userId.toString());
-        await room.save();
+        // Remove user from room array (if present)
+        if (room.users.includes(user._id)) {
+            room.users = room.users.filter(id => id.toString() !== user._id.toString());
+            await room.save();
+        }
+
+        // Remove room from user's joinedChatrooms (if present)
+        if (user.joinedChatrooms.includes(room._id)) {
+            user.joinedChatrooms = user.joinedChatrooms.filter(
+                id => id.toString() !== room._id.toString()
+            );
+            await user.save();
+        }
 
         // Leave socket room
         socket.leave(roomId.toString());
 
         // Notify room about user leaving
-        const user = await User.findById(userId).select('displayName');
         io.to(roomId.toString()).emit('user-left', {
             roomId,
             user: user.displayName
         });
 
         // If room is empty and not default, cleanup
-        if (room.users.length === 0 && !room.isDefault) {
+        if (room.users.length === 0 && room.type !== 'default') {
             await cleanupRoom(roomId);
         }
+
+        // Find and join the default room
+        const defaultRoom = await ChatRoom.findOne({ type: 'default' });
+        if (!defaultRoom) {
+            throw new Error('Default room not found');
+        }
+
+        // Join the default room using the existing joinRoom function
+        await joinRoom(socket, defaultRoom._id, user._id);
     }
 
     async function handleNewMessage(socket, io, message, roomId, user) {

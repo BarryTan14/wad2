@@ -314,6 +314,48 @@ router.get('/api/searchDisplayName/:displayName', authMiddleware, asyncHandler(a
     return res.status(200).json(users);
 }));
 
+router.post('/api/addMyselfToGroup/', authMiddleware, asyncHandler(async (req, res) => {
+    const groupId = req.params.groupId;
+    if(!groupId || groupId === '')
+        return res.status(400).json({message: 'No group id provided'});
+    const user = await User.find(req.user._id).select('-password');
+    if(!user) {
+        return res.status(400).json({message: 'No user found.'});
+    }
+    const group = await Group.findById(groupId);
+    if(!group) {
+        return res.status(400).json({message: 'No group found'});
+    }
+    try {
+        user.joinedGroups.push(group._id)
+        await user.save();
+        return res.status(200).json({message: 'Group added'});
+    } catch (e) {
+        return res.status(500).json({message: 'Unable to add to group'});
+    }
+}));
+
+router.post('/api/addToGroup/', authMiddleware, asyncHandler(async (req, res) => {
+    const {displayName, groupId} = req.body
+    if(!groupId || groupId === '')
+        return res.status(400).json({message: 'No group id provided'});
+    const user = await User.findOne(displayName).select('-password');
+    if(!user) {
+        return res.status(400).json({message: 'No user found.'});
+    }
+    const group = await Group.findById(groupId);
+    if(!group) {
+        return res.status(400).json({message: 'No group found'});
+    }
+    try {
+        user.joinedGroups.push(group._id)
+        await user.save();
+        return res.status(200).json({message: 'Group added'});
+    } catch (e) {
+        return res.status(500).json({message: 'Unable to add to group'});
+    }
+}));
+
 // Default error handling route which sends a json of error message and status code
 router.use((err, req, res, next) => {
     console.error(err.stack);

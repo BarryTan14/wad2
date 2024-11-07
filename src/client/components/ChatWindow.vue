@@ -7,10 +7,14 @@
     ]"
       style="z-index: 1000;"
   >
-    <div class="chat-header p-0 bg-primary rounded-top d-flex justify-content-between align-items-center">
-      <h3 class="ms-2 text-white mb-0">{{ currentRoom?.name || 'Chat' }}</h3>
+    <div class="chat-header p-0 bg-primary rounded-top d-flex align-items-center justify-content-between">
+      <StyledDropdown
+          v-model="selectedRoom"
+          :options="userRooms"
+          placeholder="Select Chat Room"
+          @option-selected="handleRoomChange"
+      />
       <div>
-        <ChatSettingsModal v-if="!isMinimized"/>
         <button
             @click="toggleMinimize"
             :class="[
@@ -76,18 +80,24 @@
 </template>
 
 <script>
+import StyledDropdown from './StyledDropdown.vue'
 import ChatSettingsModal from './ChatSettingsModal.vue'
 import {useRouter} from 'vue-router'
 
 export default {
   name: 'ChatWindow',
-  components: {ChatSettingsModal},
+  components: {
+    ChatSettingsModal,
+    StyledDropdown,
+  },
 
   data() {
     return {
+      user: this.$authStore.currentUser,
+      selectedRoom:'',
       messages: [],
       newMessage: '',
-      isMinimized: true,
+      isMinimized: false,
       currentRoom: null,
       MAX_MESSAGE_LENGTH: 500,
       connectionEstablished: false,
@@ -103,6 +113,7 @@ export default {
       router: useRouter(),
       timestampRefreshInterval: null, // Store interval reference
       midnightCheckTimeout: null, // Store timeout reference for next midnight
+      userRooms:[],
     }
   },
 
@@ -120,6 +131,10 @@ export default {
       });
 
       this.newMessage = '';
+    },
+
+    handleRoomChange(room) {
+      this.$socket.emit('join-room', room._id);
     },
 
     handleLarge(event) {
@@ -265,10 +280,21 @@ export default {
 
   mounted() {
     // Socket connection events
-    this.$socket.on('connect', () => {
+    if (this.$socket.connected) {
       this.connectionEstablished = true;
       this.$socket.emit('join-room')
-    });
+      this.$socket.emit('get-all-rooms', this.user._id)
+    } else {
+      this.$socket.on('connect', () => {
+        this.connectionEstablished = true;
+        this.$socket.emit('join-room')
+        this.$socket.emit('get-all-rooms', this.user._id)
+      });
+    }
+
+    this.$socket.on('get-all-rooms', rooms => {
+      this.userRooms = rooms;
+    })
 
     this.$socket.on('user-profile-updated', (userData) => {
       // Update messages where the user appears
@@ -312,6 +338,8 @@ export default {
     // Room management events
     this.$socket.on('room-info', (room) => {
       this.currentRoom = room;
+      this.selectedRoom = room.name;
+      this.$socket.emit('get-all-rooms', this.user._id)
     });
 
     this.$socket.on('set-roomid-cookie', (roomId) => {

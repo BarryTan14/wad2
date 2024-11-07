@@ -102,7 +102,7 @@
 
       <!-- Join room Tab -->
       <div v-if="activeTab === 'join'" class="join-room">
-        <form @submit.prevent="joinroom" class="d-flex gap-2 mb-4">
+        <form @submit.prevent="joinRoom" class="d-flex gap-2 mb-4">
           <input
               v-model="roomToJoin"
               placeholder="Enter room Code or Name"
@@ -151,6 +151,11 @@ export default {
       newRoomDescription: '',
       roomToJoin: ''
     }
+  },
+  mounted() {
+    this.$socket.on('get-all-rooms', (rooms) => {
+      this.userRooms = rooms;
+    });
   },
   methods: {
     openModal() {
@@ -201,6 +206,7 @@ export default {
       this.newRoomDescription = '';
     },
     joinRoom() {
+      console.log(this.roomToJoin)
       // Emit event to backend to join room
       this.$emit('join-room', this.roomToJoin);
 
