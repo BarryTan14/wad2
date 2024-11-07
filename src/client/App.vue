@@ -26,10 +26,13 @@ export default {
       isModalOpen: false,
       suggestions: [], // Stores suggestions for each team member input
       showSuggestions: [], // Controls visibility of suggestions for each input
-      newWorkspace: {
+      newModule: {
+        groupId: '',
         groupName: '',
         moduleTitle: '',
-        teamMembers: [{ name: '', role: '' }] // Initial team member input
+        teamMembers: [{ name: '', userId: '' }],
+        taskList: [],
+        // Initial team member input
       },
       isDarkTheme: true,
       isSidebarOpen: false,
@@ -67,20 +70,20 @@ export default {
     toggleSidebar() {
       this.isSidebarOpen = !this.isSidebarOpen
     },
-    async addWorkspace() {
-      const workspaceData = {
-        name: this.newWorkspaceName,
-        icon: this.newWorkspaceIcon,
-        groupId: this.newWorkspaceGroupId
+    async addModule() {
+      const newModule = {
+        groupName: this.newModule.groupName,
+        moduleName: this.newModule.moduleName,
+        teammembers: this.newModule.teamMembers
       };
-      console.log("Here")
+      console.log(this.newModule)
       try {
         const response = await fetch('http://localhost:3000/group/add', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(workspaceData)
+          body: JSON.stringify(newModule)
         });
 
         if (!response.ok) {
@@ -106,21 +109,21 @@ export default {
     },
     // Add a new team member input
     addTeamMember() {
-      this.newWorkspace.teamMembers.push({ name: "" });
+      this.newModule.teamMembers.push({ name: "" });
       this.suggestions.push([]); // Initialize suggestions for new input
       this.showSuggestions.push(false); // Initialize visibility control for new input
     },
     // Remove a team member input
     removeTeamMember(index) {
-      this.newWorkspace.teamMembers.splice(index, 1);
+      this.newModule.teamMembers.splice(index, 1);
       this.suggestions.splice(index, 1); // Remove corresponding suggestions
       this.showSuggestions.splice(index, 1); // Remove corresponding visibility control
     },
     // Reset form fields
     resetForm() {
-      this.newWorkspace = {
+      this.newModule = {
         groupName: "",
-        moduleTitle: "",
+        moduleName: "",
         teamMembers: [{ name: "" }]
       };
       this.suggestions = [[]];
@@ -133,15 +136,15 @@ export default {
         return;
       }
 
-      try {
-        const response = await axios.get(`http://localhost:3000/api/team-members`, {
-          params: { query }
-        });
-        this.suggestions[index] = response.data; // Assuming response is an array of suggestions
-        this.showSuggestions[index] = true; // Ensure suggestions are shown after fetch
-      } catch (error) {
-        console.error("Error fetching suggestions:", error);
-      }
+      // try {
+      //   const response = await axios.get(`http://localhost:3000/api/team-members`, {
+      //     params: { query }
+      //   });
+      //   this.suggestions[index] = response.data; // Assuming response is an array of suggestions
+      //   this.showSuggestions[index] = true; // Ensure suggestions are shown after fetch
+      // } catch (error) {
+      //   console.error("Error fetching suggestions:", error);
+      // }
     },
     // Select a suggestion from the list
     selectSuggestion(index, suggestion) {
@@ -156,7 +159,7 @@ export default {
     },
     // Submit the workspace data
     submitWorkspace() {
-      console.log("Submitting workspace:", this.newWorkspace);
+      console.log("Submitting workspace:", this.newModule);
 
       // Here you would make a POST request to save the workspace
       // Example:
@@ -303,19 +306,19 @@ export default {
           <!-- Group Name -->
           <label>
             Group Name:
-            <input type="text" v-model="newWorkspace.groupName" required />
+            <input type="text" v-model="newModule.groupName" required />
           </label>
 
           <!-- Module Title -->
           <label>
             Module Title:
-            <input type="text" v-model="newWorkspace.moduleTitle" required />
+            <input type="text" v-model="newModule.moduleName" required />
           </label>
 
           <!-- Team Members with Autocomplete -->
           <h3>Team Members</h3>
           <div
-            v-for="(member, index) in newWorkspace.teamMembers"
+            v-for="(member, index) in newModule.teamMembers"
             :key="index"
             class="team-member-row"
           >

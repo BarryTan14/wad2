@@ -24,7 +24,6 @@ router.get("/", async (req, res) => {
 });
 router.get('/:groupId', async (req, res) => {
     const { groupId } = req.params; // Retrieve groupId from URL parameters
-    console.log("Here")
     try {
         // Find all modules that match the provided groupId
         const modules = await Module.find({ groupId: groupId });

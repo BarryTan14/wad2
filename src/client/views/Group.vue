@@ -2,14 +2,18 @@
   <div class="group-container">
     <!-- Left side: Group Assignments -->
     <div class="group-section">
-      <h2>{{ groupId }}</h2>
+      
+        <h1 v-if="group && group.length > 0"class="card-title">{{ group[0].moduleName|| 'Module name not available' }}</h1>
+     
+        <h1 v-else>Loading module data...</h1> <!-- Fallback if data is not yet available -->
+      
       <div class="header">
-        <h1>Group Assignments</h1>
-        <button @click="openPopup" class="add-button">Add new module</button>
+        <h3 v-if="group && group.length > 0"class="card-title">{{ group[0].groupId|| 'Module name not available' }}</h3>
+     
+        <h3 v-else>Loading module data...</h3> <!-- Fallback if data is not yet available -->
+        
       </div>
-      <div class="group-content">
-        <groupComp view-prop="group" :group="group" />
-      </div>
+    
     </div>
 
     <!-- Right side: Chat Window -->
@@ -120,7 +124,8 @@ export default {
     async fetchGroupData() {
       try {
         const response = await axios.get(`/group/${this.groupId}`);
-        this.group = response;
+        console.log(response.data.data)
+        this.group = response.data.data;
       } catch (error) {
         console.error('Failed to fetch group data:', error);
       }
