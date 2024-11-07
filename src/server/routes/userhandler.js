@@ -166,7 +166,7 @@ router.get('/api/auth/test', authMiddleware, async (req, res) => {
 
 // Just checks the auth of user
 router.get('/api/auth/check', authMiddleware, async (req, res) => {
-    res.status(200).json({user: pick(req.user, ['_id', 'displayName', 'profilePic', 'bio', 'role'])});
+    res.status(200).json({user: pick(req.user, ['_id', 'displayName', 'profilePic', 'bio', 'role', 'email'])});
 })
 
 // Gets profile based on current user's token.
