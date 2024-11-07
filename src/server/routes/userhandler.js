@@ -262,7 +262,7 @@ router.post('/api/profile/picture',
 
             res.status(200).json({
                 message: 'Profile picture uploaded successfully',
-                user: pick(user, ['profilePic', 'displayName', 'bio', 'role', '_id'])
+                user: pick(user, ['profilePic', 'displayName', 'bio', 'role', '_id', 'email'])
             });
         } catch (error) {
             // Delete uploaded file if any operation fails
@@ -282,18 +282,18 @@ router.post('/api/profile/picture',
 // Profile with :id parameter to search for specific ObjectID from mongodb. Returns ['profilePic','displayName','bio','role'] as an object, not as "user"
 router.get('/api/profile/:id', authMiddleware, asyncHandler(async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-        return res.json({profilePic:'server.png',displayName:'Unknown',bio:'Who am I?'} );
+        return res.json({profilePic:'server.png',displayName:'Unknown',bio:'Who am I? Who are you?'} );
     }
 
     const user = await User.findById(req.params.id)
-        .select('displayName bio profilePic')
+        .select('-password')
         .lean();
 
     if (!user) {
-        return res.json({profilePic:'server.png',displayName:'Unknown',bio:'An empty spot in the internet... It is so very liminal...'} );
+        return res.json({profilePic:'server.png',displayName:'Unknown',bio:'An empty spot on the internet'} );
     }
 
-    res.json(pick(user, ['profilePic', 'displayName', 'bio', 'role']));
+    res.json(pick(user, ['profilePic', 'displayName', 'bio', 'role', 'email']));
 }));
 
 router.get('/api/searchDisplayName/:displayName', authMiddleware, asyncHandler(async (req, res) => {
@@ -304,6 +304,7 @@ router.get('/api/searchDisplayName/:displayName', authMiddleware, asyncHandler(a
 
     const users = await User.find({ displayName: { $regex: displayName, $options: 'i' } })
         .select('_id displayName role email')
+        .lean()
 
     if(!users || users.size === 0)
         return res.status(404).json({message: 'No users found.'});

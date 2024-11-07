@@ -50,9 +50,9 @@ export default {
         { name: 'Web Application & Development', icon: '💻', groupId: 103, path: '/group' }
       ],
       teamMembers: [
-        { id: 1, profilePic: 'profilepicture/avatar.png' },
-        { id: 2, profilePic: 'profilepicture/avatar.png' },
-        { id: 3, profilePic: 'profilepicture/avatar.png' }
+        { id: 1, profilePic: '/profilepicture/avatar.png' },
+        { id: 2, profilePic: '/profilepicture/avatar.png' },
+        { id: 3, profilePic: '/profilepicture/avatar.png' }
       ],
       fallbackImage: 'avatar.png',
     }
