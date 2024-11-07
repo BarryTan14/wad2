@@ -66,9 +66,9 @@ app.use('/user', userHandlerRouter);
 
 app.use('/transcribe', transcribeHandlerRouter);
 
-app.use('/group', groupRouter);
+app.use('/api/group', groupRouter);
 
-app.use('/task', taskRouter);
+app.use('/api/task', taskRouter);
 
 app.use('/api/email', emailRouter);
 

@@ -19,32 +19,32 @@
               <th>Done</th>
               <th>Functions</th>
           </tr>
-          <tr v-for="(task, indx) in tasks" :key="task.id">
+          <tr v-for="(task, indx) in tasks" :key="task._id">
               <td>{{ indx + 1 }}</td>
 
               <!-- Name Field: Editable if isEditing is true -->
               <td>
-                  <input type="text" v-model="task.Name" :readonly="!task.isEditing" />
+                  <input type="text" v-model="task.taskName" :readonly="!task.isEditing" />
               </td>
 
               <!-- Members in Charge Field: Editable if isEditing is true -->
               <td>
                   <input 
                       type="text" 
-                      v-model="task['Members in charge']" 
+                      v-model="task.membersInCharge" 
                       :readonly="!task.isEditing" 
-                      @input="task['Members in charge'] = task['Members in charge'].split(',')" 
+                      @input="task.membersInCharge = task.membersInCharge.split(',')" 
                       placeholder="Separate names with commas" 
                   />
               </td>
 
               <!-- Deadline Field: Editable if isEditing is true -->
               <td>
-                  <input type="date" v-model="task.Deadline" :readonly="!task.isEditing" />
+                  <input type="date" v-model="task.deadline" :readonly="!task.isEditing" />
               </td>
 
               <!-- Checkbox for Completion Status: Always Editable -->
-              <td><input type="checkbox" v-model="task.isCompleted" :disabled="!task.isEditing" /></td>
+              <td><input type="checkbox" v-model="task.status" :disabled="!task.isEditing" /></td>
 
               <!-- Update/Save and Delete Buttons -->
               <td>
@@ -186,9 +186,34 @@ export default {
     },
 
     // Save changes and disable edit mode for the selected post
-    saveChanges(task) {
-        task.isEditing = false;
-        console.log("Post updated:", task); // Optional: Log the updated post
+    async saveChanges(task) {
+      task.isEditing = false;
+      try {
+        console.log("Sending task data to server:", {
+            taskName: task.taskName,
+            membersInCharge: task.membersInCharge,
+            deadline: task.deadline,
+            status: task.status
+        });
+
+        // Make sure to await the axios.post call
+        const response = await axios.post(`/api/task/${task._id}`, {
+            taskName: task.taskName,
+            membersInCharge: task.membersInCharge,
+            deadline: task.deadline,
+            status: task.status
+        }, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        console.log('Response:', response.data);
+        // Optionally, refresh the tasks list or handle UI updates
+    } 
+    catch (error) {
+        console.error('Error updating task:', error);
+    }
     },
 
     // Delete the selected post
@@ -198,7 +223,7 @@ export default {
     },
     async fetchGroupData() {
       try {
-        const response = await axios.get(`/group/${this.groupId}`);
+        const response = await axios.get(`/api/group/${this.groupId}`);
         this.group = response.data.data;
       } catch (error) {
         console.error('Failed to fetch group data:', error);
@@ -206,7 +231,7 @@ export default {
     },
     async fetchTaskData() {
       try {
-        const response = await axios.get(`/task`);
+        const response = await axios.get(`/api/task`);
         console.log(response.data.data)
         this.tasks = response.data.data;
       } catch (error) {
@@ -444,7 +469,7 @@ export default {
 }
 
 .chat-section {
-  flex: 1;
+  flex: 0.6;
   position: relative;
 }
 

@@ -135,7 +135,7 @@ export default {
 
 
       try {
-        const response = axios.post('http://localhost:3000/group/add', this.newModule, {
+        const response = axios.post('/api/group/add', this.newModule, {
           headers: {
             'Content-Type': 'application/json'
           }

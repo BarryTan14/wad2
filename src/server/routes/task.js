@@ -7,7 +7,6 @@ router.get("/", async (req, res) => {
 
     try {
         const newTask = await Task.find();
-        console.log(newTask)
         if (!newTask) {
             return res.status(401).json({ message: 'No tasks found' })
         }
@@ -16,7 +15,6 @@ router.get("/", async (req, res) => {
             data: newTask
         });
         // Send a success message or some metadata
-        console.log(newTask)
     } catch (e) {
         //console.error("Error connecting to MongoDB collection:", e);
         res.status(500).send("Failed to connect to MongoDB collection: " + e.message);
@@ -43,36 +41,43 @@ router.get('/:taskId', async (req, res) => {
 });
 
 
-router.post("/add", async (req, res) => {
+router.post('/:taskId', async (req, res) => {
+    const taskId = req.params.taskId;  // Get the MongoDB `_id` from the URL
     console.log(req.body)
     try {
-        
-        const { groupId, groupName, moduleName, teamMembers, taskList } = req.body;
+        // Destructure and rename fields to match the schema
+        const { taskName, membersInCharge, deadline, status } = req.body;
 
         // Check if all required fields are provided
-        // if (!moduleName || !groupName || !teamMembers) {
+        // if (!taskName || !MembersInCharge || !deadline) {
         //     return res.status(400).json({ message: 'All fields are required' });
         // }
 
+        // Update the task in MongoDB based on `_id`
+        const updatedTask = await Task.findByIdAndUpdate(
+            taskId,  // The MongoDB `_id` of the task
+            {        // Fields to update based on schema
+                taskName,
+                membersInCharge,
+                deadline,
+                status
+            },
+            { new: true, runValidators: true }  // Return the updated document and run validations
+        );
 
-        // Create a new document in MongoDB
-        const newModule = new Module({
-            groupId:"123",
-            groupName,
-            moduleName,
-            teamMembers,
-            taskList
-        });
+        if (!updatedTask) {
+            return res.status(404).json({ message: "Task not found" });
+        }
 
-        const savedModule = await newModule.save();
-        res.status(201).json({
-            message: "Successfully added new module",
-            data: savedModule
+        res.status(200).json({
+            message: "Successfully updated the task",
+            data: updatedTask
         });
     } catch (e) {
-        console.error("Error adding new module:", e);
-        res.status(500).send("Failed to add new module: " + e.message);
+        console.error("Error updating task:", e);
+        res.status(500).send("Failed to update task: " + e.message);
     }
 });
+
 
 export default router;
