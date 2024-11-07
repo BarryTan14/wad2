@@ -30,7 +30,7 @@ export default {
         groupId: '',
         groupName: '',
         moduleTitle: '',
-        teamMembers: [{ name: '', userId: '' }],
+        teamMembers: [{ name: '' }],
         taskList: [],
         // Initial team member input
       },
@@ -70,34 +70,6 @@ export default {
     toggleSidebar() {
       this.isSidebarOpen = !this.isSidebarOpen
     },
-    async addModule() {
-      const newModule = {
-        groupName: this.newModule.groupName,
-        moduleName: this.newModule.moduleName,
-        teammembers: this.newModule.teamMembers
-      };
-      console.log(this.newModule)
-      try {
-        const response = await fetch('http://localhost:3000/group/add', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(newModule)
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to add workspace');
-        }
-
-        const result = await response.json();
-        console.log('Workspace added:', result);
-
-        // Optionally, refresh the workspaces list or handle UI updates
-      } catch (error) {
-        console.error('Error adding workspace:', error);
-      }
-    },
     // Open the modal
     openModal() {
       this.isModalOpen = true;
@@ -136,15 +108,14 @@ export default {
         return;
       }
 
-      // try {
-      //   const response = await axios.get(`http://localhost:3000/api/team-members`, {
-      //     params: { query }
-      //   });
-      //   this.suggestions[index] = response.data; // Assuming response is an array of suggestions
-      //   this.showSuggestions[index] = true; // Ensure suggestions are shown after fetch
-      // } catch (error) {
-      //   console.error("Error fetching suggestions:", error);
-      // }
+      try {
+        const response = await axios.get(`/user/api/searchDisplayName/${query}`,);
+        console.log(response.data)
+        this.suggestions[index] = response.data; // Assuming response is an array of suggestions
+        this.showSuggestions[index] = true; // Ensure suggestions are shown after fetch
+      } catch (error) {
+        console.error("Error fetching suggestions:", error);
+      }
     },
     // Select a suggestion from the list
     selectSuggestion(index, suggestion) {
@@ -158,16 +129,30 @@ export default {
       }, 100);
     },
     // Submit the workspace data
-    submitWorkspace() {
+    submitModule() {
       console.log("Submitting workspace:", this.newModule);
 
+
+      try {
+        const response = axios.post('http://localhost:3000/group/add', this.newModule, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        console.log('Workspace added:', response.data);
+
+        // Optionally, refresh the workspaces list or handle UI updates
+      } catch (error) {
+        console.error('Error adding workspace:', error);
+      }
       // Here you would make a POST request to save the workspace
       // Example:
       // await axios.post('/api/workspaces', this.newWorkspace);
 
       this.closeModal(); // Close the modal after submission
     }
-  
+
   },
 
   // Save theme preference
@@ -194,25 +179,21 @@ export default {
 <template>
   <div class="app-container" :class="{ 'theme-light': !isDarkTheme }">
     <ChatWindow />
-    <ToastContainer/>
+    <ToastContainer />
     <div class="layout-wrapper">
       <!-- Sidebar -->
       <aside class="sidebar" :class="{ 'sidebar-open': isSidebarOpen }">
         <div class="close-button" v-if="isSidebarOpen" @click="toggleSidebar">&times;</div>
-  <div class="brand">
-    <img src="./assets/logo.svg" alt="CultureOS" class="logo">
-    <h1 class="brand-title">CultureOS</h1>
-  </div>
+        <div class="brand">
+          <img src="./assets/logo.svg" alt="CultureOS" class="logo">
+          <h1 class="brand-title">CultureOS</h1>
+        </div>
 
         <!-- Main Navigation -->
         <nav class="main-nav">
           <ul class="nav-list">
             <li v-for="route in navigationRoutes" :key="route.path">
-              <RouterLink
-                  :to="route.path"
-                  class="nav-link"
-                  :class="{ 'active': $route.path === route.path }"
-              >
+              <RouterLink :to="route.path" class="nav-link" :class="{ 'active': $route.path === route.path }">
                 <span class="nav-icon">{{ route.icon }}</span>
                 {{ route.name }}
               </RouterLink>
@@ -231,11 +212,8 @@ export default {
               </a>
             </li> -->
             <li v-for="workspace in workspaces" :key="workspace.groupId">
-              <RouterLink
-                  :to="workspace.path+'/'+workspace.groupId"
-                  class="nav-link"
-                  :class="{ 'active': $route.path === workspace.path+'/'+workspace.groupId }"
-              >
+              <RouterLink :to="workspace.path + '/' + workspace.groupId" class="nav-link"
+                :class="{ 'active': $route.path === workspace.path + '/' + workspace.groupId }">
                 <span class="nav-icon">{{ workspace.icon }}</span>
                 {{ workspace.name }}
               </RouterLink>
@@ -261,33 +239,23 @@ export default {
               <Menu class="icon" />
             </button>
             <div class="search-container">
-              <input
-                  type="text"
-                  v-model="searchQuery"
-                  placeholder="Search"
-                  class="search-input"
-              >
+              <input type="text" v-model="searchQuery" placeholder="Search" class="search-input">
             </div>
           </div>
           <div class="top-nav-right">
             <div class="team-members">
-              <img
-                  v-for="member in teamMembers"
-                  :key="member.id"
-                  :src="member.profilePic"
-                  :alt="'Team Member ' + member.id"
-                  class="team-member-avatar"
-              >
+              <img v-for="member in teamMembers" :key="member.id" :src="member.profilePic"
+                :alt="'Team Member ' + member.id" class="team-member-avatar">
               <button class="more-members">+2</button>
             </div>
-<!--            <RouterLink to="/profile" class="user-profile">
+            <!--            <RouterLink to="/profile" class="user-profile">
               <img :src="`/profilepicture/`+userProfile.profilePic" :alt="userProfile.displayName" class="user-avatar">
               <div class="user-info">
                 <div class="user-name">{{ userProfile.displayName }}</div>
                 <div class="user-role">{{ userProfile.role }}</div>
               </div>
             </RouterLink>-->
-            <AuthDropdown/>
+            <AuthDropdown />
           </div>
         </nav>
 
@@ -300,75 +268,55 @@ export default {
   </div>
 
   <div v-if="isModalOpen" class="modal-overlay">
-      <div class="modal-content">
-        <h2>Add New Workspace</h2>
-        <form @submit.prevent="submitWorkspace" class="workspace-form">
-          <!-- Group Name -->
+    <div class="modal-content">
+      <h2>Add New Workspace</h2>
+      <form @submit.prevent="submitModule" class="workspace-form">
+        <!-- Group Name -->
+        <label>
+          Group Name:
+          <input type="text" v-model="newModule.groupName" required />
+        </label>
+
+        <!-- Module Title -->
+        <label>
+          Module Title:
+          <input type="text" v-model="newModule.moduleName" required />
+        </label>
+
+        <!-- Team Members with Autocomplete -->
+        <h3>Team Members</h3>
+        <div v-for="(member, index) in newModule.teamMembers" :key="index" class="team-member-row">
+          <!-- Team Member Name with Autocomplete -->
           <label>
-            Group Name:
-            <input type="text" v-model="newModule.groupName" required />
+            Team Member:
+            <div class="input-wrapper">
+              <input type="text" v-model="member.name" @input="fetchSuggestions(member.name, index)"
+                @focus="showSuggestions[index] = true" @blur="closeSuggestions(index)"
+                placeholder="Type to search team members" required />
+
+              <!-- Suggestions Dropdown -->
+              <ul v-if="showSuggestions[index]" class="suggestions-list">
+                <li v-for="suggestion in suggestions[index]" :key="suggestion"
+                  @click="selectSuggestion(index, suggestion)">
+                  {{ suggestion.displayName }}
+                </li>
+              </ul>
+            </div>
           </label>
-
-          <!-- Module Title -->
-          <label>
-            Module Title:
-            <input type="text" v-model="newModule.moduleName" required />
-          </label>
-
-          <!-- Team Members with Autocomplete -->
-          <h3>Team Members</h3>
-          <div
-            v-for="(member, index) in newModule.teamMembers"
-            :key="index"
-            class="team-member-row"
-          >
-            <!-- Team Member Name with Autocomplete -->
-            <label>
-              Team Member:
-              <div class="input-wrapper">
-                <input
-                  type="text"
-                  v-model="member.name"
-                  @input="fetchSuggestions(member.name, index)"
-                  @focus="showSuggestions[index] = true"
-                  @blur="closeSuggestions(index)"
-                  placeholder="Type to search team members"
-                  required
-                />
-
-                <!-- Suggestions Dropdown -->
-                <ul
-                  v-if="showSuggestions[index]"
-                  class="suggestions-list"
-                >
-                  <li
-                    v-for="suggestion in suggestions[index]"
-                    :key="suggestion"
-                    @click="selectSuggestion(index, suggestion)"
-                  >
-                    {{ suggestion }}
-                  </li>
-                </ul>
-              </div>
-            </label>
-            <button
-              type="button"
-              @click="removeTeamMember(index)"
-              class="remove-member-button"
-            >
-              Remove
-            </button>
-          </div>
-          <button type="button" @click="addTeamMember" class="add-member-button">
-            Add Team Member
+          <button type="button" @click="removeTeamMember(index)" class="remove-member-button">
+            Remove
           </button>
+        </div>
+        <button type="button" @click="addTeamMember" class="add-member-button">
+          Add Team Member
+        </button>
 
-          <!-- Submit and Cancel Buttons -->
-          <button type="submit">Submit</button>
-          <button type="button" @click="closeModal">Cancel</button>
-        </form>
-      </div>
+        <!-- Submit and Cancel Buttons -->
+        <button type="submit">Submit</button>
+        <button type="button" @click="closeModal">Cancel</button>
+      </form>
     </div>
+  </div>
 </template>
 
 <style>
@@ -416,13 +364,17 @@ export default {
 }
 
 .input-wrapper {
-  position: relative; /* Position relative for absolute positioning of suggestions */
-  width: 100%; /* Ensures input wrapper matches input width */
+  position: relative;
+  /* Position relative for absolute positioning of suggestions */
+  width: 100%;
+  /* Ensures input wrapper matches input width */
 }
 
 input[type="text"] {
-  width: 100%; /* Ensures input box takes full width */
-  box-sizing: border-box; /* Ensures padding is included in width */
+  width: 100%;
+  /* Ensures input box takes full width */
+  box-sizing: border-box;
+  /* Ensures padding is included in width */
 }
 
 .suggestions-list {
@@ -434,11 +386,15 @@ input[type="text"] {
   overflow-y: auto;
   background: #fff;
   position: absolute;
-  width: 100%; /* Matches the input width */
-  top: 100%; /* Aligns the suggestions directly below the input */
-  left: 0; /* Ensures suggestions align with the left of the input */
+  width: 100%;
+  /* Matches the input width */
+  top: 100%;
+  /* Aligns the suggestions directly below the input */
+  left: 0;
+  /* Ensures suggestions align with the left of the input */
   z-index: 10;
-  box-sizing: border-box; /* Ensures padding is included in width */
+  box-sizing: border-box;
+  /* Ensures padding is included in width */
 }
 
 .suggestions-list li {
