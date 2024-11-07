@@ -296,6 +296,21 @@ router.get('/api/profile/:id', authMiddleware, asyncHandler(async (req, res) => 
     res.json(pick(user, ['profilePic', 'displayName', 'bio', 'role']));
 }));
 
+router.get('/api/searchDisplayName/:displayName', authMiddleware, asyncHandler(async (req, res) => {
+    const displayName = req.params.displayName;
+
+    if(!displayName || displayName === '')
+        return res.status(400).json({message: 'No display name provided'});
+
+    const users = await User.find({ displayName: { $regex: displayName, $options: 'i' } })
+        .select('_id displayName role email')
+
+    if(!users || users.size === 0)
+        return res.status(404).json({message: 'No users found.'});
+
+    return res.status(200).json(users);
+}));
+
 // Default error handling route which sends a json of error message and status code
 router.use((err, req, res, next) => {
     console.error(err.stack);
