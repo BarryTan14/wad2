@@ -7,6 +7,7 @@ router.get("/", async (req, res) => {
 
     try {
         const newTask = await Task.find();
+        console.log(newTask)
         if (!newTask) {
             return res.status(401).json({ message: 'No tasks found' })
         }
@@ -41,8 +42,28 @@ router.get('/:taskId', async (req, res) => {
     }
 });
 
+router.get('/getBy/:groupId', async (req, res) => {
+    const { groupId } = req.params; // Retrieve groupId from URL parameters
+    try {
+        // Find all modules that match the provided groupId
+        const tasks = await Task.find({ groupId: groupId });
+        
+        if (!tasks || tasks.length === 0) {
+            return res.status(404).json({ message: 'No tasks found for the specified group ID' });
+        }
+        // Return the found modules as a JSON response
+        res.json({
+            message: "Successfully retrieved documents",
+            data: tasks
+        });
+    } catch (error) {
+        console.error("Error fetching tasks by groupId:", error);
+        res.status(500).json({ message: "Failed to fetch tasks by groupId", error: error.message });
+    }
+});
+
 //update Task based on taskId
-router.post('/:taskId', async (req, res) => {
+router.post('/updateBy/:taskId', async (req, res) => {
     const taskId = req.params.taskId;  // Get the MongoDB `_id` from the URL
     console.log(req.body)
     try {
@@ -81,34 +102,50 @@ router.post('/:taskId', async (req, res) => {
 });
 //add a new task based on groupId
 router.post("/add", async (req, res) => {
-    console.log(req.body)
     try {
-        
-        const { groupId, groupName, moduleName, teamMembers, taskList } = req.body;
+        console.log("Adding new task");
+
+        const { taskId, taskName, deadline, membersInCharge, status, isEditing, groupId } = req.body;
 
         // Check if all required fields are provided
-        // if (!moduleName || !groupName || !teamMembers) {
-        //     return res.status(400).json({ message: 'All fields are required' });
-        // }
+        if (!taskId || !taskName || !deadline || !membersInCharge || !groupId) {
+            return res.status(400).json({ message: 'Missing required fields' });
+        }
 
-
-        // Create a new document in MongoDB
-        const newModule = new Module({
-            groupId:"123",
-            groupName,
-            moduleName,
-            teamMembers,
-            taskList
+        // Create a new task document in MongoDB
+        const newTask = new Task({
+            taskId,
+            taskName,
+            deadline,
+            membersInCharge,
+            status: status || false, // Default to false if status is not provided
+            isEditing: isEditing || false, // Default to false if isEditing is not provided
+            groupId
         });
 
-        const savedModule = await newModule.save();
+        const savedTask = await newTask.save();
         res.status(201).json({
-            message: "Successfully added new module",
-            data: savedModule
+            message: "Successfully added new task",
+            data: savedTask
         });
     } catch (e) {
-        console.error("Error adding new module:", e);
-        res.status(500).send("Failed to add new module: " + e.message);
+        console.error("Error adding new task:", e);
+        res.status(500).send("Failed to add new task: " + e.message);
+    }
+});
+router.delete("/delete/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deletedTask = await Task.findByIdAndDelete(id);
+        
+        if (!deletedTask) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+
+        res.status(200).json({ message: "Task deleted successfully", data: deletedTask });
+    } catch (error) {
+        console.error("Error deleting task:", error);
+        res.status(500).json({ message: "Failed to delete task", error: error.message });
     }
 });
 export default router;

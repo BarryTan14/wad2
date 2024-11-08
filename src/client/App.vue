@@ -4,7 +4,6 @@ import { Moon, Sun, Menu } from 'lucide-vue-next'
 // import './assets/styles.css'
 import ChatWindow from './components/ChatWindow.vue'
 import ToastContainer from "./components/ToastContainer.vue"
-import { useAuthStore } from './stores/auth.js'
 import AuthDropdown from './components/AuthDropdown.vue'
 
 
@@ -65,8 +64,6 @@ export default {
 
   methods: {
     async fetchUserGroups() {
-      console.log(this.$authStore.currentUser.displayName)
-      
       try {
         const response = await axios.get(`/user/api/searchDisplayName/${this.$authStore.currentUser.displayName}`,);
         console.log(response.data[0].joinedGroups)
@@ -116,7 +113,7 @@ export default {
     },
     // Fetch suggestions based on user input
     async fetchSuggestions(query, index) {
-      if (query.length < 2) {
+      if (query.length < 1) {
         this.suggestions[index] = [];
         return;
       }
@@ -144,9 +141,6 @@ export default {
     },
     // Submit the workspace data
     submitModule() {
-      console.log("Submitting workspace:", this.newModule);
-
-
       try {
         const response = axios.post('/api/group/add', this.newModule, {
           headers: {
@@ -249,7 +243,7 @@ export default {
             </li> -->
             <li v-for="group in userGroups">
               <RouterLink :to="'/group/' + group" class="nav-link"
-                :class="{ 'active': $route.path === 'group/' + group }">
+                :class="{ 'active': $route.path === '/group/' + group }">
                 <!-- <span class="nav-icon">{{ workspace.icon }}</span> -->
                 {{ group }}
               </RouterLink>
@@ -360,6 +354,44 @@ export default {
   </div>
 </template>
 <style>
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  outline: none;
+}
+
+.suggestions-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  color: black;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 4px;
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.suggestions-list li {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.suggestions-list li:hover {
+  background-color: #f0f0f0;
+}
 /* Fade transition */
 .fade-enter-active,
 .fade-leave-active {

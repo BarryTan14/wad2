@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 
 const taskSchema = new mongoose.Schema({
     taskId: { type: String, required: true },
+    groupId: { type: String, required: true },
     taskName: { type: String, required: true },
     deadline: { type: String, required: true },
     membersInCharge: { type: Array, required: true },

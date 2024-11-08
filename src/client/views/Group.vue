@@ -2,65 +2,63 @@
   <div class="group-container">
     <!-- Left side: Group Assignments -->
     <div class="group-section">
-        <h1 v-if="group && group.length > 0"class="card-title">{{ group[0].moduleName|| 'Module name not available' }}</h1>
-        <h1 v-else>Loading module data...</h1> <!-- Fallback if data is not yet available -->
+      <h1 v-if="group && group.length > 0" class="card-title">{{ group[0].moduleName || 'Module name not available' }}
+      </h1>
+      <h1 v-else>Loading module data...</h1> <!-- Fallback if data is not yet available -->
       <div class="header">
-        <h3 v-if="group && group.length > 0"class="card-title">{{ group[0].groupId|| 'Module name not available' }}</h3>
+        <h3 v-if="group && group.length > 0" class="card-title">Group {{ group[0].groupId || 'Module name not available'
+          }}</h3>
         <h3 v-else>Loading module data...</h3> <!-- Fallback if data is not yet available -->
       </div>
-      <div id="app">    
+      <div id="app">
         <h2>Task Lists</h2>
-        <button @click="addTask()">Add New Task</button>
-      <table class="table m-2">
+        <button @click="openModal">Add New Task</button>
+        <table class="table m-2">
           <tr>
-              <th>S/N</th>
-              <th>Name</th>
-              <th>Members in Charge</th>
-              <th>Deadline</th>
-              <th>Done</th>
-              <th>Functions</th>
+            <th>S/N</th>
+            <th>Name</th>
+            <th>Members in Charge</th>
+            <th>Deadline</th>
+            <th>Done</th>
+            <th>Functions</th>
           </tr>
           <tr v-for="(task, indx) in tasks" :key="task._id">
-              <td>{{ indx + 1 }}</td>
+            <td>{{ indx + 1 }}</td>
 
-              <!-- Name Field: Editable if isEditing is true -->
-              <td>
-                  <input type="text" v-model="task.taskName" :readonly="!task.isEditing" />
-              </td>
+            <!-- Name Field: Editable if isEditing is true -->
+            <td>
+              <input type="text" v-model="task.taskName" :readonly="!task.isEditing" />
+            </td>
 
-              <!-- Members in Charge Field: Editable if isEditing is true -->
-              <td>
-                  <input 
-                      type="text" 
-                      v-model="task.membersInCharge" 
-                      :readonly="!task.isEditing" 
-                      @input="task.membersInCharge = task.membersInCharge.split(',')" 
-                      placeholder="Separate names with commas" 
-                  />
-              </td>
+            <!-- Members in Charge Field: Editable if isEditing is true -->
+            <td>
+              <input type="text" v-model="task.membersInCharge" :readonly="!task.isEditing"
+                @input="task.membersInCharge = task.membersInCharge.split(',')"
+                placeholder="Separate names with commas" />
+            </td>
 
-              <!-- Deadline Field: Editable if isEditing is true -->
-              <td>
-                  <input type="date" v-model="task.deadline" :readonly="!task.isEditing" />
-              </td>
+            <!-- Deadline Field: Editable if isEditing is true -->
+            <td>
+              <input type="date" v-model="task.deadline" :readonly="!task.isEditing" />
+            </td>
 
-              <!-- Checkbox for Completion Status: Always Editable -->
-              <td><input type="checkbox" v-model="task.status" :disabled="!task.isEditing" /></td>
+            <!-- Checkbox for Completion Status: Always Editable -->
+            <td><input type="checkbox" v-model="task.status" :disabled="!task.isEditing" /></td>
 
-              <!-- Update/Save and Delete Buttons -->
-              <td>
-                  <button v-if="!task.isEditing" @click="enableEditing(task)" class="btn btn-sm btn-primary">Update</button>
-                  <button v-else @click="saveChanges(task)" class="btn btn-sm btn-success">Save</button>
-                  <button @click="deletePost(indx)" class="btn btn-sm btn-danger">Delete</button>
-              </td>
+            <!-- Update/Save and Delete Buttons -->
+            <td>
+              <button v-if="!task.isEditing" @click="enableEditing(task)" class="btn btn-sm btn-primary">Update</button>
+              <button v-else @click="saveChanges(task)" class="btn btn-sm btn-success">Save</button>
+              <button @click="deleteTask(indx)" class="btn btn-sm btn-danger">Delete</button>
+            </td>
           </tr>
-      </table>
-    </div>
+        </table>
+      </div>
 
     </div>
 
     <!-- Right side: Chat Window -->
-    <div class="chat-section">
+    <!-- <div class="chat-section">
       <div
           v-if="isLoggedIn"
           class="chat-container"
@@ -78,7 +76,7 @@
         <div v-if="!isMinimized" class="chat-content">
           <div class="messages-container" ref="messagesContainer">
             <div v-for="msg in messages" :key="msg._id" class="message-item">
-              <!-- Profile picture column -->
+               Profile picture column
               <div class="avatar">
                 <img
                     :src="'/profilepicture/' + msg.saidBy.profilePic"
@@ -88,7 +86,7 @@
                 >
               </div>
 
-              <!-- Message content column -->
+              Message content column 
               <div class="message-content">
                 <div class="message-header">
                   <a
@@ -120,31 +118,48 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- Modal for adding a new task -->
     <div v-if="showAddTaskModal" class="modal-overlay">
       <div class="modal-content">
         <h2>Add New Task</h2>
-        <form @submit.prevent="submitNewTask">
+        <form>
           <label>
             Task Name:
             <input type="text" v-model="newTask.taskName" required />
           </label>
-          <label>
-            Members in Charge:
-            <input type="text" v-model="newTask.membersInCharge" placeholder="Separate names with commas" required />
-          </label>
+          <h3>Team Members</h3>
+          <div v-for="(member, index) in newTask.membersInCharge" :key="index" class="team-member-row">
+            <label>
+              Team Member:
+              <div class="input-wrapper">
+                <input type="text" v-model="member.name" @input="fetchMemberSuggestions(member.name, index)"
+                  @focus="showSuggestions[index] = true" @blur="closeSuggestions(index)"
+                  placeholder="Type to search team members" required />
+
+                <!-- Suggestions Dropdown -->
+                <ul v-if="showSuggestions[index]" class="suggestions-list">
+                  <li v-for="suggestion in suggestions[index]" :key="suggestion.displayName"
+                    @click="selectSuggestion(index, suggestion)">
+                    {{ suggestion.displayName }}
+                  </li>
+                </ul>
+              </div>
+            </label>
+            <button type="button" @click="removeTeamMember(index)" class="remove-member-button">
+              Remove
+            </button>
+          </div>
+          <button type="button" @click="addTeamMember" class="add-member-button">
+            Add Team Member
+          </button>
           <label>
             Deadline:
             <input type="date" v-model="newTask.deadline" required />
           </label>
-          <label>
-            Status:
-            <input type="checkbox" v-model="newTask.status" />
-          </label>
           <div class="modal-buttons">
-            <button type="submit" class="btn btn-primary">Add Task</button>
+            <button type="submit" @click="addTask" class="btn btn-primary">Add Task</button>
             <button type="button" @click="closeModal" class="btn btn-secondary">Cancel</button>
           </div>
         </form>
@@ -154,7 +169,6 @@
 </template>
 
 <script>
-import groupComp from "../components/groupComponent.vue";
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
@@ -162,12 +176,11 @@ import axios from 'axios';
 export default {
   name: 'GroupView',
 
-  components: {
-    groupComp
-  },
 
   data() {
     return {
+      suggestions: [], // Store fetched suggestions
+      showSuggestions: [], // Control visibility of suggestions
       // Modal Data
       tasks: [], // array of task objects
       groupId: '',
@@ -175,7 +188,7 @@ export default {
       showAddTaskModal: false, // Controls modal visibility
       newTask: {
         taskName: '',
-        membersInCharge: '',
+        membersInCharge: [{ name: '' }],
         deadline: '',
         status: false
       },
@@ -192,7 +205,7 @@ export default {
       groupSocket: io(),
     };
   },
-  
+
 
   created() {
     this.isLoggedIn = this.$authStore.checkAuth();
@@ -222,7 +235,63 @@ export default {
   },
 
   methods: {
-    addTask() {
+    addTeamMember() {
+      this.newTask.membersInCharge.push({ name: "" });
+      this.suggestions.push([]); // Initialize suggestions for new input
+      this.showSuggestions.push(false); // Initialize visibility control for new input
+    },
+    // Remove a team member input
+    removeTeamMember(index) {
+      this.newTask.membersInCharge.splice(index, 1);
+      this.suggestions.splice(index, 1); // Remove corresponding suggestions
+      this.showSuggestions.splice(index, 1); // Remove corresponding visibility control
+    },
+    async fetchMemberSuggestions(query, index) {
+      if (query.length < 1) {
+        this.suggestions[index] = [];
+        return;
+      }
+
+      try {
+        const response = await axios.get(`/user/api/searchDisplayName/${query}`,);
+        console.log(response.data)
+        this.suggestions[index] = response.data; // Assuming response is an array of suggestions
+        this.showSuggestions[index] = true; // Ensure suggestions are shown after fetch
+      } catch (error) {
+        console.error("Error fetching suggestions:", error);
+      }
+    },
+    // Select a suggestion
+    selectSuggestion(index, suggestion) {
+      this.newTask.membersInCharge[index].name = suggestion.displayName;
+      this.showSuggestions[index] = false; // Hide suggestions after selection
+    },
+    closeSuggestions(index) {
+      setTimeout(() => {
+        this.showSuggestions[index] = false;
+      }, 100);
+    },
+    async addTask() {
+      this.newTask.taskId = 't100'
+      this.newTask.groupId = this.groupId
+      this.newTask.membersInCharge = this.newTask.membersInCharge.map(member => member.name.trim())
+      try {
+        const response = await axios.post('/api/task/add', this.newTask, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        console.log('Workspace added:', response.data);
+
+        // Optionally, refresh the workspaces list or handle UI updates
+      } catch (error) {
+        console.error('Error adding workspace:', error);
+      }
+
+      this.closeModal()
+    },
+    openModal() {
       this.showAddTaskModal = true;
     },
 
@@ -232,34 +301,21 @@ export default {
       this.resetNewTask();
     },
 
+
     // Method to reset new task form data
     resetNewTask() {
       this.newTask = {
         taskName: '',
-        membersInCharge: '',
+        membersInCharge: [{ name: '' }],
         deadline: '',
         status: false
       };
     },
 
     // Method to handle form submission
-    async submitNewTask() {
-      try {
-        const taskData = {
-          ...this.newTask,
-          membersInCharge: this.newTask.membersInCharge.split(',').map(name => name.trim()) // Convert to array
-        };
-        
-        const response = await axios.post('/api/task', taskData);
-        this.tasks.push(response.data.data); // Add the new task to the list
-        this.closeModal(); // Close modal after submission
-      } catch (error) {
-        console.error("Error adding new task:", error);
-      }
-    },
     // Enable edit mode for the selected post
     enableEditing(task) {
-        task.isEditing = true;
+      task.isEditing = true;
     },
 
     // Save changes and disable edit mode for the selected post
@@ -267,35 +323,50 @@ export default {
       task.isEditing = false;
       try {
         console.log("Sending task data to server:", {
-            taskName: task.taskName,
-            membersInCharge: task.membersInCharge,
-            deadline: task.deadline,
-            status: task.status
+          taskName: task.taskName,
+          membersInCharge: task.membersInCharge,
+          deadline: task.deadline,
+          status: task.status
         });
 
         // Make sure to await the axios.post call
-        const response = await axios.post(`/api/task/${task._id}`, {
-            taskName: task.taskName,
-            membersInCharge: task.membersInCharge,
-            deadline: task.deadline,
-            status: task.status
+        const response = await axios.post(`/api/task/updateBy/${task._id}`, {
+          taskName: task.taskName,
+          membersInCharge: task.membersInCharge,
+          deadline: task.deadline,
+          status: task.status
         }, {
-            headers: {
-                'Content-Type': 'application/json'
-            }
+          headers: {
+            'Content-Type': 'application/json'
+          }
         });
-        
+
         console.log('Response:', response.data);
         // Optionally, refresh the tasks list or handle UI updates
-    } 
-    catch (error) {
+      }
+      catch (error) {
         console.error('Error updating task:', error);
-    }
+      }
     },
     // Delete the selected post
-    deletePost(index) {
-        this.tasks.splice(index, 1);
-        console.log("Deleted Post at index:", index);
+    //ToDo: delete the task in the database
+    async deleteTask(index) {
+      const taskId = this.tasks[index]._id; // Get the task's _id
+
+      try {
+        // Send delete request to the backend
+        const response = await axios.delete(`/api/task/delete/${taskId}`);
+
+        if (response.status === 200) {
+          // Remove the task from the local array if the delete was successful
+          this.tasks.splice(index, 1);
+          console.log("Deleted task at index:", index);
+        } else {
+          console.error("Failed to delete task:", response.data.message);
+        }
+      } catch (error) {
+        console.error("Error deleting task:", error);
+      }
     },
     async fetchGroupData() {
       try {
@@ -307,9 +378,11 @@ export default {
     },
     async fetchTaskData() {
       try {
-        const response = await axios.get(`/api/task`);
-        console.log(response.data.data)
-        this.tasks = response.data.data;
+        //get data back based on group or group i
+        const taskList = await axios.get(`/api/task/getBy/${this.groupId}`)
+          .then(resp => {
+            this.tasks = resp.data.data
+          })
       } catch (error) {
         console.error('Failed to fetch group data:', error);
       }
@@ -363,8 +436,8 @@ export default {
       const trimmedText = pastedText.slice(0, remainingSpace);
 
       this.newMessage = currentValue.slice(0, currentPosition) +
-          trimmedText +
-          currentValue.slice(event.target.selectionEnd);
+        trimmedText +
+        currentValue.slice(event.target.selectionEnd);
 
       if (pastedText.length > remainingSpace) {
         this.showError(`Pasted text was trimmed to fit ${this.MAX_MESSAGE_LENGTH} character limit`);
@@ -414,122 +487,36 @@ export default {
       // Implement your error handling here
       console.error(message);
     },
-
-    openPopup() {
-      const popup = window.open(
-          "",
-          "Add New Module",
-          "width=500,height=600,scrollbars=yes,resizable=yes"
-      );
-
-      const popupContent = `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>Add New Module</title>
-            <style>
-              body {
-                font-family: Arial, sans-serif;
-                padding: 20px;
-                max-width: 500px;
-                margin: 0 auto;
-              }
-              label {
-                display: block;
-                margin-top: 10px;
-                font-weight: bold;
-              }
-              input, textarea {
-                width: 100%;
-                padding: 8px;
-                margin-top: 5px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-              }
-              textarea {
-                min-height: 100px;
-                resize: vertical;
-              }
-              .button-group {
-                margin-top: 20px;
-                display: flex;
-                gap: 10px;
-              }
-              button {
-                padding: 8px 16px;
-                border-radius: 4px;
-                border: none;
-                cursor: pointer;
-              }
-              button[type="submit"] {
-                background-color: #4CAF50;
-                color: white;
-              }
-              button[type="button"] {
-                background-color: #f44336;
-                color: white;
-              }
-            </style>
-          </head>
-          <body>
-            <h2>Add New Module</h2>
-            <form id="popupForm">
-              <label>Module Name:
-                <input type="text" id="moduleName" required />
-              </label>
-              <label>Module ID:
-                <input type="text" id="moduleId" required />
-              </label>
-              <label>Description:
-                <textarea id="description" required></textarea>
-              </label>
-              <div class="button-group">
-                <button type="submit">Submit</button>
-                <button type="button" onclick="window.close()">Cancel</button>
-              </div>
-            </form>
-            <script>
-              document.getElementById("popupForm").onsubmit = async function(event) {
-                event.preventDefault();
-                const formData = {
-                  module_name: document.getElementById("moduleName").value,
-                  module_id: document.getElementById("moduleId").value,
-                  description: document.getElementById("description").value
-                };
-
-                try {
-                  const response = await fetch('/group/${this.groupId}/add', {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(formData)
-                  });
-
-                  if (!response.ok) {
-                    throw new Error(await response.text() || 'Failed to add module');
-                  }
-
-                  alert("Module added successfully!");
-                  window.opener.location.reload();
-                  window.close();
-                } catch (error) {
-                  alert("Error: " + error.message);
-                }
-              };
-            <\/script>
-          </body>
-        </html>
-      `;
-
-      popup.document.write(popupContent);
-      popup.document.close();
-    }
   }
 };
 </script>
 
 <style scoped>
+.suggestions-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  color: black;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 4px;
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.suggestions-list li {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.suggestions-list li:hover {
+  background-color: #f0f0f0;
+}
+
 .group-container {
   display: flex;
   width: 100%;
@@ -748,6 +735,7 @@ export default {
     height: 32px;
   }
 }
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -762,7 +750,7 @@ export default {
 }
 
 .modal-content {
-  background: white;
+  background: grey;
   padding: 20px;
   border-radius: 8px;
   max-width: 500px;
@@ -784,6 +772,4 @@ export default {
   padding: 8px 16px;
   cursor: pointer;
 }
-
-
 </style>

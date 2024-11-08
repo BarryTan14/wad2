@@ -305,7 +305,7 @@ router.get('/api/searchDisplayName/:displayName', authMiddleware, asyncHandler(a
         return res.status(400).json({message: 'No display name provided'});
 
     const users = await User.find({ displayName: { $regex: displayName, $options: 'i' } })
-        .select('joinedGroups')
+        .select('_id displayName role email joinedGroups')
         .lean()
 
     if(!users || users.size === 0)
