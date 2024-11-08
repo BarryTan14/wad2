@@ -192,9 +192,6 @@ export default {
         deadline: '',
         status: false
       },
-      tasks: null, // array of post objects
-      groupId: '',
-      group: null,
       messages: [],
       newMessage: '',
       isMinimized: false,

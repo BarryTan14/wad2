@@ -66,7 +66,6 @@ export default {
     async fetchUserGroups() {
       try {
         const response = await axios.get(`/user/api/searchDisplayName/${this.$authStore.currentUser.displayName}`,);
-        console.log(response.data[0].joinedGroups)
         this.userGroups = response.data[0].joinedGroups
       } catch (error) {
         console.error("Error fetching suggestions:", error);
@@ -130,7 +129,6 @@ export default {
     // Select a suggestion from the list
     selectSuggestion(index, suggestion) {
       this.newModule.teamMembers[index].name = suggestion.displayName;
-      
       this.showSuggestions[index] = false; // Hide suggestions after selection
     },
     // Close suggestions with a delay to allow selection click to process
@@ -147,17 +145,11 @@ export default {
             'Content-Type': 'application/json'
           }
         });
-
-        console.log('Workspace added:', response.data);
-
-        // Optionally, refresh the workspaces list or handle UI updates
       } catch (error) {
         console.error('Error adding workspace:', error);
       }
-      // Here you would make a POST request to save the workspace
-      // Example:
-      // await axios.post('/api/workspaces', this.newWorkspace);
-
+      //ToDo: Add in the group's id into the current user's groupList.
+      console.log(this.$authStore.currentUser.displayName)
       this.closeModal(); // Close the modal after submission
     },
     beforeEnter(el) {
@@ -228,19 +220,6 @@ export default {
         <div class="workspaces">
           <h2 class="section-title">Groups <button @click="openModal">Add Group</button></h2>
           <ul class="nav-list">
-            <!-- <li v-for="workspace in workspaces" :key="workspace.name">
-              <a href="#" class="nav-link">
-                <span class="nav-icon">{{ workspace.icon }}</span>
-                {{ workspace.name }}
-              </a>
-            </li> -->
-            <!-- <li v-for="workspace in workspaces" :key="workspace.groupId">
-              <RouterLink :to="workspace.path + '/' + workspace.groupId" class="nav-link"
-                :class="{ 'active': $route.path === workspace.path + '/' + workspace.groupId }">
-                <span class="nav-icon">{{ workspace.icon }}</span>
-                {{ workspace.name }}
-              </RouterLink>
-            </li> -->
             <li v-for="group in userGroups">
               <RouterLink :to="'/group/' + group" class="nav-link"
                 :class="{ 'active': $route.path === '/group/' + group }">
@@ -278,20 +257,13 @@ export default {
                 :alt="'Team Member ' + member.id" class="team-member-avatar">
               <button class="more-members">+2</button>
             </div>
-            <!--            <RouterLink to="/profile" class="user-profile">
-              <img :src="`/profilepicture/`+userProfile.profilePic" :alt="userProfile.displayName" class="user-avatar">
-              <div class="user-info">
-                <div class="user-name">{{ userProfile.displayName }}</div>
-                <div class="user-role">{{ userProfile.role }}</div>
-              </div>
-            </RouterLink>-->
             <AuthDropdown />
           </div>
         </nav>
 
         <!-- Main Content -->
         <main class="content">
-<!--          <RouterView />-->
+         <!--<RouterView />-->
           <router-view v-slot="{ Component }">
             <transition name="fade" mode="out-in">
               <component :is="Component" :key="$route.path" />
