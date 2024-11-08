@@ -11,7 +11,7 @@ router.post('/send', validateEmail, async (req, res) => {
     try {
         const { to, subject, text, html } = req.body;
         console.log('Received email request:', { to, subject, text, html });
-        const result = await sendEmail(to, subject, text, html);
+        const result = await sendEmail({ to, subject, text, html });
         
         res.json({ 
             success: true, 

@@ -67,41 +67,43 @@
                 />
               </div>
               <div class="form-group">
-                <label for="eventStart">Start Time</label>
-                <div class="input-group">
-                  <input
-                    type="text"
-                    id="eventStart"
-                    class="form-control flatpickr-input"
-                    v-model="eventForm.start"
-                    data-input
-                    required
-                  />
-                  <div class="input-group-append">
-                    <button class="btn btn-primary" type="button" data-toggle>
-                      <i class="fas fa-calendar"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="eventEnd">End Time</label>
-                <div class="input-group">
-                  <input
-                    type="text"
-                    id="eventEnd"
-                    class="form-control flatpickr-input"
-                    v-model="eventForm.end"
-                    data-input
-                    required
-                  />
-                  <div class="input-group-append">
-                    <button class="btn btn-primary" type="button" data-toggle>
-                      <i class="fas fa-calendar"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
+    <label for="eventStart">Start Time</label>
+    <div class="input-group">
+      <input
+        type="text"
+        id="eventStart"
+        class="form-control flatpickr-input"
+        v-model="eventForm.start"
+        data-input
+        required
+        readonly
+      />
+      <div class="input-group-append">
+        <button class="btn btn-primary" type="button" @click="openStartPicker">
+          <i class="fas fa-calendar"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="eventEnd">End Time</label>
+    <div class="input-group">
+      <input
+        type="text"
+        id="eventEnd"
+        class="form-control flatpickr-input"
+        v-model="eventForm.end"
+        data-input
+        required
+        readonly
+      />
+      <div class="input-group-append">
+        <button class="btn btn-primary" type="button" @click="openEndPicker">
+          <i class="fas fa-calendar"></i>
+        </button>
+      </div>
+    </div>
+  </div>
               <div class="form-group">
                 <label for="eventDescription">Description</label>
                 <textarea
@@ -149,7 +151,12 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">{{ modalTitle }}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <button 
+              type="button" 
+              class="btn-close" 
+              @click="closeEventActionModal"
+              aria-label="Close"
+            ></button>
           </div>
           <div class="modal-body">
             <div v-if="modalAction" class="status-badge" :class="modalAction.toLowerCase()">
@@ -162,9 +169,15 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn-secondary" data-bs-dismiss="modal">Close</button>
             <button 
-              v-if="modalAction === 'Success' && !selectedEvent" 
+              type="button" 
+              class="btn-secondary" 
+              @click="closeEventActionModal"
+            >
+              Close
+            </button>
+            <button 
+              v-if="modalAction === 'Success' && isNewEvent && !invitationsSent" 
               type="button" 
               class="btn-primary"
               @click="showEmailModal"
@@ -182,24 +195,47 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Send Email Invitations</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <button 
+              type="button" 
+              class="btn-close" 
+              @click="closeEmailModal"
+              :disabled="isLoading"
+            ></button>
           </div>
           <div class="modal-body">
             <div class="form-group">
               <label for="emailList">Enter email addresses (comma-separated)</label>
               <textarea
-                id="emailList"
-                v-model="emailAddresses"
-                rows="3"
-                placeholder="example1@email.com, example2@email.com"
-                class="form-control"
-              ></textarea>
+  id="emailList"
+  v-model="emailAddresses"
+  rows="6"
+  placeholder="example1@email.com, example2@email.com, example3@email.com, example4@email.com"
+  class="form-control"
+  :disabled="isLoading"
+></textarea>
+              <small class="text-muted">Separate multiple email addresses with commas </small>
+              <div v-if="emailError" class="text-danger mt-2">
+                {{ emailError }}
+              </div>
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="button" class="btn-primary" @click="sendInvitations">
-              Send Invitations
+            <button 
+              type="button" 
+              class="btn-secondary" 
+              @click="closeEmailModal"
+              :disabled="isLoading"
+            >
+              Cancel
+            </button>
+            <button 
+              type="button" 
+              class="btn-primary" 
+              @click="sendInvitations"
+              :disabled="!hasValidEmails || isLoading"
+            >
+              <span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+              {{ isLoading ? 'Sending...' : 'Send Invitations' }}
             </button>
           </div>
         </div>
@@ -228,13 +264,18 @@ export default {
         end: '',
         description: ''
       },
+      isLoading: false,
+      emailError: '',
+      hasValidEmails: false,
       modalTitle: '',
       modalAction: '',
       modalEvent: {},
       eventActionModal: null,
       emailModal: null,
       startPicker: null,
-      endPicker: null
+      endPicker: null,
+      isNewEvent: true, // New flag to track if it's a new event
+      invitationsSent: false
     }
   },
   computed: {
@@ -250,15 +291,23 @@ export default {
     this.emailModal = new Modal(document.getElementById('emailModal'))
     this.initDateTimePickers()
   },
+  watch: {
+    emailAddresses(newValue) {
+      this.validateEmails(newValue)
+    }
+  },
   methods: {
     initDateTimePickers() {
       this.startPicker = flatpickr('#eventStart', {
         enableTime: true,
         dateFormat: 'Y-m-d H:i',
         time_24hr: true,
-        onChange: (selectedDates, dateStr, instance) => {
+        onChange: (selectedDates, dateStr) => {
           this.eventForm.start = dateStr
-          this.endPicker.set('minDate', selectedDates[0])
+          // Update end picker min date
+          if (this.endPicker) {
+            this.endPicker.set('minDate', selectedDates[0])
+          }
         }
       })
 
@@ -266,10 +315,26 @@ export default {
         enableTime: true,
         dateFormat: 'Y-m-d H:i',
         time_24hr: true,
-        onChange: (selectedDates, dateStr, instance) => {
+        onChange: (selectedDates, dateStr) => {
           this.eventForm.end = dateStr
         }
       })
+    },
+    closeEventActionModal() {
+    this.eventActionModal.hide()
+  },
+
+    // New methods to handle calendar button clicks
+    openStartPicker() {
+      if (this.startPicker) {
+        this.startPicker.open()
+      }
+    },
+
+    openEndPicker() {
+      if (this.endPicker) {
+        this.endPicker.open()
+      }
     },
     showEventActionModal(action, event) {
       this.modalTitle = action === 'Success' ? 'Event Action Successful' : 'Event Action Failed'
@@ -278,8 +343,11 @@ export default {
       this.eventActionModal.show()
     },
     showEmailModal() {
-      this.eventActionModal.hide()
-      this.emailModal.show()
+      // Only show email modal for new events
+      if (this.isNewEvent) {
+        this.eventActionModal.hide()
+        this.emailModal.show()
+      }
     },
     scrollToTop() {
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -303,6 +371,7 @@ export default {
     },
     selectEvent(event) {
       this.selectedEvent = event
+      this.isNewEvent = false // Set flag when editing existing event
       this.eventForm.summary = event.summary
       this.eventForm.start = event.start.dateTime || event.start.date
       this.eventForm.end = event.end.dateTime || event.end.date
@@ -321,13 +390,15 @@ export default {
 
         let res
         if (this.selectedEvent) {
-          res = await axios.put(`/api/calendar-email/events/${this.selectedEvent.id}?email=${this.email}`, eventData)
-          this.showEventActionModal('Success', res.data)
-        } else {
-          res = await axios.post(`/api/calendar-email/events?email=${this.email}`, eventData)
-          this.createdEvent = res.data
-          this.showEventActionModal('Success', res.data)
-        }
+        this.isNewEvent = false // Ensure it's false for updates
+        res = await axios.put(`/api/calendar-email/events/${this.selectedEvent.id}?email=${this.email}`, eventData)
+        this.showEventActionModal('Success', res.data)
+      } else {
+        this.isNewEvent = true // Set to true for new events
+        res = await axios.post(`/api/calendar-email/events?email=${this.email}`, eventData)
+        this.createdEvent = res.data
+        this.showEventActionModal('Success', res.data)
+      }
 
         await this.listEvents()
         this.selectedEvent = null
@@ -340,6 +411,8 @@ export default {
     },
     async deleteEvent() {
       if (!this.selectedEvent) return
+
+      this.isNewEvent = false
 
       try {
         await axios.delete(`/api/calendar-email/events/${this.selectedEvent.id}?email=${this.email}`)
@@ -361,17 +434,44 @@ export default {
       this.startPicker.clear()
       this.endPicker.clear()
     },
-    async sendInvitations() {
-      if (!this.createdEvent) return
+    validateEmails(emails) {
+      if (!emails.trim()) {
+        this.emailError = 'Please enter at least one email address';
+        this.hasValidEmails = false;
+        return;
+      }
 
-      const recipients = this.emailAddresses.split(',').map(e => e.trim()).filter(e => {
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        return re.test(e)
-      })
+      const emailList = emails
+        .split(',')
+        .map(e => e.trim())
+        .filter(Boolean);
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const invalidEmails = emailList.filter(email => !emailRegex.test(email));
+
+      if (invalidEmails.length > 0) {
+        this.emailError = `Invalid email format: ${invalidEmails.join(', ')}`;
+        this.hasValidEmails = false;
+      } else if (emailList.length === 0) {
+        this.emailError = 'Please enter at least one email address';
+        this.hasValidEmails = false;
+      } else {
+        this.emailError = '';
+        this.hasValidEmails = true;
+      }
+    },
+
+    async sendInvitations() {
+      if (!this.createdEvent) return;
+
+      const recipients = this.emailAddresses
+        .split(',')
+        .map(e => e.trim())
+        .filter(e => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e));
 
       if (recipients.length === 0) {
-        alert('No valid email addresses provided')
-        return
+        this.emailError = 'Please enter at least one valid email address';
+        return;
       }
 
       const event = this.createdEvent
@@ -379,50 +479,110 @@ export default {
       const endDateTime = this.formatDateTime(event.end.dateTime || event.end.date)
 
       const invitationData = {
-        to: recipients.join(', '),
+        to: recipients,
         subject: `Event Invitation: ${event.summary}`,
         text: `
-          You are invited to the following event:
+You are invited to the following event:
 
-          Event: ${event.summary}
-          Start: ${startDateTime}
-          End: ${endDateTime}
-          Description: ${event.description || 'No description provided'}
+Event: ${event.summary}
+Start: ${startDateTime}
+End: ${endDateTime}
+Description: ${event.description || 'No description provided'}
 
-          You are invited by ${this.email}
-        `,
+You are invited by ${this.email}
+        `.trim(),
         html: `
-          <h1>Event Invitation</h1>
-          <p>You are invited to the following event:</p>
-          <p><strong>Event:</strong> ${event.summary}</p>
-          <p><strong>Start:</strong> ${startDateTime}</p>
-          <p><strong>End:</strong> ${endDateTime}</p>
-          <p><strong>Description:</strong> ${event.description || 'No description provided'}</p>
-          <p>You are invited by ${this.email}</p>
-          <img src="https://example.com/company-logo.png" alt="Company Logo" style="max-width: 200px;">
-        `
-      }
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <h2 style="color: #2c3e50;">Event Invitation</h2>
+  <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px;">
+    <h3 style="color: #3498db;">${event.summary}</h3>
+    <p><strong>Start:</strong> ${startDateTime}</p>
+    <p><strong>End:</strong> ${endDateTime}</p>
+    <p><strong>Description:</strong> ${event.description || 'No description provided'}</p>
+    <p><strong>Invited by:</strong> ${this.email}</p>
+  </div>
+</div>
+        `.trim()
+      };
 
+      this.isLoading = true;
       try {
-        await axios.post('/api/email/send', invitationData)
-        alert('Email invitations sent successfully')
-        this.emailModal.hide()
-        this.emailAddresses = ''
-        this.createdEvent = null
+        const response = await axios.post('/api/email/send', invitationData, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.data.success) {
+          this.invitationsSent = true;
+          this.emailModal.hide();
+          this.emailAddresses = '';
+          this.emailError = '';
+          this.createdEvent = null;
+          
+          this.showEventActionModal('Success', {
+            summary: 'Email invitations sent successfully',
+            start: { dateTime: event.start.dateTime },
+            end: { dateTime: event.end.dateTime }
+          });
+        } else {
+          throw new Error(response.data.message || 'Failed to send invitations');
+        }
       } catch (error) {
-        console.error('Error sending invitations:', error)
-        alert('Failed to send email invitations')
+        console.error('Error sending invitations:', error);
+        this.emailError = error.response?.data?.message || 
+                          'Failed to send email invitations. Please try again.';
+      } finally {
+        this.isLoading = false;
       }
     },
+
+    showEventActionModal(action, event) {
+      this.modalTitle = action === 'Success' ? 'Event Action Successful' : 'Event Action Failed'
+      this.modalAction = action
+      this.modalEvent = event
+      this.eventActionModal.show()
+    },
+
+    closeEventActionModal() {
+      this.eventActionModal.hide()
+      if (this.invitationsSent) {
+        this.invitationsSent = false
+        this.isNewEvent = false
+      }
+    },
+
+    showEmailModal() {
+      this.eventActionModal.hide()
+      this.emailModal.show()
+    },
+
+    closeEmailModal() {
+      this.emailModal.hide()
+      if (!this.invitationsSent) {
+        this.eventActionModal.show()
+      }
+    },
+
     backToCreate() {
       this.selectedEvent = null
+      this.isNewEvent = true // Reset flag when going back to create mode
       this.resetEventForm()
-    }
+    },
   }
 }
 </script>
 
 <style scoped>
+.text-danger {
+  color: #dc3545;
+  font-size: 0.875rem;
+}
+
+.text-muted {
+  color: #6c757d;
+  font-size: 0.875rem;
+}
 .calendar-app {
   font-family: 'Roboto', sans-serif;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -770,5 +930,87 @@ export default {
     border-radius: 4px;
     justify-content: center;
   }
+}
+.custom-modal .modal-content {
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.custom-modal .modal-header {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.custom-modal .modal-footer {
+  border-top: none;
+  padding-top: 0;
+}
+
+.custom-modal .btn-close:focus {
+  box-shadow: none;
+}
+
+.custom-modal .form-control:focus {
+  box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+.custom-modal .form-control {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.custom-modal .btn-primary {
+  background-color: #3498db;
+  border-color: #3498db;
+  transition: all 0.3s ease;
+}
+
+.custom-modal .btn-primary:hover {
+  background-color: #2980b9;
+  border-color: #2980b9;
+}
+
+.custom-modal .btn-secondary {
+  background-color: #95a5a6;
+  border-color: #95a5a6;
+  transition: all 0.3s ease;
+}
+
+.custom-modal .btn-secondary:hover {
+  background-color: #7f8c8d;
+  border-color: #7f8c8d;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 15px;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.status-badge.success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-badge.failure {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.spinner-border {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.2em;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.custom-modal {
+  animation: fadeIn 0.3s ease-out;
 }
 </style>

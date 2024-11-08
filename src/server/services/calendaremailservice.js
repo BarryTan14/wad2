@@ -125,30 +125,55 @@ export class CalendarEmailService {
     });
   }
 
-  async sendEmailInvitation(to, subject, text, html, eventId) {
+  async sendEmailInvitation(recipients, subject, text, html, eventId) {
     try {
-      console.log('Sending email invitation:', { to, subject, eventId });
+      // Convert single recipient to array if necessary
+      const recipientList = Array.isArray(recipients) ? recipients : [recipients];
+      
+      // Validate all email addresses
+      const invalidEmails = recipientList.filter(email => !this.isValidEmail(email));
+      if (invalidEmails.length > 0) {
+        throw new Error(`Invalid email addresses: ${invalidEmails.join(', ')}`);
+      }
+
+      console.log('Sending email invitation:', { recipients: recipientList, subject, eventId });
+      
       const msg = await this.mg.messages.create(config.mailgun.domain, {
         from: `Event Invitation <mailgun@${config.mailgun.domain}>`,
-        to: [to],
+        to: recipientList,
         subject: subject,
         text: text,
         html: html
       });
     
       console.log('Email sent successfully:', msg.id);
+      
+      // If eventId is provided, add all recipients as attendees
+      if (eventId) {
+        await Promise.all(recipientList.map(email => 
+          this.addAttendeeToEvent(this.calendarId, eventId, email)
+        ));
+      }
+
       return {
         id: msg.id,
         status: msg.status,
-        message: 'Email invitation sent successfully'
+        message: 'Email invitation sent successfully',
+        recipients: recipientList
       };
     } catch (error) {
       console.error('Failed to send email invitation:', error);
       throw new Error(`Failed to send email: ${error.message}`);
     }
   }
+    // Add email validation helper method
+    isValidEmail(email) {
+      return email && email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
+    }
+  
 
   // Optional: Add the invited email to the event attendees
+  // Update addAttendeeToEvent to handle duplicate checks
   async addAttendeeToEvent(calendarId, eventId, email) {
     return this.writeThrottle(async () => {
       const event = await this.calendar.events.get({
@@ -156,16 +181,20 @@ export class CalendarEmailService {
         eventId,
       });
 
-      const updatedEvent = {
-        ...event.data,
-        attendees: [...(event.data.attendees || []), { email }],
-      };
+      // Check if attendee already exists
+      const existingAttendees = event.data.attendees || [];
+      if (!existingAttendees.some(attendee => attendee.email === email)) {
+        const updatedEvent = {
+          ...event.data,
+          attendees: [...existingAttendees, { email }],
+        };
 
-      await this.calendar.events.update({
-        calendarId,
-        eventId,
-        requestBody: updatedEvent,
-      });
+        await this.calendar.events.update({
+          calendarId,
+          eventId,
+          requestBody: updatedEvent,
+        });
+      }
     });
   }
 
