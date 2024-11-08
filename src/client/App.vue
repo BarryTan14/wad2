@@ -24,6 +24,7 @@ export default {
 
   data() {
     return {
+      userGroups: [],
       isModalOpen: false,
       suggestions: [], // Stores suggestions for each team member input
       showSuggestions: [], // Controls visibility of suggestions for each input
@@ -63,17 +64,13 @@ export default {
   },
 
   methods: {
-    async fetchUserGroups(query, index) {
-      if (query.length < 2) {
-        this.suggestions[index] = [];
-        return;
-      }
-
+    async fetchUserGroups() {
+      console.log(this.$authStore.currentUser.displayName)
+      
       try {
-        const response = await axios.get(`/user/api/searchDisplayName/${query}`,);
-        console.log(response.data)
-        this.suggestions[index] = response.data; // Assuming response is an array of suggestions
-        this.showSuggestions[index] = true; // Ensure suggestions are shown after fetch
+        const response = await axios.get(`/user/api/searchDisplayName/${this.$authStore.currentUser.displayName}`,);
+        console.log(response.data[0].joinedGroups)
+        this.userGroups = response.data[0].joinedGroups
       } catch (error) {
         console.error("Error fetching suggestions:", error);
       }
@@ -202,8 +199,10 @@ export default {
       this.isDarkTheme = savedTheme === 'dark'
       document.body.setAttribute('data-bs-theme', savedTheme)
     }
+    this.fetchUserGroups();
   }
-}
+};
+
 </script>
 
 <template>
@@ -241,11 +240,18 @@ export default {
                 {{ workspace.name }}
               </a>
             </li> -->
-            <li v-for="workspace in workspaces" :key="workspace.groupId">
+            <!-- <li v-for="workspace in workspaces" :key="workspace.groupId">
               <RouterLink :to="workspace.path + '/' + workspace.groupId" class="nav-link"
                 :class="{ 'active': $route.path === workspace.path + '/' + workspace.groupId }">
                 <span class="nav-icon">{{ workspace.icon }}</span>
                 {{ workspace.name }}
+              </RouterLink>
+            </li> -->
+            <li v-for="group in userGroups">
+              <RouterLink :to="'/group/' + group" class="nav-link"
+                :class="{ 'active': $route.path === 'group/' + group }">
+                <!-- <span class="nav-icon">{{ workspace.icon }}</span> -->
+                {{ group }}
               </RouterLink>
             </li>
           </ul>
