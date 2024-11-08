@@ -41,9 +41,10 @@ export default {
       navigationRoutes: [
         { path: '/', name: 'Dashboard', icon: '📊' },
         { path: '/transcribe', name: 'Class Participation', icon: '👥' },
-        { path: '/progress', name: 'Progress', icon: '📈' },
-        { path: '/team', name: 'Team Members', icon: '👥' },
-        { path: '/messages', name: 'Messages', icon: '💬' }
+        { path: '/calendarmanager', name: 'Event Planner', icon: '🗓️' },
+        // { path: '/progress', name: 'Progress', icon: '📈' },
+        // { path: '/team', name: 'Team Members', icon: '👥' },
+        // { path: '/messages', name: 'Messages', icon: '💬' }
       ],
       workspaces: [
         { name: 'Interactive Design & Prototyping', icon: '🎨', groupId: 101, path: '/group' },
