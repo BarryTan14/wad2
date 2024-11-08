@@ -1,5 +1,6 @@
 import express from 'express';
 import {Module} from "../models/Module.js";
+import {User} from "../models/User.js"
 
 const router = express.Router();
 
@@ -22,6 +23,25 @@ router.get("/", async (req, res) => {
         res.status(500).send("Failed to connect to MongoDB collection: " + e.message);
     }
 });
+
+    router.get("/name/:displayName", async (req, res) => {
+        const { displayName } = req.params;
+        try {
+            const Task = await User.find({displayName: displayName});
+            if (!Task) {
+                return res.status(401).json({ message: 'No modules found' })
+            }
+            res.json({
+                message: "Successfully retrieved documents",
+                data: Task
+            });
+            // Send a success message or some metadata
+        } catch (e) {
+            //console.error("Error connecting to MongoDB collection:", e);
+            res.status(500).send("Failed to connect to MongoDB collection: " + e.message);
+        }
+    });
+
 router.get('/:groupId', async (req, res) => {
     const { groupId } = req.params; // Retrieve groupId from URL parameters
     try {
@@ -48,7 +68,7 @@ router.post("/add", async (req, res) => {
     try {
         
         const { groupId, groupName, moduleName, teamMembers, taskList } = req.body;
-
+        
         // Check if all required fields are provided
         // if (!moduleName || !groupName || !teamMembers) {
         //     return res.status(400).json({ message: 'All fields are required' });

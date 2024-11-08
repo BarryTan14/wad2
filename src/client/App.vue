@@ -10,7 +10,7 @@ import AuthDropdown from './components/AuthDropdown.vue'
 
 export default {
   name: 'App',
-
+  
   components: {
     ChatWindow,
     ToastContainer,
@@ -24,6 +24,7 @@ export default {
 
   data() {
     return {
+      userGroups: [],
       isModalOpen: false,
       suggestions: [], // Stores suggestions for each team member input
       showSuggestions: [], // Controls visibility of suggestions for each input
@@ -63,6 +64,17 @@ export default {
   },
 
   methods: {
+    async fetchUserGroups() {
+      console.log(this.$authStore.currentUser.displayName)
+      
+      try {
+        const response = await axios.get(`/user/api/searchDisplayName/${this.$authStore.currentUser.displayName}`,);
+        console.log(response.data[0].joinedGroups)
+        this.userGroups = response.data[0].joinedGroups
+      } catch (error) {
+        console.error("Error fetching suggestions:", error);
+      }
+    },
     toggleTheme() {
       this.isDarkTheme = !this.isDarkTheme
       document.body.setAttribute('data-bs-theme', this.isDarkTheme ? 'dark' : 'light')
@@ -187,8 +199,10 @@ export default {
       this.isDarkTheme = savedTheme === 'dark'
       document.body.setAttribute('data-bs-theme', savedTheme)
     }
+    this.fetchUserGroups();
   }
-}
+};
+
 </script>
 
 <template>
@@ -226,11 +240,18 @@ export default {
                 {{ workspace.name }}
               </a>
             </li> -->
-            <li v-for="workspace in workspaces" :key="workspace.groupId">
+            <!-- <li v-for="workspace in workspaces" :key="workspace.groupId">
               <RouterLink :to="workspace.path + '/' + workspace.groupId" class="nav-link"
                 :class="{ 'active': $route.path === workspace.path + '/' + workspace.groupId }">
                 <span class="nav-icon">{{ workspace.icon }}</span>
                 {{ workspace.name }}
+              </RouterLink>
+            </li> -->
+            <li v-for="group in userGroups">
+              <RouterLink :to="'/group/' + group" class="nav-link"
+                :class="{ 'active': $route.path === 'group/' + group }">
+                <!-- <span class="nav-icon">{{ workspace.icon }}</span> -->
+                {{ group }}
               </RouterLink>
             </li>
           </ul>
