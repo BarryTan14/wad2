@@ -7,6 +7,7 @@ import ToastContainer from "./components/ToastContainer.vue"
 import { useAuthStore } from './stores/auth.js'
 import AuthDropdown from './components/AuthDropdown.vue'
 
+
 export default {
   name: 'App',
   
