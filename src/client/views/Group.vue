@@ -10,6 +10,7 @@
       </div>
       <div id="app">    
         <h2>Task Lists</h2>
+        <button @click="addTask()">Add New Task</button>
       <table class="table m-2">
           <tr>
               <th>S/N</th>
@@ -120,6 +121,35 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal for adding a new task -->
+    <div v-if="showAddTaskModal" class="modal-overlay">
+      <div class="modal-content">
+        <h2>Add New Task</h2>
+        <form @submit.prevent="submitNewTask">
+          <label>
+            Task Name:
+            <input type="text" v-model="newTask.taskName" required />
+          </label>
+          <label>
+            Members in Charge:
+            <input type="text" v-model="newTask.membersInCharge" placeholder="Separate names with commas" required />
+          </label>
+          <label>
+            Deadline:
+            <input type="date" v-model="newTask.deadline" required />
+          </label>
+          <label>
+            Status:
+            <input type="checkbox" v-model="newTask.status" />
+          </label>
+          <div class="modal-buttons">
+            <button type="submit" class="btn btn-primary">Add Task</button>
+            <button type="button" @click="closeModal" class="btn btn-secondary">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -138,6 +168,17 @@ export default {
 
   data() {
     return {
+      // Modal Data
+      tasks: [], // array of task objects
+      groupId: '',
+      group: null,
+      showAddTaskModal: false, // Controls modal visibility
+      newTask: {
+        taskName: '',
+        membersInCharge: '',
+        deadline: '',
+        status: false
+      },
       tasks: null, // array of post objects
       groupId: '',
       group: null,
@@ -151,6 +192,7 @@ export default {
       groupSocket: io(),
     };
   },
+  
 
   created() {
     this.isLoggedIn = this.$authStore.checkAuth();
@@ -180,6 +222,41 @@ export default {
   },
 
   methods: {
+    addTask() {
+      this.showAddTaskModal = true;
+    },
+
+    // Method to close the modal
+    closeModal() {
+      this.showAddTaskModal = false;
+      this.resetNewTask();
+    },
+
+    // Method to reset new task form data
+    resetNewTask() {
+      this.newTask = {
+        taskName: '',
+        membersInCharge: '',
+        deadline: '',
+        status: false
+      };
+    },
+
+    // Method to handle form submission
+    async submitNewTask() {
+      try {
+        const taskData = {
+          ...this.newTask,
+          membersInCharge: this.newTask.membersInCharge.split(',').map(name => name.trim()) // Convert to array
+        };
+        
+        const response = await axios.post('/api/task', taskData);
+        this.tasks.push(response.data.data); // Add the new task to the list
+        this.closeModal(); // Close modal after submission
+      } catch (error) {
+        console.error("Error adding new task:", error);
+      }
+    },
     // Enable edit mode for the selected post
     enableEditing(task) {
         task.isEditing = true;
@@ -215,7 +292,6 @@ export default {
         console.error('Error updating task:', error);
     }
     },
-
     // Delete the selected post
     deletePost(index) {
         this.tasks.splice(index, 1);
@@ -672,4 +748,42 @@ export default {
     height: 32px;
   }
 }
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+
 </style>

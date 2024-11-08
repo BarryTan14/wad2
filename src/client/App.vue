@@ -9,7 +9,7 @@ import AuthDropdown from './components/AuthDropdown.vue'
 
 export default {
   name: 'App',
-
+  
   components: {
     ChatWindow,
     ToastContainer,
@@ -62,6 +62,21 @@ export default {
   },
 
   methods: {
+    async fetchUserGroups(query, index) {
+      if (query.length < 2) {
+        this.suggestions[index] = [];
+        return;
+      }
+
+      try {
+        const response = await axios.get(`/user/api/searchDisplayName/${query}`,);
+        console.log(response.data)
+        this.suggestions[index] = response.data; // Assuming response is an array of suggestions
+        this.showSuggestions[index] = true; // Ensure suggestions are shown after fetch
+      } catch (error) {
+        console.error("Error fetching suggestions:", error);
+      }
+    },
     toggleTheme() {
       this.isDarkTheme = !this.isDarkTheme
       document.body.setAttribute('data-bs-theme', this.isDarkTheme ? 'dark' : 'light')
