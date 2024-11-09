@@ -44,7 +44,7 @@ const userSchema = new mongoose.Schema({
         ref: 'ChatRoom'
     }],
     joinedGroups: [{
-        type: mongoose.Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.String,
         ref: 'Groups'
     }],
     accountStatus: {

@@ -73,11 +73,19 @@ router.post("/add", async (req, res) => {
         // if (!moduleName || !groupName || !teamMembers) {
         //     return res.status(400).json({ message: 'All fields are required' });
         // }
+        const allGroups = await Module.find({}, 'groupId'); // Fetch only the `_id` field
+        const existingGroupIds = allGroups.map(group => group.groupId.toString());
+        console.log(existingGroupIds)
+        // Step 2: Generate a unique group ID
+        let newGroupId;
+        do {
+            newGroupId = (Math.floor(Math.random() * 100) + 1).toString(); // Adjust the range as needed
+        } while (existingGroupIds.includes(newGroupId));
 
 
         // Create a new document in MongoDB
         const newModule = new Module({
-            groupId:"123",
+            groupId:newGroupId,
             groupName,
             moduleName,
             teamMembers,
@@ -87,7 +95,7 @@ router.post("/add", async (req, res) => {
         const savedModule = await newModule.save();
         res.status(201).json({
             message: "Successfully added new module",
-            data: savedModule
+            data: newGroupId
         });
     } catch (e) {
         console.error("Error adding new module:", e);

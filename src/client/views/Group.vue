@@ -13,7 +13,8 @@
       <div id="app">
         <h2>Task Lists</h2>
         <button @click="openModal">Add New Task</button>
-        <table class="table m-2">
+        <table v-if="tasks && tasks.length > 0" class="table m-2">
+          <tbody>
           <tr>
             <th>S/N</th>
             <th>Name</th>
@@ -24,8 +25,6 @@
           </tr>
           <tr v-for="(task, indx) in tasks" :key="task._id">
             <td>{{ indx + 1 }}</td>
-
-            <!-- Name Field: Editable if isEditing is true -->
             <td>
               <input type="text" v-model="task.taskName" :readonly="!task.isEditing" />
             </td>
@@ -52,7 +51,9 @@
               <button @click="deleteTask(indx)" class="btn btn-sm btn-danger">Delete</button>
             </td>
           </tr>
+          </tbody>
         </table>
+        <h1 v-else>No tasks yet</h1>
       </div>
 
     </div>

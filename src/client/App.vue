@@ -139,30 +139,53 @@ export default {
       }, 100);
     },
     // Submit the workspace data
-    addGroup() {
-      // Add group into database
-      axios.post('/api/group/add', this.newModule, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-        .then(resp => {
-          console.log(resp.data);
-          // If the first request is successful, proceed to the second request
-          return axios.post('/api/addToGroup/', this.$authStore.currentUser, {
+    async addGroup() {
+      try {
+        // Add group into database
+        const resp = await axios.post('/api/group/add', this.newModule, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        //add the group id to all the users in the new module.
+
+        const groupId = resp.data.data;
+        console.log("Group ID:", groupId);
+        console.log(this.newModule.teamMembers)
+        for (let i = 0; i < this.newModule.teamMembers.length; i++) {
+          const member = this.newModule.teamMembers[i];
+          console.log(member)
+          // Post request to add the group ID to each team member
+          await axios.post(`/user/api/addToGroup/${groupId}`, {
+            displayName: member.name
+          }, {
             headers: {
               'Content-Type': 'application/json'
             }
           });
-        })
-        .then(resp2 => {
-          console.log(resp2.data);
-        })
-        .catch(err => {
-          console.log(err);
+
+          console.log(`Added group to member: ${member.name}`);
+        }
+
+        
+
+        // Proceed to the second request using the retrieved group ID
+        const resp2 = await axios.post(`/user/api/addToGroup/${groupId}`, this.$authStore.currentUser, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
         });
-      this.closeModal();
+
+        console.log("Add to group response:", resp2.data);
+      } catch (err) {
+        console.error("Error:", err);
+      } finally {
+        // Close modal whether requests succeed or fail
+        this.closeModal();
+      }
     },
+
 
     beforeEnter(el) {
       // Called before the entering element is inserted
