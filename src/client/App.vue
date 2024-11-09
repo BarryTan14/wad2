@@ -149,9 +149,10 @@ export default {
         });
 
         //add the group id to all the users in the new module.
-
+        
         const groupId = resp.data.data;
         console.log("Group ID:", groupId);
+        this.userGroups.push(groupId)
         console.log(this.newModule.teamMembers)
         for (let i = 0; i < this.newModule.teamMembers.length; i++) {
           const member = this.newModule.teamMembers[i];
