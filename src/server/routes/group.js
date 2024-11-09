@@ -1,8 +1,13 @@
 import express from 'express';
 import {Module} from "../models/Module.js";
 import {User} from "../models/User.js"
+import {authMiddleware} from "../middleware/auth.js";
 
 const router = express.Router();
+
+const asyncHandler = (fn) => (req, res, next) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+};
 
 router.get("/", async (req, res) => {
 
@@ -23,6 +28,50 @@ router.get("/", async (req, res) => {
         res.status(500).send("Failed to connect to MongoDB collection: " + e.message);
     }
 });
+
+router.get('/myGroups', authMiddleware, asyncHandler(async (req, res) => {
+    try {
+        // Get the current user with their joinedGroups
+        const user = await User.findById(req.user._id)
+            .select("joinedGroups")
+            .lean();
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        // If user has no joined groups, return empty array
+        if (!user.joinedGroups || user.joinedGroups.length === 0) {
+            return res.json({
+                success: true,
+                message: "No groups joined",
+                groups: []
+            });
+        }
+
+        // Fetch all groups that the user has joined
+        const userGroups = await Module.find({
+            groupId: { $in: user.joinedGroups }
+        }).lean();
+
+        res.json({
+            success: true,
+            message: "Successfully retrieved user's groups",
+            groups: userGroups
+        });
+
+    } catch (error) {
+        console.error('Error fetching user groups:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch user groups',
+            error: error.message
+        });
+    }
+}));
 
     router.get("/name/:displayName", async (req, res) => {
         const { displayName } = req.params;

@@ -97,7 +97,7 @@ export default {
       try {
         this.loading = true
         this.error = null
-        const response = await axios.get(`/user/api/profile/${this.userId}`)
+        const response = await axios.get(`/api/user/profile/${this.userId}`)
         this.userData = response.data
       } catch (err) {
         this.error = err.response?.data?.message || 'Failed to load profile'

@@ -7,10 +7,6 @@ const moduleSchema = new mongoose.Schema({
     moduleName: { type: String, required: true },
     teamMembers: { type: Array, required: true },
     taskList: { type: Array, required: false },
-    // chatRoom: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'ChatRoom'
-    // }
 }, { timestamps: true })
 
 export const Module = mongoose.model('groups', moduleSchema)

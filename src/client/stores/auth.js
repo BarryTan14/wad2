@@ -28,7 +28,7 @@ export const useAuthStore = defineStore('auth', {
         // Improved checkAuth that properly validates the token
         async checkAuth() {
             try {
-                const response = await fetch('/user/api/auth/check', {
+                const response = await fetch('/api/user/auth/check', {
                     credentials: 'include', // Ensures cookies are sent
                     headers: {
                         'Accept': 'application/json',
@@ -71,7 +71,7 @@ export const useAuthStore = defineStore('auth', {
             this.error = null
 
             try {
-                const response = await fetch('/user/api/auth/login', {
+                const response = await fetch('/api/user/auth/login', {
                     method: 'POST',
                     credentials: 'include',
                     headers: {
@@ -104,7 +104,7 @@ export const useAuthStore = defineStore('auth', {
             this.error = null
 
             try {
-                const response = await fetch('/user/api/auth/register', {
+                const response = await fetch('/api/user/auth/register', {
                     method: 'PUT',
                     credentials: 'include',
                     headers: {
@@ -137,7 +137,7 @@ export const useAuthStore = defineStore('auth', {
             this.error = null
 
             try {
-                const response = await fetch('/user/api/auth/logout', {
+                const response = await fetch('/api/user/auth/logout', {
                     method: 'POST',
                     credentials: 'include',
                     headers: {

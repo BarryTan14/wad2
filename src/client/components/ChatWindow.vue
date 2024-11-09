@@ -97,7 +97,7 @@ export default {
       selectedRoom:'',
       messages: [],
       newMessage: '',
-      isMinimized: false,
+      isMinimized: true,
       currentRoom: null,
       MAX_MESSAGE_LENGTH: 500,
       connectionEstablished: false,
@@ -267,7 +267,7 @@ export default {
       }
       // try to return to default room
       if (errorType === 'chat-invalid-room-error') {
-        this.$socket.emit('join-room');
+        this.$socket.emit('join-room', 'general');
       }
     }
   },
@@ -286,9 +286,13 @@ export default {
       this.$socket.emit('get-all-rooms', this.user._id)
     } else {
       this.$socket.on('connect', () => {
-        this.connectionEstablished = true;
-        this.$socket.emit('join-room')
-        this.$socket.emit('get-all-rooms', this.user._id)
+        this.user = this.$authStore.currentUser;
+        if(this.user)
+        {
+          this.connectionEstablished = true;
+          this.$socket.emit('join-room')
+          this.$socket.emit('get-all-rooms', this.user._id)
+        }
       });
     }
 
@@ -343,7 +347,7 @@ export default {
     });
 
     this.$socket.on('set-roomid-cookie', (roomId) => {
-      this.setCookie('roomId', roomId, 30)
+      this.setCookie('roomId', roomId._id ? roomId._id : roomId, 30)
     });
 
     this.setupTimestampRefresh();

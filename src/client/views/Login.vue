@@ -12,7 +12,7 @@
           <label for="exampleInputUsername1" class="form-label">Username</label>
           <input
               type="text"
-              class="form-control form-input"
+              class="form-control form-input py-3 py-md-2"
               :class="{ 'is-invalid': errors.username, 'is-valid': formData.username && !errors.username }"
               id="exampleInputUsername1"
               :disabled="loginDisabled"
@@ -27,7 +27,7 @@
           <label for="exampleInputPassword1" class="form-label">Password</label>
           <input
               type="password"
-              class="form-control form-input"
+              class="form-control form-input py-3 py-md-2"
               :class="{ 'is-invalid': errors.password, 'is-valid': formData.password && !errors.password }"
               id="exampleInputPassword1"
               :disabled="loginDisabled"
@@ -38,7 +38,7 @@
             {{ errors.password }}
           </div>
         </div>
-        <button class="btn btn-primary form-input"
+        <button class="btn btn-primary form-input py-3 py-md-2 w-100"
                 type="submit"
                 id="loginBtn"
                 :disabled="loginDisabled || !isFormValid">
@@ -128,7 +128,10 @@ export default {
       return true;
     },
     handleToastSuccess(message) {
-      this.$toastStore.success(message || 'Success');
+      this.$toast.fire({
+        icon: 'success',
+        title: message
+      });
     },
     handleToastError(error) {
       if (error.errors) {

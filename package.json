@@ -59,6 +59,7 @@
     "socket.io": "^4.8.1",
     "svg-captcha": "^1.4.0",
     "svgo": "^3.3.2",
+    "sweetalert2": "^11.14.5",
     "tempusdominus-bootstrap-4": "^5.39.2",
     "throttled-queue": "^2.1.4",
     "vite-express": "*",
