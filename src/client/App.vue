@@ -9,7 +9,7 @@ import AuthDropdown from './components/AuthDropdown.vue'
 
 export default {
   name: 'App',
-  
+
   components: {
     ChatWindow,
     ToastContainer,
@@ -46,11 +46,11 @@ export default {
         // { path: '/team', name: 'Team Members', icon: '👥' },
         // { path: '/messages', name: 'Messages', icon: '💬' }
       ],
-      workspaces: [
-        { name: 'Interactive Design & Prototyping', icon: '🎨', groupId: 101, path: '/group' },
-        { name: 'Computational Thinking', icon: '🧮', groupId: 102, path: '/group' },
-        { name: 'Web Application & Development', icon: '💻', groupId: 103, path: '/group' }
-      ],
+      // workspaces: [
+      //   { name: 'Interactive Design & Prototyping', icon: '🎨', groupId: 101, path: '/group' },
+      //   { name: 'Computational Thinking', icon: '🧮', groupId: 102, path: '/group' },
+      //   { name: 'Web Application & Development', icon: '💻', groupId: 103, path: '/group' }
+      // ],
       teamMembers: [
         { id: 1, profilePic: '/profilepicture/avatar.png' },
         { id: 2, profilePic: '/profilepicture/avatar.png' },
@@ -139,20 +139,54 @@ export default {
       }, 100);
     },
     // Submit the workspace data
-    submitModule() {
+    async addGroup() {
       try {
-        const response = axios.post('/api/group/add', this.newModule, {
+        // Add group into database
+        const resp = await axios.post('/api/group/add', this.newModule, {
           headers: {
             'Content-Type': 'application/json'
           }
         });
-      } catch (error) {
-        console.error('Error adding workspace:', error);
+
+        //add the group id to all the users in the new module.
+
+        const groupId = resp.data.data;
+        console.log("Group ID:", groupId);
+        console.log(this.newModule.teamMembers)
+        for (let i = 0; i < this.newModule.teamMembers.length; i++) {
+          const member = this.newModule.teamMembers[i];
+          console.log(member)
+          // Post request to add the group ID to each team member
+          await axios.post(`/user/api/addToGroup/${groupId}`, {
+            displayName: member.name
+          }, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+
+          console.log(`Added group to member: ${member.name}`);
+        }
+
+        
+
+        // Proceed to the second request using the retrieved group ID
+        const resp2 = await axios.post(`/user/api/addToGroup/${groupId}`, this.$authStore.currentUser, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        console.log("Add to group response:", resp2.data);
+      } catch (err) {
+        console.error("Error:", err);
+      } finally {
+        // Close modal whether requests succeed or fail
+        this.closeModal();
       }
-      //ToDo: Add in the group's id into the current user's groupList.
-      console.log(this.$authStore.currentUser.displayName)
-      this.closeModal(); // Close the modal after submission
     },
+
+
     beforeEnter(el) {
       // Called before the entering element is inserted
       console.log('Before enter')
@@ -264,7 +298,7 @@ export default {
 
         <!-- Main Content -->
         <main class="content">
-         <!--<RouterView />-->
+          <!--<RouterView />-->
           <router-view v-slot="{ Component }">
             <transition name="fade" mode="out-in">
               <component :is="Component" :key="$route.path" />
@@ -278,7 +312,7 @@ export default {
   <div v-if="isModalOpen" class="modal-overlay">
     <div class="modal-content">
       <h2>Add New Workspace</h2>
-      <form @submit.prevent="submitModule" class="workspace-form">
+      <form @submit.prevent="addGroup" class="workspace-form">
         <!-- Group Name -->
         <label>
           Group Name:
@@ -365,6 +399,7 @@ export default {
 .suggestions-list li:hover {
   background-color: #f0f0f0;
 }
+
 /* Fade transition */
 .fade-enter-active,
 .fade-leave-active {

@@ -1,20 +1,21 @@
 import express from 'express';
 import bcrypt from "bcrypt";
-import {User} from "../models/User.js";
+import { User } from "../models/User.js";
 import jwt from "jsonwebtoken";
 import config from '../config/secrets.js'
-import {authMiddleware} from "../middleware/auth.js";
-import {validateLogin, validateProfileUpdate, validateRegistration} from '../middleware/validation.js';
+import { authMiddleware } from "../middleware/auth.js";
+import { validateLogin, validateProfileUpdate, validateRegistration } from '../middleware/validation.js';
 import pkg from 'lodash';
 import fs from 'fs';
 import path from "path";
 import multer from "multer";
 import crypto from 'crypto';
-import {dirname} from 'path'
+import { dirname } from 'path'
 import mongoose from "mongoose";
-import {svgUploadMiddleware} from "../middleware/svgSanitizer.js";
+import { svgUploadMiddleware } from "../middleware/svgSanitizer.js";
+import {Module} from "../models/Module.js";
 
-const {pick} = pkg;
+const { pick } = pkg;
 
 const router = express.Router();
 
@@ -66,7 +67,7 @@ const upload = multer({
 // jwt token encryption
 const generateToken = (user) => {
     return jwt.sign(
-        {userId: user._id, username: user.username},
+        { userId: user._id, username: user.username },
         config.jwt.secret,
         config.jwt.options
     );
@@ -92,26 +93,26 @@ const asyncHandler = (fn) => (req, res, next) => {
 // automatically logs the user in after registration to save time
 // originally wanted to do verification with email but required smtp and is complex
 router.put('/api/auth/register', validateRegistration, asyncHandler(async (req, res) => {
-    const {email, password, username, captcha} = req.body;
+    const { email, password, username, captcha } = req.body;
 
     if (captcha !== req.session.captcha) {
-        return res.status(400).json({message: 'Invalid captcha'});
+        return res.status(400).json({ message: 'Invalid captcha' });
     }
 
     // Check existing users (using Promise.all for parallel execution)
     const [existingNameUser, existingEmailUser] = await Promise.all([
-        User.findOne({username}),
-        User.findOne({email})
+        User.findOne({ username }),
+        User.findOne({ email })
     ]);
 
     if (existingNameUser) {
-        return res.status(400).json({message: 'Username already taken'});
+        return res.status(400).json({ message: 'Username already taken' });
     }
     if (existingEmailUser) {
-        return res.status(400).json({message: 'Email already registered'});
+        return res.status(400).json({ message: 'Email already registered' });
     }
 
-    const user = new User({email, password, username});
+    const user = new User({ email, password, username });
     await user.save();
 
     const token = generateToken(user);
@@ -126,15 +127,15 @@ router.put('/api/auth/register', validateRegistration, asyncHandler(async (req, 
 // handles login
 // sets cookie token
 router.post('/api/auth/login', validateLogin, asyncHandler(async (req, res) => {
-    const {username, password, captcha} = req.body;
+    const { username, password, captcha } = req.body;
 
     if (captcha !== req.session.captcha) {
-        return res.status(400).json({message: 'Invalid captcha'});
+        return res.status(400).json({ message: 'Invalid captcha' });
     }
 
-    const user = await User.findOne({username}).select('+password'); // Explicitly select password
+    const user = await User.findOne({ username }).select('+password'); // Explicitly select password
     if (!user || !(await bcrypt.compare(password, user.password))) {
-        return res.status(401).json({message: 'Invalid credentials'});
+        return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     const token = generateToken(user);
@@ -155,18 +156,18 @@ router.post('/api/auth/logout', authMiddleware, (req, res) => {
         sameSite: 'strict',
         path: '/'
     });
-    res.json({message: 'Logged out successfully'});
+    res.json({ message: 'Logged out successfully' });
 });
 
 // Test route that was written to learn about auth middleware
 // UNUSED (maybe)
 router.get('/api/auth/test', authMiddleware, async (req, res) => {
-    res.status(200).json({message: 'You have access to this protected resource',})
+    res.status(200).json({ message: 'You have access to this protected resource', })
 })
 
 // Just checks the auth of user
 router.get('/api/auth/check', authMiddleware, async (req, res) => {
-    res.status(200).json({user: pick(req.user, ['_id', 'displayName', 'profilePic', 'bio', 'role', 'email'])});
+    res.status(200).json({ user: pick(req.user, ['_id', 'displayName', 'profilePic', 'bio', 'role', 'email', 'joinedGroups']) });
 })
 
 // Gets profile based on current user's token.
@@ -174,9 +175,9 @@ router.get('/api/auth/check', authMiddleware, async (req, res) => {
 router.get('/api/profile', authMiddleware, asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id).select('-password');
     if (!user) {
-        return res.status(404).json({message: 'User not found'});
+        return res.status(404).json({ message: 'User not found' });
     }
-    res.json(pick(user, ['profilePic', 'displayName', 'bio', 'role']));
+    res.json(pick(user, ['profilePic', 'displayName', 'bio', 'role', 'joinedGroups']));
 }));
 
 // Handles general info update like displayname bio and role.
@@ -187,11 +188,11 @@ const handleGeneralInfoUpdate = async (user, updates) => {
 
     Object.assign(user, updates);
     await user.save();
-    return {message: 'Profile updated successfully'};
+    return { message: 'Profile updated successfully' };
 };
 
 // Checks input password against current password so that someone who has a token but doesn't know the password can change it.
-const handlePasswordUpdate = async (user, {currentPassword, newPassword}) => {
+const handlePasswordUpdate = async (user, { currentPassword, newPassword }) => {
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
         throw new Error('Current password is incorrect');
@@ -199,7 +200,7 @@ const handlePasswordUpdate = async (user, {currentPassword, newPassword}) => {
 
     user.password = newPassword;
     await user.save();
-    return {message: 'Password updated successfully, please login again'};
+    return { message: 'Password updated successfully, please login again' };
 };
 
 // Handles updating of profile details
@@ -228,11 +229,11 @@ router.put('/api/profile/update', authMiddleware, validateProfileUpdate, asyncHa
                 return res.json(passwordResult);
 
             default:
-                return res.status(400).json({message: 'Invalid action'});
+                return res.status(400).json({ message: 'Invalid action' });
         }
     } catch (error) {
-        if(error.code === 11000)
-            return res.status(400).json({message: 'That display name is already in use'});
+        if (error.code === 11000)
+            return res.status(400).json({ message: 'That display name is already in use' });
         throw error;
     }
 }));
@@ -249,12 +250,12 @@ router.post('/api/profile/picture',
     asyncHandler(async (req, res) => {
         try {
             if (!req.file) {
-                return res.status(400).json({message: 'No file uploaded'});
+                return res.status(400).json({ message: 'No file uploaded' });
             }
 
             const user = await User.findById(req.user._id).select('-password');
             if (!user) {
-                return res.status(404).json({message: 'User not found'});
+                return res.status(404).json({ message: 'User not found' });
             }
 
             // Update user's profile picture in database
@@ -284,7 +285,7 @@ router.post('/api/profile/picture',
 // Profile with :id parameter to search for specific ObjectID from mongodb. Returns ['profilePic','displayName','bio','role'] as an object, not as "user"
 router.get('/api/profile/:id', authMiddleware, asyncHandler(async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-        return res.json({profilePic:'server.png',displayName:'Unknown',bio:'Who am I? Who are you?'} );
+        return res.json({ profilePic: 'server.png', displayName: 'Unknown', bio: 'Who am I? Who are you?' });
     }
 
     const user = await User.findById(req.params.id)
@@ -292,67 +293,71 @@ router.get('/api/profile/:id', authMiddleware, asyncHandler(async (req, res) => 
         .lean();
 
     if (!user) {
-        return res.json({profilePic:'server.png',displayName:'Unknown',bio:'An empty spot on the internet'} );
+        return res.json({ profilePic: 'server.png', displayName: 'Unknown', bio: 'An empty spot on the internet' });
     }
 
-    res.json(pick(user, ['profilePic', 'displayName', 'bio', 'role', 'email']));
+    res.json(pick(user, ['profilePic', 'displayName', 'bio', 'role', 'email', 'joinedGroups']));
 }));
 
 router.get('/api/searchDisplayName/:displayName', authMiddleware, asyncHandler(async (req, res) => {
     const displayName = req.params.displayName;
 
-    if(!displayName || displayName === '')
-        return res.status(400).json({message: 'No display name provided'});
+    if (!displayName || displayName === '')
+        return res.status(400).json({ message: 'No display name provided' });
 
     const users = await User.find({ displayName: { $regex: displayName, $options: 'i' } })
         .select('_id displayName role email joinedGroups')
         .lean()
 
-    if(!users || users.size === 0)
-        return res.status(404).json({message: 'No users found.'});
+    if (!users || users.size === 0)
+        return res.status(404).json({ message: 'No users found.' });
 
     return res.status(200).json(users);
 }));
 
 router.post('/api/addMyselfToGroup/', authMiddleware, asyncHandler(async (req, res) => {
     const groupId = req.params.groupId;
-    if(!groupId || groupId === '')
-        return res.status(400).json({message: 'No group id provided'});
+    if (!groupId || groupId === '')
+        return res.status(400).json({ message: 'No group id provided' });
     const user = await User.find(req.user._id).select('-password');
-    if(!user) {
-        return res.status(400).json({message: 'No user found.'});
+    if (!user) {
+        return res.status(400).json({ message: 'No user found.' });
     }
     const group = await Group.findById(groupId);
-    if(!group) {
-        return res.status(400).json({message: 'No group found'});
+    if (!group) {
+        return res.status(400).json({ message: 'No group found' });
     }
     try {
         user.joinedGroups.push(group._id)
         await user.save();
-        return res.status(200).json({message: 'Group added'});
+        return res.status(200).json({ message: 'Group added' });
     } catch (e) {
-        return res.status(500).json({message: 'Unable to add to group'});
+        return res.status(500).json({ message: 'Unable to add to group' });
     }
 }));
 
-router.post('/api/addToGroup/', authMiddleware, asyncHandler(async (req, res) => {
-    const {displayName, groupId} = req.body
-    if(!groupId || groupId === '')
-        return res.status(400).json({message: 'No group id provided'});
-    const user = await User.findOne(displayName).select('-password');
-    if(!user) {
-        return res.status(400).json({message: 'No user found.'});
+router.post('/api/addToGroup/:groupId', authMiddleware, asyncHandler(async (req, res) => {
+    // Retrieve groupId from route parameters
+    const { groupId } = req.params;
+    const { displayName } = req.body;
+
+    // Find user by displayName
+    const user = await User.findOne({ displayName });
+    if (!user) {
+        return res.status(400).json({ message: 'No user found.' });
     }
-    const group = await Group.findById(groupId);
-    if(!group) {
-        return res.status(400).json({message: 'No group found'});
-    }
+    console.log("User:", user);
+    console.log("Group ID:", groupId);
+
     try {
-        user.joinedGroups.push(group._id)
+        // Add the group ID to the user's joinedGroups array
+        user.joinedGroups.push(groupId);
         await user.save();
-        return res.status(200).json({message: 'Group added'});
+
+        return res.status(200).json({ message: 'Group added', groupId });
     } catch (e) {
-        return res.status(500).json({message: 'Unable to add to group'});
+        console.log("Error:", e);
+        return res.status(500).json({ message: 'Unable to add to group' });
     }
 }));
 
