@@ -1,7 +1,7 @@
 import express from 'express';
-import {Module} from "../models/Module.js";
-import {User} from "../models/User.js"
-import {authMiddleware} from "../middleware/auth.js";
+import { Group } from "../models/Group.js";
+import { User } from "../models/User.js"
+import { authMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -12,7 +12,7 @@ const asyncHandler = (fn) => (req, res, next) => {
 router.get("/", async (req, res) => {
 
     try {
-        const Task = await Module.find();
+        const Task = await Group.find();
         console.log(Task)
         if (!Task) {
             return res.status(401).json({ message: 'No modules found' })
@@ -34,7 +34,6 @@ router.get('/myGroups', authMiddleware, asyncHandler(async (req, res) => {
         // Get the current user with their joinedGroups
         const user = await User.findById(req.user._id)
             .select("joinedGroups")
-            .lean();
 
         if (!user) {
             return res.status(404).json({
@@ -53,9 +52,10 @@ router.get('/myGroups', authMiddleware, asyncHandler(async (req, res) => {
         }
 
         // Fetch all groups that the user has joined
-        const userGroups = await Module.find({
-            groupId: { $in: user.joinedGroups }
-        }).lean();
+        const groupIds = user.joinedGroups.map(group => group.groupId);
+        const userGroups = await Group.find({
+            groupId: { $in: groupIds }
+        });
 
         res.json({
             success: true,
@@ -73,30 +73,30 @@ router.get('/myGroups', authMiddleware, asyncHandler(async (req, res) => {
     }
 }));
 
-    router.get("/name/:displayName", async (req, res) => {
-        const { displayName } = req.params;
-        try {
-            const Task = await User.find({displayName: displayName});
-            if (!Task) {
-                return res.status(401).json({ message: 'No modules found' })
-            }
-            res.json({
-                message: "Successfully retrieved documents",
-                data: Task
-            });
-            // Send a success message or some metadata
-        } catch (e) {
-            //console.error("Error connecting to MongoDB collection:", e);
-            res.status(500).send("Failed to connect to MongoDB collection: " + e.message);
+router.get("/name/:displayName", async (req, res) => {
+    const { displayName } = req.params;
+    try {
+        const Task = await User.find({ displayName: displayName });
+        if (!Task) {
+            return res.status(401).json({ message: 'No modules found' })
         }
-    });
+        res.json({
+            message: "Successfully retrieved documents",
+            data: Task
+        });
+        // Send a success message or some metadata
+    } catch (e) {
+        //console.error("Error connecting to MongoDB collection:", e);
+        res.status(500).send("Failed to connect to MongoDB collection: " + e.message);
+    }
+});
 
 router.get('/:groupId', async (req, res) => {
     const { groupId } = req.params; // Retrieve groupId from URL parameters
     try {
         // Find all modules that match the provided groupId
-        const modules = await Module.find({ groupId: groupId });
-        
+        const modules = await Group.find({ groupId: groupId });
+
         if (!modules || modules.length === 0) {
             return res.status(404).json({ message: 'No modules found for the specified group ID' });
         }
@@ -115,9 +115,9 @@ router.get('/:groupId', async (req, res) => {
 router.post("/add", async (req, res) => {
     console.log(req.body)
     try {
-        
+
         const { groupId, groupName, moduleName, teamMembers, taskList } = req.body;
-        const allGroups = await Module.find({}, 'groupId'); // Fetch only the `_id` field
+        const allGroups = await Group.find({}, 'groupId'); // Fetch only the `_id` field
         const existingGroupIds = allGroups.map(group => group.groupId.toString());
         // Step 2: Generate a unique group ID
         let newGroupId;
@@ -127,9 +127,8 @@ router.post("/add", async (req, res) => {
 
 
         // Create a new document in MongoDB
-        const newModule = new Module({
-            groupId:newGroupId,
-            groupName,
+        const newModule = new Group({
+            groupId: newGroupId,
             moduleName,
             teamMembers,
             taskList

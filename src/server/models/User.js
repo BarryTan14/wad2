@@ -51,9 +51,10 @@ const userSchema = new mongoose.Schema({
         ref: 'ChatRoom'
     }],
     joinedGroups: [{
-        type: mongoose.Schema.Types.String,
-        ref: 'Groups'
+        groupId: { type: String, required: true },
+        moduleTitle: { type: String, required: true }
     }],
+
     associatedTranscriptions: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Transcription'

@@ -13,7 +13,7 @@ import crypto from 'crypto';
 import { dirname } from 'path'
 import mongoose from "mongoose";
 import { svgUploadMiddleware } from "../middleware/svgSanitizer.js";
-import {Module} from "../models/Module.js";
+import {Group} from "../models/Group.js";
 
 const { pick } = pkg;
 
@@ -335,24 +335,23 @@ router.post('/addMyselfToGroup/', authMiddleware, asyncHandler(async (req, res) 
     }
 }));
 
-router.post('/addToGroup/:groupId', authMiddleware, asyncHandler(async (req, res) => {
+router.post('/addToGroup/:displayName', authMiddleware, asyncHandler(async (req, res) => {
     // Retrieve groupId from route parameters
-    const { groupId } = req.params;
-    const { displayName } = req.body;
-
+    const { groupId, moduleTitle } = req.body;
+    const {displayName} = req.params;
+    console.log(groupId,moduleTitle)
+    console.log(displayName)
     // Find user by displayName
     const user = await User.findOne({ displayName });
+    console.log(user)
     if (!user) {
         return res.status(400).json({ message: 'No user found.' });
     }
-    console.log("User:", user);
-    console.log("Group ID:", groupId);
-
-    try {
+    try {   
         // Add the group ID to the user's joinedGroups array
-        user.joinedGroups.push(groupId);
+        user.joinedGroups.push({groupId, moduleTitle});
+        console.log(user.joinedGroups)
         await user.save();
-
         return res.status(200).json({ message: 'Group added', groupId });
     } catch (e) {
         console.log("Error:", e);

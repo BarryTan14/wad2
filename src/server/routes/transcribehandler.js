@@ -4,7 +4,7 @@ import multer from 'multer';
 import path from 'path'
 import fs from 'fs'
 import {User} from "../models/User.js";
-import {Module} from "../models/Module.js"
+import {Group} from "../models/Group.js"
 import {Transcription} from "../models/Transcription.js";
 import {authMiddleware} from "../middleware/auth.js";
 import mongoose from "mongoose";
@@ -121,7 +121,7 @@ router.post('/transcriptions/:transcriptionId', authMiddleware, asyncHandler(asy
         return res.status(403).json({ message: 'Not authorized to update this transcription.' });
     }
 
-    const module = await Module.findById(moduleId);
+    const module = await Group.findById(moduleId);
     if (!module) {
         return res.status(404).json({ message: 'No group found.' });
     }

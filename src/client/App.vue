@@ -23,13 +23,12 @@ export default {
 
   data() {
     return {
-      userGroups: [],
+      userGroups: [{}],
       isModalOpen: false,
       suggestions: [], // Stores suggestions for each team member input
       showSuggestions: [], // Controls visibility of suggestions for each input
       newModule: {
         groupId: '',
-        groupName: '',
         moduleTitle: '',
         teamMembers: [{ name: '' }],
         taskList: [],
@@ -101,7 +100,6 @@ export default {
     // Reset form fields
     resetForm() {
       this.newModule = {
-        groupName: "",
         moduleName: "",
         teamMembers: [{ name: "" }]
       };
@@ -139,41 +137,42 @@ export default {
     async addGroup() {
       try {
         // Add group into database
-        const resp = await axios.post('/api/group/add', this.newModule, {
+        await axios.post('/api/group/add', this.newModule, {
           headers: {
             'Content-Type': 'application/json'
           }
-        });
+        }).then(resp => {
 
-        //add the group id to all the users in the new module.
-        
-        const groupId = resp.data.data;
-        console.log("Group ID:", groupId);
-        this.userGroups.push(groupId)
-        console.log(this.newModule.teamMembers)
-        for (let i = 0; i < this.newModule.teamMembers.length; i++) {
-          const member = this.newModule.teamMembers[i];
-          console.log(member)
-          // Post request to add the group ID to each team member
-          await axios.post(`/api/user/addToGroup/${groupId}`, {
-            displayName: member.name
-          }, {
+          const groupId = resp.data.data;
+          const groupObj = { groupId: groupId, moduleTitle: this.newModule.moduleName }
+          this.userGroups.push({ groupId: groupId, moduleTitle: this.newModule.moduleName })
+          for (let i = 0; i < this.newModule.teamMembers.length; i++) {
+            const member = this.newModule.teamMembers[i];
+            // Post request to add the group ID to each team member
+            axios.post(`/api/user/addToGroup/${member.name}`, groupObj,
+              {
+                headers: {
+                  'Content-Type': 'application/json'
+                }
+              });
+
+            console.log(`Added group to member: ${member.name}`);
+          }
+          axios.post(`/api/user/addToGroup/${this.$authStore.currentUser.displayName}`,groupObj, {
             headers: {
               'Content-Type': 'application/json'
             }
           });
 
-          console.log(`Added group to member: ${member.name}`);
-        }
-        // Proceed to the second request using the retrieved group ID
-        const resp2 = await axios.post(`/api/user/addToGroup/${groupId}`, this.$authStore.currentUser, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
+        })
+          ;
 
-        console.log("Add to group response:", resp2.data);
-      } catch (err) {
+        //add the group id to all the users in the new module.
+
+        // Proceed to the second request using the retrieved group ID
+
+      }
+      catch (err) {
         console.error("Error:", err);
       } finally {
         // Close modal whether requests succeed or fail
@@ -249,10 +248,10 @@ export default {
           <h2 class="section-title">Groups <button @click="openModal">Add Group</button></h2>
           <ul class="nav-list">
             <li v-for="group in userGroups">
-              <RouterLink :to="'/group/' + group" class="nav-link"
-                :class="{ 'active': $route.path === '/group/' + group }">
+              <RouterLink :to="'/group/' + group.groupId" class="nav-link"
+                :class="{ 'active': $route.path === '/group/' + group.groupId }">
                 <!-- <span class="nav-icon">{{ workspace.icon }}</span> -->
-                {{ group }}
+                {{ group.moduleTitle }}
               </RouterLink>
             </li>
           </ul>
@@ -306,11 +305,6 @@ export default {
     <div class="modal-content">
       <h2>Add New Workspace</h2>
       <form @submit.prevent="addGroup" class="workspace-form">
-        <!-- Group Name -->
-        <label>
-          Group Name:
-          <input type="text" v-model="newModule.groupName" required />
-        </label>
 
         <!-- Module Title -->
         <label>
