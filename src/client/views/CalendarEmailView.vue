@@ -22,7 +22,12 @@
             </button>
           </div>
 
-          <div v-if="events.length" class="events-list">
+          <div v-if="isLoading" class="loading-indicator">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+          </div>
+
+          <div v-else-if="events.length" class="events-list">
             <div v-for="event in events" :key="event.id" class="event-card"
               :class="{ 'selected': selectedEvent?.id === event.id }">
               <div class="event-header">
@@ -209,7 +214,7 @@ export default {
       emailModal: null,
       startPicker: null,
       endPicker: null,
-      isNewEvent: true, // New flag to track if it's a new event
+      isNewEvent: true,
       invitationsSent: false
     }
   },
@@ -220,7 +225,6 @@ export default {
   },
   mounted() {
     this.getGroup();
-    //Get groups based on display Name stuff
     if (this.email) {
       this.listEvents()
     }
@@ -235,26 +239,28 @@ export default {
   },
   methods: {
     async getGroup() {
+      this.isLoading = true;
       try {
         const response = await axios.get('/api/group/myGroups');
         this.groupOptions = response.data.groups[0].teamMembers;
-        console.log(this.groupOptions)
+        console.log(this.groupOptions);
+        
         for (const member of this.groupOptions) {
           console.log(member.name);
-          await axios.get('/api/user/searchDisplayname/'+member.name)
-          .then(resp=>{
-            console.log(resp.data)
-            this.groupEmails.push(resp.data[0].email)
-          })
-          
+          const resp = await axios.get('/api/user/searchDisplayname/'+member.name);
+          console.log(resp.data);
+          this.groupEmails.push(resp.data[0].email);
         }
-        console.log(this.groupEmails)
+        
+        console.log(this.groupEmails);
+        // Only show success toast after all data is loaded
+        this.$toast.success('Successfully fetched group emails');
       } catch (error) {
         console.error('Error fetching emails:', error);
-        this.$toast.fire({
-          icon: 'error',
-          message: 'Failed to fetch emails',
-        })
+        // Only show error toast if the API call fails
+        this.$toast.error('Failed to fetch emails');
+      } finally {
+        this.isLoading = false;
       }
     },
 
@@ -285,7 +291,6 @@ export default {
       this.eventActionModal.hide()
     },
 
-    // New methods to handle calendar button clicks
     openStartPicker() {
       if (this.startPicker) {
         this.startPicker.open()
@@ -304,7 +309,6 @@ export default {
       this.eventActionModal.show()
     },
     showEmailModal() {
-      // Only show email modal for new events
       if (this.isNewEvent) {
         this.eventActionModal.hide()
         this.emailModal.show()
@@ -332,7 +336,7 @@ export default {
     },
     selectEvent(event) {
       this.selectedEvent = event
-      this.isNewEvent = false // Set flag when editing existing event
+      this.isNewEvent = false
       this.eventForm.summary = event.summary
       this.eventForm.start = event.start.dateTime || event.start.date
       this.eventForm.end = event.end.dateTime || event.end.date
@@ -351,11 +355,11 @@ export default {
 
         let res
         if (this.selectedEvent) {
-          this.isNewEvent = false // Ensure it's false for updates
+          this.isNewEvent = false
           res = await axios.put(`/api/calendar-email/events/${this.selectedEvent.id}?email=${this.email}`, eventData)
           this.showEventActionModal('Success', res.data)
         } else {
-          this.isNewEvent = true // Set to true for new events
+          this.isNewEvent = true
           res = await axios.post(`/api/calendar-email/events?email=${this.email}`, eventData)
           this.createdEvent = res.data
           this.showEventActionModal('Success', res.data)
@@ -527,7 +531,7 @@ You are invited by ${this.email}
 
     backToCreate() {
       this.selectedEvent = null
-      this.isNewEvent = true // Reset flag when going back to create mode
+      this.isNewEvent = true
       this.resetEventForm()
     },
   }
