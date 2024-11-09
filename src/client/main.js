@@ -37,15 +37,6 @@ app.config.globalProperties.$toast = VueSweetalert2.mixin({
     timerProgressBar: true
 });
 
-
-/*app.config.globalProperties.$toast = VueSweetalert2.mixin({
-    toast: true,
-    position: 'top-end',
-    showConfirmButton: false,
-    timer: 3000,
-    timerProgressBar: true
-});*/
-
 app.use(router)
 
 // Add navigation guard for protected routes

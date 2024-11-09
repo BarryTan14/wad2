@@ -1,39 +1,43 @@
 <template>
-  <div class="profile bg-body-tertiary rounded-4 p-4">
-    <!-- Previous loading and error states remain unchanged -->
-    <div v-if="loading" class="loading">
+  <div class="profile bg-body-tertiary shadow-sm rounded-4 p-4 p-md-5">
+    <!-- Loading State -->
+    <div v-if="loading" class="d-flex flex-column align-items-center justify-content-center min-vh-50">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
-      <p class="mt-2">Loading profile...</p>
+      <p class="mt-3 text-body-secondary">Loading profile...</p>
     </div>
 
-    <div v-else-if="error" class="error alert alert-danger">
+    <!-- Error State -->
+    <div v-else-if="error" class="alert alert-danger d-flex align-items-center shadow-sm">
       <i class="bi bi-exclamation-triangle-fill me-2"></i>
-      {{ error }}
-      <button @click="fetchUserProfile" class="btn btn-outline-danger btn-sm ms-3">
+      <div class="flex-grow-1">{{ error }}</div>
+      <button @click="fetchUserProfile" class="btn btn-outline-danger btn-sm">
         Try Again
       </button>
     </div>
 
+    <!-- Profile Content -->
     <div v-else class="profile-content">
-      <div class="row">
-        <!-- Profile image section remains unchanged -->
-        <div class="col-12 col-md-4 mb-4 mb-md-0">
-          <div class="profile-image-container position-relative">
+      <div class="row g-4">
+        <!-- Profile Image Section -->
+        <div class="col-12 col-md-4">
+          <div class="profile-image-container shadow-sm bg-body-secondary">
             <img
                 :src="profileImageUrl"
                 class="rounded-3 img-fluid w-100 h-100 object-fit-cover position-absolute top-0 start-0"
                 :alt="userData.displayName + '\'s profile picture'"
                 @error="handleImageError"
             >
-            <button
-                class="btn btn-primary btn-sm position-absolute bottom-0 end-0 m-2"
-                @click="triggerImageUpload"
-            >
-              <span class="bi bi-camera-fill me-1">📷</span>
-              Change Photo
-            </button>
+            <div class="position-absolute bottom-0 start-0 end-0 p-3 overlay-gradient">
+              <button
+                  class="btn btn-light btn-sm w-100"
+                  @click="triggerImageUpload"
+              >
+                <span class="bi bi-camera-fill me-2">📷</span>
+                Change Photo
+              </button>
+            </div>
             <input
                 type="file"
                 ref="fileInput"
@@ -44,55 +48,61 @@
           </div>
         </div>
 
+        <!-- Profile Details Section -->
         <div class="col-12 col-md-8">
-          <div class="row">
-            <div class="m-0 col col-10">
-              <h1 class="m-0 col col-12">
-                <span v-if="!isEditing">{{ userData.displayName }}</span>
+          <!-- Header Section -->
+          <div class="d-flex flex-wrap align-items-start mb-4 gap-3">
+            <div class="flex-grow-1">
+              <div class="mb-3">
+                <div v-if="!isEditing" class="h2 mb-1 text-body">{{ userData.displayName }}</div>
                 <div v-else class="input-group">
                   <input
                       type="text"
                       v-model="editForm.displayName"
-                      class="form-control"
+                      class="form-control form-control-lg"
                       @keyup.enter="saveChanges"
                       :maxlength="maxDisplayNameLength"
+                      placeholder="Display Name"
                   >
-                  <span class="input-group-text text-muted">
-                    {{ remainingDisplayNameChars }} remaining
+                  <span class="input-group-text text-body-secondary small">
+                    {{ remainingDisplayNameChars }}
                   </span>
                 </div>
-              </h1>
+              </div>
+
+              <div class="mb-3">
+                <div v-if="!isEditing" class="badge bg-primary fs-6">{{ userData.role }}</div>
+                <select
+                    v-else
+                    v-model="editForm.role"
+                    class="form-select"
+                >
+                  <option v-for="role in roles" :key="role" :value="role">{{role}}</option>
+                </select>
+              </div>
             </div>
-            <div class="col col-12 col-md-2 order-first order-md-1">
+
+            <div class="d-flex gap-2">
               <button
-                  class="btn btn-outline-primary d-inline-block col-12 col"
+                  class="btn btn-outline-primary"
                   @click="toggleEditing"
               >
                 {{ isEditing ? 'Cancel' : 'Edit Profile' }}
               </button>
             </div>
           </div>
-          <div class="row">
-            <h1 class="m-0 col col-12">
-              <span v-if="!isEditing">{{ userData.role }}</span>
-              <select
-                  v-else
-                  v-model="editForm.role"
-                  class="form-control">
-                <option v-for="role in roles" :key="role" :value="role">{{role}}</option>
-              </select>
-            </h1>
-          </div>
-          <div class="card">
+
+          <!-- Bio Card -->
+          <div class="card border-0 shadow-sm">
             <div class="card-body">
-              <h5 class="card-title d-flex justify-content-between align-items-center">
-                Bio
-                <small class="text-muted" v-if="isEditing">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title mb-0">Bio</h5>
+                <small class="text-body-secondary" v-if="isEditing">
                   {{ remainingBioChars }} characters remaining
                 </small>
-              </h5>
+              </div>
 
-              <p v-if="!isEditing" class="card-text">
+              <p v-if="!isEditing" class="card-text text-body-secondary">
                 {{ userData.bio || 'No bio added yet.' }}
               </p>
 
@@ -105,9 +115,9 @@
                   placeholder="Tell us about yourself..."
               ></textarea>
 
-              <div v-if="isEditing" class="mt-3">
+              <div v-if="isEditing" class="d-flex gap-2 mt-4">
                 <button
-                    class="btn btn-primary me-2"
+                    class="btn btn-primary"
                     @click="saveChanges"
                     :disabled="isSaving"
                 >

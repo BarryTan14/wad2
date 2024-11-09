@@ -7,6 +7,7 @@ import {User} from "../models/User.js";
 import {Module} from "../models/Module.js"
 import {Transcription} from "../models/Transcription.js";
 import {authMiddleware} from "../middleware/auth.js";
+import mongoose from "mongoose";
 
 const router = express.Router();
 
@@ -102,6 +103,42 @@ router.delete('/transcriptions/:transcriptionId', authMiddleware, asyncHandler(a
     await Transcription.findByIdAndDelete(transcriptionId);
 
     res.json({ message: 'Transcription deleted successfully' });
+}));
+
+router.post('/transcriptions/:transcriptionId', authMiddleware, asyncHandler(async (req, res) => {
+    const transcriptionId = req.params.transcriptionId;
+    const { moduleId, content } = req.body;
+    const user = await User.findById(req.user._id).select("-password");
+
+    // Find the transcription
+    const transcription = await Transcription.findById(transcriptionId);
+    if (!transcription) {
+        return res.status(404).json({ message: 'No transcription found.' });
+    }
+
+    // Verify ownership
+    if (transcription.saidBy.toString() !== user._id.toString()) {
+        return res.status(403).json({ message: 'Not authorized to update this transcription.' });
+    }
+
+    const module = await Module.findById(moduleId);
+    if (!module) {
+        return res.status(404).json({ message: 'No group found.' });
+    }
+
+    try {
+        // Update transcription
+        transcription.content = content;
+        transcription.saidFor = module._id;
+
+        // Save the transcription
+        await transcription.save();
+    } catch (e) {
+        console.log(e)
+        return res.status(500).json({message: 'Internal Server Error: ' + e.message})
+    }
+
+    res.status(200).json({ message: 'Transcription saved successfully' });
 }));
 
 router.post('/upload', authMiddleware, upload.single('audio'), async (req, res) => {
