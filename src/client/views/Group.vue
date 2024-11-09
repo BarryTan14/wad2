@@ -326,8 +326,6 @@ export default {
           deadline: task.deadline,
           status: task.status
         });
-
-        // Make sure to await the axios.post call
         const response = await axios.post(`/api/task/updateBy/${task._id}`, {
           taskName: task.taskName,
           membersInCharge: task.membersInCharge,
@@ -340,7 +338,6 @@ export default {
         });
 
         console.log('Response:', response.data);
-        // Optionally, refresh the tasks list or handle UI updates
       }
       catch (error) {
         console.error('Error updating task:', error);
@@ -377,9 +374,12 @@ export default {
     async fetchTaskData() {
       try {
         //get data back based on group or group i
-        const taskList = await axios.get(`/api/task/getBy/${this.groupId}`)
+        await axios.get(`/api/task/getBy/${this.groupId}`)
           .then(resp => {
             this.tasks = resp.data.data
+          })
+          .catch(err=>{
+            console.log(err)
           })
       } catch (error) {
         console.error('Failed to fetch group data:', error);

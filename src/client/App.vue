@@ -229,7 +229,7 @@ export default {
         <div class="close-button" v-if="isSidebarOpen" @click="toggleSidebar">&times;</div>
         <div class="brand">
           <img src="./assets/logo.svg" alt="CultureOS" class="logo">
-          <h1 class="brand-title">CultureOS</h1>
+          <h1 class="brand-title">SMU Buddy</h1>
         </div>
 
         <!-- Main Navigation -->
@@ -275,16 +275,16 @@ export default {
             <button @click="toggleSidebar" class="menu-button">
               <Menu class="icon" />
             </button>
-            <div class="search-container">
+            <!-- <div class="search-container">
               <input type="text" v-model="searchQuery" placeholder="Search" class="search-input">
-            </div>
+            </div> -->
           </div>
           <div class="top-nav-right">
-            <div class="team-members">
+            <!-- <div class="team-members">
               <img v-for="member in teamMembers" :key="member.id" :src="member.profilePic"
                 :alt="'Team Member ' + member.id" class="team-member-avatar">
               <button class="more-members">+2</button>
-            </div>
+            </div> -->
             <AuthDropdown />
           </div>
         </nav>

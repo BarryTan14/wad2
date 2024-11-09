@@ -117,14 +117,8 @@ router.post("/add", async (req, res) => {
     try {
         
         const { groupId, groupName, moduleName, teamMembers, taskList } = req.body;
-        
-        // Check if all required fields are provided
-        // if (!moduleName || !groupName || !teamMembers) {
-        //     return res.status(400).json({ message: 'All fields are required' });
-        // }
         const allGroups = await Module.find({}, 'groupId'); // Fetch only the `_id` field
         const existingGroupIds = allGroups.map(group => group.groupId.toString());
-        console.log(existingGroupIds)
         // Step 2: Generate a unique group ID
         let newGroupId;
         do {
