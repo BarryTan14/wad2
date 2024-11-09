@@ -1,24 +1,28 @@
 <template>
-  <div class="profile bg-body-tertiary rounded-4 p-4">
-    <div v-if="loading" class="loading">
+  <div class="profile bg-body-tertiary shadow-sm rounded-4 p-4 p-md-5">
+    <!-- Loading State -->
+    <div v-if="loading" class="d-flex flex-column align-items-center justify-content-center min-vh-50">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
-      <p class="mt-2">Loading profile...</p>
+      <p class="mt-3 text-body-secondary">Loading profile...</p>
     </div>
 
-    <div v-else-if="error" class="error alert alert-danger">
+    <!-- Error State -->
+    <div v-else-if="error" class="alert alert-danger d-flex align-items-center shadow-sm">
       <i class="bi bi-exclamation-triangle-fill me-2"></i>
-      {{ error }}
-      <button @click="fetchProfile" class="btn btn-outline-danger btn-sm ms-3">
+      <div class="flex-grow-1">{{ error }}</div>
+      <button @click="fetchProfile" class="btn btn-outline-danger btn-sm">
         Try Again
       </button>
     </div>
 
+    <!-- Profile Content -->
     <div v-else class="profile-content">
-      <div class="row">
-        <div class="col-12 col-md-4 mb-4 mb-md-0">
-          <div class="profile-image-container position-relative">
+      <div class="row g-4">
+        <!-- Profile Image Section -->
+        <div class="col-12 col-md-4">
+          <div class="profile-image-container shadow-sm bg-body-secondary">
             <img
                 :src="profileImageUrl"
                 class="rounded-3 img-fluid w-100 h-100 object-fit-cover position-absolute top-0 start-0"
@@ -28,19 +32,26 @@
           </div>
         </div>
 
+        <!-- Profile Details Section -->
         <div class="col-12 col-md-8">
-          <div class="row">
-            <div class="m-0 col col-12">
-              <h1 class="m-0">{{ userData.displayName }}</h1>
+          <!-- Header Section -->
+          <div class="d-flex flex-wrap align-items-start mb-4 gap-3">
+            <div class="flex-grow-1">
+              <div class="mb-3">
+                <div class="h2 mb-1 text-body">{{ userData.displayName }}</div>
+              </div>
+
+              <div class="mb-3">
+                <div class="badge bg-primary fs-6">{{ userData.role }}</div>
+              </div>
             </div>
           </div>
-          <div class="row">
-            <h1 class="m-0 col col-12">{{ userData.role }}</h1>
-          </div>
-          <div class="card">
+
+          <!-- Bio Card -->
+          <div class="card border-0 shadow-sm">
             <div class="card-body">
-              <h5 class="card-title">Bio</h5>
-              <p class="card-text">
+              <h5 class="card-title mb-3">Bio</h5>
+              <p class="card-text text-body-secondary">
                 {{ userData.bio || 'No bio added yet.' }}
               </p>
             </div>
@@ -151,10 +162,5 @@ export default {
 .error {
   text-align: center;
   padding: 1rem;
-}
-
-textarea {
-  resize: vertical;
-  min-height: 100px;
 }
 </style>
