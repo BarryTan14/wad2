@@ -167,9 +167,6 @@ export default {
 
           console.log(`Added group to member: ${member.name}`);
         }
-
-        
-
         // Proceed to the second request using the retrieved group ID
         const resp2 = await axios.post(`/user/api/addToGroup/${groupId}`, this.$authStore.currentUser, {
           headers: {
@@ -185,8 +182,6 @@ export default {
         this.closeModal();
       }
     },
-
-
     beforeEnter(el) {
       // Called before the entering element is inserted
       console.log('Before enter')
