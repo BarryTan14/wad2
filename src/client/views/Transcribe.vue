@@ -69,26 +69,29 @@
           <div class="col-12 col-md-6">
             <button
                 @click="requestPermissionAndRecord"
-                :disabled="isRecording || !isSupported"
+                :disabled="isRecording || !isSupported || isProcessing"
                 class="btn btn-success w-100 py-4 py-md-2">
-              <i class="bi bi-mic-fill me-2"></i>
+              <span class="bi bi-mic-fill me-2">🎙️</span>
               Start Recording
             </button>
           </div>
           <div class="col-12 col-md-6">
             <button
                 @click="stopRecording"
-                :disabled="!isRecording || !isSupported"
+                :disabled="!isRecording || !isSupported || isProcessing"
                 class="btn btn-danger w-100 py-4 py-md-2">
-              <i class="bi bi-stop-fill me-2"></i>
+              <span class="bi bi-stop-fill me-2">🛑</span>
               Stop Recording
             </button>
           </div>
         </div>
 
-        <div class="text-muted fst-italic mb-3">
-          <i class="bi" :class="statusIcon"></i>
+        <div class="text-muted mb-3">
+          <span class="bi" :class="statusIcon">💻</span>
           {{ status }}
+          <span v-if="isRecording" class="ms-2">
+            ({{ remainingTime }}s remaining)
+          </span>
         </div>
 
         <div class="col-12">
@@ -270,7 +273,7 @@
                         class="btn btn-success"
                         title="Save changes"
                     >
-                      <i class="bi bi-check-lg">✅</i>
+                      <span class="bi bi-check-lg">✅</span>
                     </button>
                     <button
                         v-if="!isEditing(item._id)"
@@ -278,7 +281,7 @@
                         class="btn btn-danger"
                         title="Delete transcription"
                     >
-                      <i class="bi bi-trash">🗑️</i>
+                      <span class="bi bi-trash">🗑️</span>
                     </button>
                   </div>
                 </div>
@@ -298,7 +301,7 @@
                 </div>
 
                 <small class="text-muted d-flex align-items-center">
-                  <i class="bi bi-clock me-1"></i>
+                  <span class="bi bi-clock me-1">⏱️</span>
                   {{ formatDate(item.createdAt) }}
                 </small>
               </div>
@@ -325,6 +328,7 @@ export default {
   data() {
     return {
       isRecording: false,
+      isProcessing: false,
       status: 'Ready to record',
       transcription: '',
       error: '',
@@ -339,6 +343,8 @@ export default {
       mediaStream: null,
       editForm: {},
       editingId: null,
+      remainingTime: 15, // ??? seconds time limit
+      MAX_RECORDING_TIME: 15, // constant for max recording time
     }
   },
 
@@ -371,6 +377,23 @@ export default {
   },
 
   methods: {
+    startRecordingTimer() {
+      this.remainingTime = this.MAX_RECORDING_TIME;
+      this.recordingTimer = setInterval(() => {
+        this.remainingTime--;
+        if (this.remainingTime <= 0) {
+          this.stopRecording();
+          this.clearRecordingTimer();
+        }
+      }, 1000);
+    },
+
+    clearRecordingTimer() {
+      if (this.recordingTimer) {
+        clearInterval(this.recordingTimer);
+        this.recordingTimer = null;
+      }
+    },
     isEditing(transcriptionId) {
       return this.editingId === transcriptionId;
     },
@@ -477,10 +500,6 @@ export default {
           cancelButtonColor: '#6c757d',
           confirmButtonText: 'Yes, delete it',
           cancelButtonText: 'Cancel',
-          customClass: {
-            confirmButton: 'order-1',
-            cancelButton: 'order-2',
-          },
         });
 
         if (result.isConfirmed) {
@@ -554,6 +573,7 @@ export default {
 
         this.mediaRecorder.onstop = async () => {
           this.status = 'Processing...';
+          this.clearRecordingTimer(); // Clear the timer when recording stops
 
           const audioBlob = new Blob(this.audioChunks, {
             type: 'audio/webm;codecs=opus'
@@ -564,6 +584,7 @@ export default {
           formData.append('moduleId', this.selectedModuleId);
 
           try {
+            this.isProcessing = true;
             const response = await fetch('/api/transcribe/upload', {
               method: 'POST',
               body: formData
@@ -595,6 +616,8 @@ export default {
           } catch (err) {
             this.error = `Error transcribing audio: ${err.message}`;
             this.status = 'Ready to record';
+          } finally {
+            this.isProcessing = false;
           }
         };
 
@@ -603,6 +626,15 @@ export default {
         this.status = 'Recording...';
         this.audioChunks = [];
         this.error = '';
+        // Start the recording timer
+        this.startRecordingTimer();
+
+        // Automatically stop recording after MAX_RECORDING_TIME seconds
+        setTimeout(() => {
+          if (this.isRecording) {
+            this.stopRecording();
+          }
+        }, this.MAX_RECORDING_TIME * 1000);
       } catch (err) {
         this.error = `Error accessing microphone: ${err.message}`;
         this.status = 'Ready to record';
@@ -619,8 +651,9 @@ export default {
         this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
         this.isRecording = false;
         this.status = 'Processing...';
+        this.clearRecordingTimer();
       }
-    }
+    },
   }
 }
 </script>

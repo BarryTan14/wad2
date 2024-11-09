@@ -32,14 +32,11 @@ export default {
         cancelButtonColor: '#6c757d',
         confirmButtonText: 'Yes',
         cancelButtonText: 'No',
-        customClass: {
-          confirmButton: 'order-1',
-          cancelButton: 'order-2',
-        },
       });
 
       if (result.isConfirmed) {
         await this.$authStore.logout()
+        this.$socket.disconnect();
         this.eraseCookie('roomId')
         this.$toast.fire({
           showConfirmButton: true,

@@ -9,6 +9,17 @@ import {useAuthStore} from './stores/auth.js'
 
 import VueSweetalert2 from 'sweetalert2';
 
+const socket = io({
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 3000,
+    reconnectionDelayMax: 5000,
+    timeout: 10000,
+    autoConnect: true,
+    // Add your socket URL if not connecting to same origin
+    // url: 'http://your-server-url'
+})
+
 // import 'sweetalert2/dist/sweetalert2.min.css';
 
 const options = {
@@ -21,7 +32,29 @@ const options = {
 const app = createApp(App)
 const pinia = createPinia()
 
-app.config.globalProperties.$socket = io();
+app.config.globalProperties.$socket = socket;
+
+app.config.globalProperties.$socketManager = {
+    connect() {
+        if (!socket.connected) {
+            socket.connect()
+        }
+    },
+    disconnect() {
+        if (socket.connected) {
+            socket.disconnect()
+        }
+    },
+    reconnect() {
+        if (socket.connected) {
+            socket.disconnect()
+        }
+        // Give a small delay before reconnecting
+        setTimeout(() => {
+            socket.connect()
+        }, 1000)
+    }
+}
 
 // use global authstore and toaststore instead;
 

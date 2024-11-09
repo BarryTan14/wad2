@@ -56,10 +56,24 @@ export default {
         { id: 3, profilePic: '/profilepicture/avatar.png' }
       ],
       fallbackImage: 'avatar.png',
+      chatKey: 0,
+      showChat: true
     }
   },
 
   methods: {
+    reinitializeChat() {
+      // Temporarily remove the component
+      this.showChat = false
+
+      // Increment key to force a fresh mount
+      this.chatKey++
+
+      // Use nextTick to ensure DOM updates before showing again
+      this.$nextTick(() => {
+        this.showChat = true
+      })
+    },
     async fetchUserGroups() {
       try {
         const response = await axios.get(`/api/user/searchDisplayName/${this.$authStore.currentUser.displayName}`,);
@@ -220,7 +234,8 @@ export default {
 
 <template>
   <div class="app-container" :class="{ 'theme-light': !isDarkTheme }">
-    <ChatWindow />
+    <ChatWindow v-if="showChat" :key="chatKey"
+                @reinitialize="reinitializeChat" />
     <ToastContainer />
     <div class="layout-wrapper">
       <!-- Sidebar -->

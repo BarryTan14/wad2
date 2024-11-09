@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import UserProfile from "../views/UserProfile.vue";
+import LandingPage from "../views/LandingPage.vue";
 
 const checkAuth = async () => {
   try {
@@ -16,13 +17,19 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'home',
+      name: 'landing',
       component: HomeView,
+      meta: {
+        requiresAuth: false,
+      }
     },
     {
-      path: '/group/:groupId',
-      name: 'group',
-      component: () => import('../views/Group.vue'),
+      path: '/dashboard',
+      name: 'home',
+      component: HomeView,
+      meta: {
+        requiresAuth: true,
+      }
     },
     {
       path: '/login',

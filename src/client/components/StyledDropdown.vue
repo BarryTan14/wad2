@@ -1,15 +1,5 @@
 <template>
   <div class="styled-dropdown-container">
-
-    <ChatRoomModal
-        v-model:show="showModal"
-        :modal-type="modalType"
-        :room-to-leave="selectedRoomToLeave"
-        @create="handleCreateRoom"
-        @join="handleJoinRoom"
-        @leave="handleLeaveRoom"
-    />
-
     <div class="input-wrapper">
       <span class="chevron">▼</span>
       <input
@@ -26,10 +16,10 @@
     <ul :class="['value-list', { open: isOpen }]">
       <!-- Management options -->
       <div class="management-options">
-        <li class="management-option" @click="openModal('create')">
+        <li class="management-option" @click="showCreateRoomModal">
           <span class="plus-icon">📝</span> Create New Room
         </li>
-        <li class="management-option" @click="openModal('join')">
+        <li class="management-option" @click="showJoinRoomModal">
           <span class="join-icon">🚪</span> Join Existing Room
         </li>
       </div>
@@ -49,7 +39,7 @@
         <span class="room-name">{{ option.name }}</span>
         <button
             class="leave-button"
-            @click.stop="leaveRoom(option)"
+            @click.stop="showLeaveRoomModal(option)"
             v-if="option.name !== 'General'"
         >
           Leave
@@ -60,13 +50,8 @@
 </template>
 
 <script>
-import ChatRoomModal from "./ChatRoomModal.vue";
-
 export default {
   name: 'StyledDropdown',
-  components: {
-    ChatRoomModal,
-  },
   props: {
     modelValue: {
       type: String,
@@ -81,20 +66,16 @@ export default {
       default: 'Select option'
     }
   },
-  emits: ['update:modelValue', 'option-selected', 'create-room', 'join-room', 'leave-room'],
+  emits: ['update:modelValue', 'option-selected'],
   data() {
     return {
       isOpen: false,
       selectedOption: null,
       isFiltering: false,
-      showModal: false,
-      modalType: 'create',
-      selectedRoomToLeave: null,
       isMobile: false
     }
   },
   created() {
-    // Check if device is mobile
     this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   },
   computed: {
@@ -108,21 +89,93 @@ export default {
     }
   },
   methods: {
+    async showCreateRoomModal() {
+      const { value: formValues } = await this.$swal.fire({
+        title: 'Create New Room',
+        html: `
+          <input id="swal-room-name" class="swal2-input" placeholder="Room Name" required>
+          <textarea id="swal-room-description" class="swal2-textarea" placeholder="Room Description"></textarea>
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Create',
+        preConfirm: () => {
+          const name = document.getElementById('swal-room-name').value;
+          const description = document.getElementById('swal-room-description').value;
+
+          if (!name.trim()) {
+            this.$swal.showValidationMessage('Room name is required');
+            return false;
+          }
+
+          return { name, description };
+        }
+      });
+
+      if (formValues) {
+        this.$socket.emit('create-room', {
+          name: formValues.name,
+          description: formValues.description
+        });
+        this.$toast.fire({
+          icon: 'success',
+          title: 'You created a new chatroom!',
+        });
+      }
+    },
+
+    async showJoinRoomModal() {
+      const { value: roomId } = await this.$swal.fire({
+        title: 'Join Room',
+        input: 'text',
+        inputLabel: 'Room ID',
+        inputPlaceholder: 'Enter room ID',
+        showCancelButton: true,
+        inputValidator: (value) => {
+          if (!value) {
+            return 'Room ID is required';
+          }
+        }
+      });
+
+      if (roomId) {
+        this.$socket.emit('join-room', roomId);
+      }
+    },
+
+    async showLeaveRoomModal(room) {
+      const result = await this.$swal.fire({
+        title: 'Leave Room',
+        text: `Are you sure you want to leave "${room.name}"? You'll need the code to rejoin this room.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        confirmButtonText: 'Leave'
+      });
+
+      if (result.isConfirmed) {
+        this.$socket.emit('leave-room', room._id);
+        this.$toast.fire({
+          icon: 'info',
+          title: 'You left the chatroom.',
+        });
+      }
+    },
+
     handleFocus(event) {
       if (this.isMobile) {
-        event.target.blur(); // Immediately blur the input on mobile
-        this.isOpen = !this.isOpen; // Just toggle the dropdown
+        event.target.blur();
+        this.isOpen = !this.isOpen;
       } else {
         this.openDropdown();
       }
     },
+
     openDropdown() {
       this.isOpen = true;
       this.isFiltering = false;
     },
-    leaveRoom(option) {
-      this.$socket.emit('leave-room', option._id);
-    },
+
     handleBlur() {
       if (!this.isMobile) {
         setTimeout(() => {
@@ -131,43 +184,29 @@ export default {
         }, 200);
       }
     },
+
     handleInput(event) {
       const value = event.target.value;
       this.$emit('update:modelValue', value);
       this.isFiltering = value.length > 0;
     },
+
     selectOption(option) {
       this.selectedOption = option;
       this.$emit('update:modelValue', option.name);
       this.$emit('option-selected', option);
       this.isOpen = false;
       this.isFiltering = false;
-    },
-    openModal(type, room = null) {
-      this.modalType = type;
-      this.selectedRoomToLeave = room;
-      this.showModal = true;
-    },
-    handleLeaveClick(room) {
-      this.openModal('leave', room);
-    },
-    handleCreateRoom(roomData) {
-      this.$emit('create-room', roomData);
-    },
-    handleJoinRoom(roomId) {
-      this.$emit('join-room', roomId);
-    },
-    handleLeaveRoom(room) {
-      this.$emit('leave-room', room);
     }
   }
 }
 </script>
 
 <style scoped>
+/* Keep all the existing styles from your original component */
 .styled-dropdown-container {
   position: relative;
-  width: 300px;
+  width: 200px;
   height: 100%;
   display: flex;
   align-items: center;
@@ -237,7 +276,6 @@ export default {
   overflow: auto;
 }
 
-/* Management options styling */
 .management-options {
   background-color: #f8f9fa;
 }
@@ -262,7 +300,6 @@ export default {
   font-weight: bold;
 }
 
-/* Divider styling */
 .divider {
   position: relative;
   padding: 0.5rem 1rem;
@@ -277,7 +314,6 @@ export default {
   font-weight: 500;
 }
 
-/* Room option styling */
 .room-option {
   padding: 0.75rem 1rem;
   font-size: 0.9rem;
@@ -323,10 +359,6 @@ export default {
   right: 1rem;
 }
 
-.room-option:hover .room-name {
-
-}
-
 .value-list::-webkit-scrollbar {
   width: 4px;
 }
@@ -340,39 +372,6 @@ export default {
   border-radius: 2px;
 }
 
-/* Input wrapper hover effects */
-.input-wrapper:hover .chosen-value {
-  background-color: rgba(var(--bs-purple-rgb), 0.9);
-}
-
-.input-wrapper:hover .chevron {
-  animation: bounce 1s infinite;
-}
-
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-2px);
-  }
-}
-/* Add new styles for mobile filter */
-.filter-input-mobile {
-  padding: 0.5rem;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.mobile-filter {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  font-size: 0.9rem;
-}
-
-/* Make the dropdown scroll area larger on mobile */
 @media (max-width: 768px) {
   .value-list.open {
     max-height: 70vh;

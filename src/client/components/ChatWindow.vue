@@ -14,6 +14,13 @@
           placeholder="Select Chat Room"
           @option-selected="handleRoomChange"
       />
+
+      <div v-if="!isMinimized"
+           @click="roomDetailModal"
+          class="d-flex btn m-0 px-0 room-details-btn"
+      >
+        Room Details
+      </div>
       <div>
         <button
             @click="toggleMinimize"
@@ -95,6 +102,7 @@ export default {
     return {
       user: this.$authStore.currentUser,
       selectedRoom:'',
+      selectedRoomID:'',
       messages: [],
       newMessage: '',
       isMinimized: true,
@@ -118,6 +126,61 @@ export default {
   },
 
   methods: {
+    roomDetailModal() {
+      const copyToClipboard = async (text) => {
+        try {
+          await navigator.clipboard.writeText(text);
+          this.$swal.fire({
+            toast:true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'ID Copied!',
+            showConfirmButton: false,
+            timer: 1500
+          });
+        } catch (err) {
+          console.error('Failed to copy:', err);
+        }
+      };
+
+      this.$swal.fire({
+        title: this.currentRoom.name,
+        html: `
+      <div>
+        <p id="room-id"
+            style="cursor: pointer;">
+          <strong>ID:</strong>
+          <span
+          >${this.currentRoom._id}
+          </span>
+          <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="copy-icon"
+            >
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+        </p>
+        <p><strong>Description:</strong> ${this.currentRoom.description}</p>
+      </div>
+    `,
+        icon: 'info',
+        showCloseButton: true,
+        didOpen: () => {
+          document.getElementById('room-id').addEventListener('click', () => {
+            copyToClipboard(this.currentRoom._id);
+          });
+        }
+      });
+    },
     async sendMessage() {
       if (!this.newMessage.trim() || !this.isAuthenticated) return;
 
@@ -343,6 +406,7 @@ export default {
     this.$socket.on('room-info', (room) => {
       this.currentRoom = room;
       this.selectedRoom = room.name;
+      this.selectedRoomID = room._id;
       this.$socket.emit('get-all-rooms', this.user._id)
     });
 
@@ -558,6 +622,10 @@ export default {
   .chat-header h3 {
     font-size: 1.2em;
   }
+}
+
+.room-details-btn {
+  font-size: 0.9rem;
 }
 </style>
 

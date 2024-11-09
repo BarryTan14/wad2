@@ -97,8 +97,7 @@ export default {
         )
 
         // Reconnect socket with new auth state
-        this.$socket.disconnect()
-        this.$socket.connect()
+        this.$socketManager.reconnect()
 
         this.handleToastSuccess(response.message);
 
