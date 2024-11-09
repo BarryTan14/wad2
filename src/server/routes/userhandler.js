@@ -343,6 +343,7 @@ router.post('/api/addToGroup/', authMiddleware, asyncHandler(async (req, res) =>
     if(!user) {
         return res.status(400).json({message: 'No user found.'});
     }
+
     try {
         user.joinedGroups.push(group._id)
         await user.save();
