@@ -41,7 +41,7 @@ export default {
       navigationRoutes: [
         { path: '/', name: 'Dashboard', icon: '📊' },
         { path: '/transcribe', name: 'Class Participation', icon: '👥' },
-        { path: '/calendarmanager', name: 'Event Planner', icon: '🗓️' },
+        { path: '/calendaremailview', name: 'Event Planner', icon: '🗓️' },
         // { path: '/progress', name: 'Progress', icon: '📈' },
         // { path: '/team', name: 'Team Members', icon: '👥' },
         // { path: '/messages', name: 'Messages', icon: '💬' }
