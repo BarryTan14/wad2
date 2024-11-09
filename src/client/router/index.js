@@ -85,17 +85,17 @@ const router = createRouter({
     {
     path: '/emailsender',
     name: 'EmailSender',
-    component: () => import('../views/EmailSender.Vue')
+    component: () => import('../views/EmailSender.vue')
   },
   {
     path: '/calendarManager',
     name: 'CalendarManager',
-    component: () => import('../views/CalendarManager.Vue')
+    component: () => import('../views/CalendarManager.vue')
   },
   {
     path: '/calendarEmailView',
     name: 'CalendarEmailView',
-    component: () => import('../views/CalendarEmailView.Vue')
+    component: () => import('../views/CalendarEmailView.vue')
   },
   ],
 })

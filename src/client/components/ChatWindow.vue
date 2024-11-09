@@ -139,7 +139,18 @@ export default {
             timer: 1500
           });
         } catch (err) {
-          console.error('Failed to copy:', err);
+          if(err.message === "navigator.clipboard is undefined")
+          {
+            this.$swal.fire({
+              toast:true,
+              position: 'top-end',
+              icon: 'error',
+              title: 'Unable to copy',
+              text: 'We do not have enough permissions for "click to copy", please copy manually.',
+              showConfirmButton: false,
+              timer: 3000
+            });
+          }
         }
       };
 
@@ -147,13 +158,14 @@ export default {
         title: this.currentRoom.name,
         html: `
       <div>
-        <p id="room-id"
-            style="cursor: pointer;">
+        <p>
           <strong>ID:</strong>
           <span
           >${this.currentRoom._id}
           </span>
           <svg
+                style="cursor: pointer;"
+                id="room-id"
               xmlns="http://www.w3.org/2000/svg"
               width="16"
               height="16"
