@@ -60,13 +60,10 @@ export default {
     }
   },
 
-  computed: {
-  },
-
   methods: {
     async fetchUserGroups() {
       try {
-        const response = await axios.get(`/user/api/searchDisplayName/${this.$authStore.currentUser.displayName}`,);
+        const response = await axios.get(`/api/user/searchDisplayName/${this.$authStore.currentUser.displayName}`,);
         this.userGroups = response.data[0].joinedGroups
       } catch (error) {
         console.error("Error fetching suggestions:", error);
@@ -119,7 +116,7 @@ export default {
       }
 
       try {
-        const response = await axios.get(`/user/api/searchDisplayName/${query}`,);
+        const response = await axios.get(`/api/user/searchDisplayName/${query}`,);
         console.log(response.data)
         this.suggestions[index] = response.data; // Assuming response is an array of suggestions
         this.showSuggestions[index] = true; // Ensure suggestions are shown after fetch
@@ -158,7 +155,7 @@ export default {
           const member = this.newModule.teamMembers[i];
           console.log(member)
           // Post request to add the group ID to each team member
-          await axios.post(`/user/api/addToGroup/${groupId}`, {
+          await axios.post(`/api/user/addToGroup/${groupId}`, {
             displayName: member.name
           }, {
             headers: {
@@ -169,7 +166,7 @@ export default {
           console.log(`Added group to member: ${member.name}`);
         }
         // Proceed to the second request using the retrieved group ID
-        const resp2 = await axios.post(`/user/api/addToGroup/${groupId}`, this.$authStore.currentUser, {
+        const resp2 = await axios.post(`/api/user/addToGroup/${groupId}`, this.$authStore.currentUser, {
           headers: {
             'Content-Type': 'application/json'
           }

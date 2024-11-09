@@ -251,7 +251,7 @@ export default {
       }
 
       try {
-        const response = await axios.get(`/user/api/searchDisplayName/${query}`,);
+        const response = await axios.get(`/api/user/searchDisplayName/${query}`,);
         console.log(response.data)
         this.suggestions[index] = response.data; // Assuming response is an array of suggestions
         this.showSuggestions[index] = true; // Ensure suggestions are shown after fetch

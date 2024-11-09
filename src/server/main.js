@@ -63,10 +63,10 @@ app.use(express.urlencoded({extended: false}));
 //app.use(express.multipart());
 
 // ROUTE IS /user/blahblah
-app.use('/user', userHandlerRouter);
+app.use('/api/user', userHandlerRouter);
 
 // ROUTE IS /transcribe/blahblah
-app.use('/transcribe', transcribeHandlerRouter);
+app.use('/api/transcribe', transcribeHandlerRouter);
 
 app.use('/api/group', groupRouter);
 

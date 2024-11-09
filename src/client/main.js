@@ -7,6 +7,16 @@ import {createPinia} from 'pinia'
 import {useAuthStore} from './stores/auth.js'
 import {useToastStore} from "./stores/toast.js";
 
+import VueSweetalert2 from 'sweetalert2';
+
+// import 'sweetalert2/dist/sweetalert2.min.css';
+
+const options = {
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    reverseButtons: true
+};
+
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -18,6 +28,24 @@ app.config.globalProperties.$socket = io();
 app.use(pinia)
 app.config.globalProperties.$authStore = useAuthStore();
 app.config.globalProperties.$toastStore = useToastStore();
+app.config.globalProperties.$swal = VueSweetalert2.mixin(options);
+app.config.globalProperties.$toast = VueSweetalert2.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true
+});
+
+
+/*app.config.globalProperties.$toast = VueSweetalert2.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true
+});*/
+
 app.use(router)
 
 // Add navigation guard for protected routes

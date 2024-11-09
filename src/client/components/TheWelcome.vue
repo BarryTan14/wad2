@@ -54,7 +54,7 @@ const openScheduler = () => {
         Class Participation
       </template>
       <div>
-        <RouterLink to="/classPart" class="nav-link" :class="{ 'active': $route.path === '/classPart' }">
+        <RouterLink to="/transcribe" class="nav-link" :class="{ 'active': $route.path === '/transcribe' }">
           🎤 Start Voice Recording
         </RouterLink>
       </div>

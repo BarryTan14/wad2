@@ -3,6 +3,10 @@ import speech from '@google-cloud/speech';
 import multer from 'multer';
 import path from 'path'
 import fs from 'fs'
+import {User} from "../models/User.js";
+import {Module} from "../models/Module.js"
+import {Transcription} from "../models/Transcription.js";
+import {authMiddleware} from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -32,7 +36,75 @@ const client = new speech.SpeechClient({
     keyFilename: './src/server/key.json'
 });
 
-router.post('/upload', upload.single('audio'), async (req, res) => {
+const asyncHandler = (fn) => (req, res, next) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+};
+
+router.get('/transcriptions', authMiddleware, asyncHandler(async (req, res) => {
+    try {
+        // Find the authenticated user
+        const user = await User.findById(req.user._id).select('-password');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Build query
+        const query = {
+            saidBy: user._id,
+        };
+
+        // Get transcriptions with populated user and module data
+        const transcriptions = await Transcription.find(query)
+            .sort({ createdAt: -1 }) // Sort by newest first
+            .populate({
+                path: 'saidBy',
+                select: '-password -associatedTranscriptions' // Exclude sensitive and recursive data
+            })
+            .populate({
+                path: 'saidFor',
+                select: 'groupId groupName moduleName' // Select specific module fields
+            });
+
+        // Return response
+        res.json({
+            transcriptions,
+        });
+    } catch (error) {
+        console.error('Error fetching transcriptions:', error);
+        res.status(500).json({
+            message: 'Error fetching transcriptions',
+            error: error.message
+        });
+    }
+}));
+
+router.delete('/transcriptions/:transcriptionId', authMiddleware, asyncHandler(async (req, res) => {
+    const { transcriptionId } = req.params;
+    const user = await User.findById(req.user._id).select("-password");
+
+    // Find the transcription
+    const transcription = await Transcription.findById(transcriptionId);
+    if (!transcription) {
+        return res.status(404).json({ message: 'No transcription found.' });
+    }
+
+    // Verify ownership
+    if (transcription.saidBy.toString() !== user._id.toString()) {
+        return res.status(403).json({ message: 'Not authorized to delete this transcription.' });
+    }
+
+    // Remove transcription reference from user
+    await User.findByIdAndUpdate(user._id, {
+        $pull: { associatedTranscriptions: transcriptionId }
+    });
+
+    // Delete the transcription
+    await Transcription.findByIdAndDelete(transcriptionId);
+
+    res.json({ message: 'Transcription deleted successfully' });
+}));
+
+router.post('/upload', authMiddleware, upload.single('audio'), async (req, res) => {
     try {
         console.log('Request received:', {
             file: req.file,
@@ -74,6 +146,9 @@ router.post('/upload', upload.single('audio'), async (req, res) => {
 
         console.log('Transcription received:', transcription);
 
+        if(transcription)
+            await handleTranscription(req, res, transcription);
+
         // Clean up: delete the file after processing
         fs.unlinkSync(req.file.path);
 
@@ -87,5 +162,32 @@ router.post('/upload', upload.single('audio'), async (req, res) => {
         });
     }
 });
+
+async function handleTranscription(req, res, transcription) {
+    const user = await User.findById(req.user._id).select('-password');
+    const transcribe = new Transcription({
+        saidBy: user._id,
+        saidFor: req.body.moduleId,
+        content: transcription
+    });
+
+    console.log(transcribe)
+
+    try {
+        await transcribe.save();
+    } catch (e) {
+        console.error(e);
+        return res.status(500).json({message: e.message});
+    }
+
+    user.associatedTranscriptions.push(transcribe.id);
+
+    try {
+        await user.save();
+    } catch (e) {
+        console.error(e);
+        return res.status(500).json({message: e.message});
+    }
+}
 
 export default router;

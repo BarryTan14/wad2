@@ -184,7 +184,7 @@ export default {
         this.loading = true
         this.error = null
 
-        const response = await axios.get('/user/api/profile')
+        const response = await axios.get('/api/user/profile')
         this.userData = response.data
         this.resetEditForm()
       } catch (err) {
@@ -220,7 +220,7 @@ export default {
       try {
         this.isSaving = true;
 
-        const response = await axios.put('/user/api/profile/update', {
+        const response = await axios.put('/api/user/profile/update', {
           displayName: this.editForm.displayName,
           bio: this.editForm.bio,
           action: this.editForm.action,
@@ -262,7 +262,7 @@ export default {
         const formData = new FormData();
         formData.append('profilePic', file);
 
-        const response = await axios.post('/user/api/profile/picture', formData, {
+        const response = await axios.post('/api/user/profile/picture', formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }

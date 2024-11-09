@@ -43,13 +43,16 @@ export default async function messagesHandler(io) {
             // Handle room joining
             socket.on('join-room', async (roomId) => {
                 //if no roomID, try to get from cookie, if not, join default room
-                if(!roomId)
+                if(!mongoose.Types.ObjectId.isValid(roomId))
                 {
                     roomId = getRoomIdFromSocket(socket)
-                    if(!roomId) {
+                    if(mongoose.Types.ObjectId.isValid(roomId))
+                        roomId = await ChatRoom.findById(roomId).select('_id');
+                    if(!mongoose.Types.ObjectId.isValid(roomId)) {
                         roomId = await ChatRoom.findOne({type: 'default'}).select('_id');
                         roomId = roomId._id
                     }
+                    console.log(roomId)
                 }
                 try {
                     if (!user) throw new Error('Authentication required');

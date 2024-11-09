@@ -4,7 +4,7 @@ import UserProfile from "../views/UserProfile.vue";
 
 const checkAuth = async () => {
   try {
-    await axios.get('/user/api/auth/test')  // Your existing profile endpoint
+    await axios.get('/api/user/auth/test')  // Your existing profile endpoint
     return true // User is authenticated
   } catch (error) {
     return false // User is not authenticated

@@ -92,7 +92,7 @@ const asyncHandler = (fn) => (req, res, next) => {
 // handles register with registration validation middleware using npm package
 // automatically logs the user in after registration to save time
 // originally wanted to do verification with email but required smtp and is complex
-router.put('/api/auth/register', validateRegistration, asyncHandler(async (req, res) => {
+router.put('/auth/register', validateRegistration, asyncHandler(async (req, res) => {
     const { email, password, username, captcha } = req.body;
 
     if (captcha !== req.session.captcha) {
@@ -126,7 +126,7 @@ router.put('/api/auth/register', validateRegistration, asyncHandler(async (req, 
 
 // handles login
 // sets cookie token
-router.post('/api/auth/login', validateLogin, asyncHandler(async (req, res) => {
+router.post('/auth/login', validateLogin, asyncHandler(async (req, res) => {
     const { username, password, captcha } = req.body;
 
     if (captcha !== req.session.captcha) {
@@ -149,7 +149,7 @@ router.post('/api/auth/login', validateLogin, asyncHandler(async (req, res) => {
 
 // handles logout requests with an auth middleware so that anybody can't just log out anyone else.
 // removes token cookie
-router.post('/api/auth/logout', authMiddleware, (req, res) => {
+router.post('/auth/logout', authMiddleware, (req, res) => {
     res.clearCookie('token', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -161,18 +161,18 @@ router.post('/api/auth/logout', authMiddleware, (req, res) => {
 
 // Test route that was written to learn about auth middleware
 // UNUSED (maybe)
-router.get('/api/auth/test', authMiddleware, async (req, res) => {
+router.get('/auth/test', authMiddleware, async (req, res) => {
     res.status(200).json({ message: 'You have access to this protected resource', })
 })
 
 // Just checks the auth of user
-router.get('/api/auth/check', authMiddleware, async (req, res) => {
+router.get('/auth/check', authMiddleware, async (req, res) => {
     res.status(200).json({ user: pick(req.user, ['_id', 'displayName', 'profilePic', 'bio', 'role', 'email', 'joinedGroups']) });
 })
 
 // Gets profile based on current user's token.
 // Only able to get profile of current user, for other users, use profile/:id
-router.get('/api/profile', authMiddleware, asyncHandler(async (req, res) => {
+router.get('/profile', authMiddleware, asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id).select('-password');
     if (!user) {
         return res.status(404).json({ message: 'User not found' });
@@ -206,8 +206,7 @@ const handlePasswordUpdate = async (user, { currentPassword, newPassword }) => {
 // Handles updating of profile details
 // uses Auth Middleware to get token and who's trying to edit their details, makes sure another user can't edit other users without correct auth
 // validate middleware using validation package so that we don't have to write our own validator
-// TODO: handle password updating and validation
-router.put('/api/profile/update', authMiddleware, validateProfileUpdate, asyncHandler(async (req, res) => {
+router.put('/profile/update', authMiddleware, validateProfileUpdate, asyncHandler(async (req, res) => {
     const action = req.body.action;
     try {
         switch (action) {
@@ -243,7 +242,7 @@ router.put('/api/profile/update', authMiddleware, validateProfileUpdate, asyncHa
 // svgUploadMiddleware to santize and optimize svg in case the user uploads an SVG (Don't want to block svg outright)
 // Uploads profile picture as randomstring + timestamp to ensure no duplicates
 // Does not delete the old picture for "caching"
-router.post('/api/profile/picture',
+router.post('/profile/picture',
     authMiddleware,
     upload.single('profilePic'),
     svgUploadMiddleware,  // Move after upload.single()
@@ -283,7 +282,7 @@ router.post('/api/profile/picture',
 );
 
 // Profile with :id parameter to search for specific ObjectID from mongodb. Returns ['profilePic','displayName','bio','role'] as an object, not as "user"
-router.get('/api/profile/:id', authMiddleware, asyncHandler(async (req, res) => {
+router.get('/profile/:id', authMiddleware, asyncHandler(async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
         return res.json({ profilePic: 'server.png', displayName: 'Unknown', bio: 'Who am I? Who are you?' });
     }
@@ -299,7 +298,7 @@ router.get('/api/profile/:id', authMiddleware, asyncHandler(async (req, res) => 
     res.json(pick(user, ['profilePic', 'displayName', 'bio', 'role', 'email', 'joinedGroups']));
 }));
 
-router.get('/api/searchDisplayName/:displayName', authMiddleware, asyncHandler(async (req, res) => {
+router.get('/searchDisplayName/:displayName', authMiddleware, asyncHandler(async (req, res) => {
     const displayName = req.params.displayName;
 
     if (!displayName || displayName === '')
@@ -315,7 +314,7 @@ router.get('/api/searchDisplayName/:displayName', authMiddleware, asyncHandler(a
     return res.status(200).json(users);
 }));
 
-router.post('/api/addMyselfToGroup/', authMiddleware, asyncHandler(async (req, res) => {
+router.post('/addMyselfToGroup/', authMiddleware, asyncHandler(async (req, res) => {
     const groupId = req.params.groupId;
     if (!groupId || groupId === '')
         return res.status(400).json({ message: 'No group id provided' });
@@ -336,7 +335,7 @@ router.post('/api/addMyselfToGroup/', authMiddleware, asyncHandler(async (req, r
     }
 }));
 
-router.post('/api/addToGroup/:groupId', authMiddleware, asyncHandler(async (req, res) => {
+router.post('/addToGroup/:groupId', authMiddleware, asyncHandler(async (req, res) => {
     // Retrieve groupId from route parameters
     const { groupId } = req.params;
     const { displayName } = req.body;

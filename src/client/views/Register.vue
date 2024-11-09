@@ -7,7 +7,7 @@
           <label for="exampleInputEmail1" class="form-label">Email</label>
           <input
               type="email"
-              class="form-control form-input"
+              class="form-control form-input py-3 py-md-2"
               :class="{ 'is-invalid': errors.email, 'is-valid': formData.email && !errors.email }"
               id="exampleInputEmail1"
               aria-describedby="emailHelp"
@@ -30,7 +30,7 @@
           <label for="exampleInputUsername1" class="form-label">Username</label>
           <input
               type="text"
-              class="form-control form-input"
+              class="form-control form-input py-3 py-md-2"
               :class="{ 'is-invalid': errors.username, 'is-valid': formData.username && !errors.username }"
               id="exampleInputUsername1"
               :disabled="registerDisabled"
@@ -53,7 +53,7 @@
           <label for="exampleInputPassword1" class="form-label">Password</label>
           <input
               type="password"
-              class="form-control form-input"
+              class="form-control form-input  py-3 py-md-2"
               :class="{ 'is-invalid': errors.password, 'is-valid': formData.password && !errors.password }"
               id="exampleInputPassword1"
               :disabled="registerDisabled"
@@ -88,7 +88,7 @@
         </div>
 
         <button
-            class="btn btn-primary form-input col col-12"
+            class="btn btn-primary form-input py-3 py-md-2 w-100"
             type="submit"
             id="registerBtn"
             :disabled="registerDisabled || !isFormValid"

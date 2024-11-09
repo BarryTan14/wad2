@@ -47,6 +47,10 @@ const userSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.String,
         ref: 'Groups'
     }],
+    associatedTranscriptions: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Transcription'
+    }],
     accountStatus: {
         type: String,
         required: true,
