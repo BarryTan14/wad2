@@ -245,7 +245,10 @@ export default {
         }
       } catch (error) {
         console.error('Error fetching modules:', error);
-        this.$toastStore.error('Failed to fetch modules');
+        this.$toast.fire({
+          icon: 'error',
+          message: 'Failed to fetch modules',
+        })
       }
     },
 
@@ -255,7 +258,10 @@ export default {
         this.transcriptions = response.data.transcriptions;
       } catch (error) {
         console.error('Error fetching transcriptions:', error);
-        this.$toastStore.error('Failed to fetch transcriptions');
+        this.$toast.fire({
+          icon: 'error',
+          message: 'Failed to fetch transcriptions',
+        })
       }
     },
 
@@ -269,7 +275,11 @@ export default {
           confirmButtonColor: '#dc3545',
           cancelButtonColor: '#6c757d',
           confirmButtonText: 'Yes, delete it',
-          cancelButtonText: 'Cancel'
+          cancelButtonText: 'Cancel',
+          customClass: {
+            confirmButton: 'order-1',
+            cancelButton: 'order-2',
+          },
         });
 
         if (result.isConfirmed) {

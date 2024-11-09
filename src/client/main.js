@@ -5,7 +5,7 @@ import App from './App.vue'
 import router from './router'
 import {createPinia} from 'pinia'
 import {useAuthStore} from './stores/auth.js'
-import {useToastStore} from "./stores/toast.js";
+//import {useToastStore} from "./stores/toast.js";
 
 import VueSweetalert2 from 'sweetalert2';
 
@@ -27,12 +27,12 @@ app.config.globalProperties.$socket = io();
 
 app.use(pinia)
 app.config.globalProperties.$authStore = useAuthStore();
-app.config.globalProperties.$toastStore = useToastStore();
+//app.config.globalProperties.$toastStore = useToastStore();
 app.config.globalProperties.$swal = VueSweetalert2.mixin(options);
 app.config.globalProperties.$toast = VueSweetalert2.mixin({
     toast: true,
     position: 'top-end',
-    showConfirmButton: false,
+    showConfirmButton: true,
     timer: 3000,
     timerProgressBar: true
 });
@@ -52,7 +52,6 @@ app.use(router)
 router.beforeEach(async (to, from, next) => {
     const authStore = useAuthStore()
     //const authStore = this.$authStore;
-    const toastStore = useToastStore();
     const hasAuthMeta = to.matched.some(record => 'requiresAuth' in record.meta)
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
     if (hasAuthMeta)
@@ -61,12 +60,24 @@ router.beforeEach(async (to, from, next) => {
             // Verify auth status
             const isAuthenticated = await authStore.checkAuth()
             if (!isAuthenticated && requiresAuth) {
-                toastStore.error("You need authentication to access this resource");
+                VueSweetalert2.mixin(options).fire({
+                    icon: 'warning',
+                    title: 'You need authentication to access this resource.'
+                })
                 next('/login')
                 return
             }
             if (isAuthenticated && !requiresAuth) {
-                toastStore.warning("You have been redirected");
+                VueSweetalert2.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: true,
+                    timer: 3000,
+                    timerProgressBar: true
+                }).fire({
+                    icon: 'info',
+                    title: 'You have been redirected.'
+                })
                 next('/')
                 return
             }
@@ -84,13 +95,25 @@ router.beforeEach(async (to, from, next) => {
             })
 
             if (!authStore.isAuthenticated && requiresAuth) {
-                toastStore.error("You need authentication to access this resource");
+                VueSweetalert2.mixin(options).fire({
+                    icon: 'warning',
+                    title: 'You need authentication to access this resource.'
+                })
                 next('/login')
                 return
             }
 
             if (authStore.isAuthenticated && !requiresAuth) {
-                toastStore.warning("You have been redirected");
+                VueSweetalert2.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: true,
+                    timer: 3000,
+                    timerProgressBar: true
+                }).fire({
+                    icon: 'info',
+                    title: 'You have been redirected.'
+                })
                 next('/')
                 return
             }
@@ -100,7 +123,7 @@ router.beforeEach(async (to, from, next) => {
 
 // Initialize auth before mounting
 const authStore = useAuthStore()
-authStore.initializeAuth().then(()=>{
+authStore.initializeAuth().then(() => {
     const vm = app.mount('#app')
 })
 

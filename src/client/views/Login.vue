@@ -54,8 +54,6 @@
   </div>
 </template>
 <script>
-import { getCurrentInstance } from 'vue'
-import { useToastStore } from '../stores/toast';
 import {useRouter} from "vue-router";
 
 export default {
@@ -86,8 +84,6 @@ export default {
       },
       loginDisabled: false,
       router: null,
-      /*authStore: null,
-      toastStore: null,*/
     }
   },
   methods: {
@@ -136,10 +132,16 @@ export default {
     handleToastError(error) {
       if (error.errors) {
         for (const err of error.errors) {
-          this.$toastStore.error(`The ${err.type} ${err.path} has an error of: ${err.msg}`);
+          this.$toast.fire({
+            icon: 'error',
+            title: `The ${err.type} ${err.path} has an error of: ${err.msg}`,
+          })
         }
       } else {
-        this.$toastStore.error(error.message || error.msg || error);
+        this.$toast.fire({
+          icon: 'error',
+          title:error.message || error.msg || error,
+        })
       }
     },
   },
@@ -153,34 +155,9 @@ export default {
 
   },
   beforeMount() {
-    this.router = useRouter()/*
-    this.authStore = useAuthStore()
-    this.toastStore = useToastStore();*/
+    this.router = useRouter()
   },
 }
-/*
-const formData = reactive({
-  username:'',
-  password:'',
-})
-const loginDisabled = ref(false);
-
-const router = useRouter();
-
-function login() {
-  loginDisabled.value = true;
-  // simulate loading time to test out spinner
-  setTimeout(() => {
-    axios.post('user/api/auth/login', formData).then(response => {
-      alert(response.data)
-      router.push('/profile');
-    }).catch(error => {
-      alert(error.response)
-    }).finally(()=>{
-      loginDisabled.value = false;
-    })
-  }, 1000)
-}*/
 </script>
 <style scoped>
 @media (min-width: 1024px) {

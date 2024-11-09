@@ -236,9 +236,9 @@ export default {
         // Emit socket event for profile update
         this.$socket.emit('profile-updated', this.userData._id);
 
-        this.$toastStore.success(response.data.message);
+        this.handleToastSuccess(response.data.message);
       } catch (err) {
-        this.$toastStore.error(err.response?.data?.message || 'Failed to update profile');
+        this.handleToastError(err.response?.data?.message || 'Failed to update profile');
       } finally {
         this.isSaving = false;
       }
@@ -254,7 +254,7 @@ export default {
 
       const maxSize = 5 * 1024 * 1024; // 5MB
       if (file.size > maxSize) {
-        this.$toastStore.error('Image size should be less than 5MB');
+        this.handleToastError('Image size should be less than 5MB');
         return;
       }
 
@@ -275,9 +275,31 @@ export default {
         // Emit socket event for profile update
         this.$socket.emit('profile-updated', this.userData._id);
 
-        this.$toastStore.success('Profile picture updated successfully!');
+        this.handleToastSuccess('Profile picture updated successfully!');
       } catch (err) {
-        this.$toastStore.error(err.response?.data?.message || 'Failed to upload image');
+        this.handleToastError(err.response?.data?.message || 'Failed to upload image');
+      }
+    },
+
+    handleToastSuccess(message) {
+      this.$toast.fire({
+        icon: 'success',
+        title: message
+      });
+    },
+    handleToastError(error) {
+      if (error.errors) {
+        for (const err of error.errors) {
+          this.$toast.fire({
+            icon: 'error',
+            title: `The ${err.type} ${err.path} has an error of: ${err.msg}`,
+          })
+        }
+      } else {
+        this.$toast.fire({
+          icon: 'error',
+          title:error.message || error.msg || error,
+        })
       }
     },
 

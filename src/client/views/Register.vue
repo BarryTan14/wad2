@@ -287,7 +287,10 @@ export default {
         this.$socket.disconnect();
         this.$socket.connect();
 
-        this.$toastStore.success('Registration successful!');
+        this.$toast.fire({
+          icon:'success',
+          title:'Registration successful!'
+        })
         this.router.push('/profile');
       } catch (error) {
         this.handleToastError(error);
@@ -299,12 +302,18 @@ export default {
     handleToastError(error) {
       if (error.errors) {
         for (const err of error.errors) {
-          this.$toastStore.error(`The ${err.type} ${err.path} has an error of: ${err.msg}`);
+          this.$toast.fire({
+            icon: 'error',
+            title: `The ${err.type} ${err.path} has an error of: ${err.msg}`,
+          })
         }
       } else {
-        this.$toastStore.error(error.message || error.msg || error);
+        this.$toast.fire({
+          icon: 'error',
+          title:error.message || error.msg || error,
+        })
       }
-    }
+    },
   },
   beforeMount() {
     this.router = useRouter();

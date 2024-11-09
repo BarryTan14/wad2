@@ -1,13 +1,11 @@
 <!-- AuthDropdown.vue -->
 <script>
-import { useToastStore } from '../stores/toast';
 
 export default {
   name: 'AuthDropdown',
 
   data() {
     return {
-      toastStore: null,
       fallbackImage: '/profilepicture/avatar.png',
     }
   },
@@ -20,18 +18,39 @@ export default {
   },
 
   beforeMount() {
-    this.toastStore = useToastStore();
+
   },
 
   methods: {
     async handleLogout() {
-      await this.$authStore.logout()
-      this.eraseCookie('roomId')
-      this.toastStore.success('Logged out');
-      this.$router.push('/')
+      const result = await this.$swal.fire({
+        title: 'Logout',
+        text: 'Are you sure you want to logout?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'No',
+        customClass: {
+          confirmButton: 'order-1',
+          cancelButton: 'order-2',
+        },
+      });
+
+      if (result.isConfirmed) {
+        await this.$authStore.logout()
+        this.eraseCookie('roomId')
+        this.$toast.fire({
+          showConfirmButton: true,
+          icon: 'success',
+          title: 'Logged out successfully'
+        })
+        this.$router.push('/')
+      }
     },
     eraseCookie(name) {
-      document.cookie = name +'=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+      document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     }
   }
 }
@@ -72,11 +91,11 @@ export default {
             <i class="bi bi-person me-2"></i>Profile
           </RouterLink>
         </li>
-<!--        <li>
-          <RouterLink to="/settings" class="dropdown-item">
-            <i class="bi bi-gear me-2"></i>Settings
-          </RouterLink>
-        </li>-->
+        <!--        <li>
+                  <RouterLink to="/settings" class="dropdown-item">
+                    <i class="bi bi-gear me-2"></i>Settings
+                  </RouterLink>
+                </li>-->
         <li>
           <hr class="dropdown-divider">
         </li>
