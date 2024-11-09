@@ -166,7 +166,7 @@ router.get('/api/auth/test', authMiddleware, async (req, res) => {
 
 // Just checks the auth of user
 router.get('/api/auth/check', authMiddleware, async (req, res) => {
-    res.status(200).json({user: pick(req.user, ['_id', 'displayName', 'profilePic', 'bio', 'role', 'email'])});
+    res.status(200).json({user: pick(req.user, ['_id', 'displayName', 'profilePic', 'bio', 'role', 'email', 'joinedGroups'])});
 })
 
 // Gets profile based on current user's token.
@@ -176,7 +176,7 @@ router.get('/api/profile', authMiddleware, asyncHandler(async (req, res) => {
     if (!user) {
         return res.status(404).json({message: 'User not found'});
     }
-    res.json(pick(user, ['profilePic', 'displayName', 'bio', 'role']));
+    res.json(pick(user, ['profilePic', 'displayName', 'bio', 'role', 'joinedGroups']));
 }));
 
 // Handles general info update like displayname bio and role.
@@ -295,7 +295,7 @@ router.get('/api/profile/:id', authMiddleware, asyncHandler(async (req, res) => 
         return res.json({profilePic:'server.png',displayName:'Unknown',bio:'An empty spot on the internet'} );
     }
 
-    res.json(pick(user, ['profilePic', 'displayName', 'bio', 'role', 'email']));
+    res.json(pick(user, ['profilePic', 'displayName', 'bio', 'role', 'email', 'joinedGroups']));
 }));
 
 router.get('/api/searchDisplayName/:displayName', authMiddleware, asyncHandler(async (req, res) => {
