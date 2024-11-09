@@ -23,7 +23,7 @@ export default {
 
   data() {
     return {
-      userGroups: [{}],
+      userGroups: [],
       isModalOpen: false,
       suggestions: [], // Stores suggestions for each team member input
       showSuggestions: [], // Controls visibility of suggestions for each input

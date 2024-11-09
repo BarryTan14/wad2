@@ -270,6 +270,7 @@ export default {
       }, 100);
     },
     async addTask() {
+      //ToDo: Create task Id accordingly
       this.newTask.taskId = 't100'
       this.newTask.groupId = this.groupId
       this.newTask.membersInCharge = this.newTask.membersInCharge.map(member => member.name.trim())
@@ -281,7 +282,7 @@ export default {
         });
 
         console.log('Workspace added:', response.data);
-
+        //ToDo: Append the task ID to the relevant group id
         // Optionally, refresh the workspaces list or handle UI updates
       } catch (error) {
         console.error('Error adding workspace:', error);

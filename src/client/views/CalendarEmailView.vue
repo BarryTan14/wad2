@@ -23,7 +23,8 @@
           </div>
 
           <div v-if="events.length" class="events-list">
-            <div v-for="event in events" :key="event.id" class="event-card" :class="{ 'selected': selectedEvent?.id === event.id }">
+            <div v-for="event in events" :key="event.id" class="event-card"
+              :class="{ 'selected': selectedEvent?.id === event.id }">
               <div class="event-header">
                 <h3 class="event-title">{{ event.summary }}</h3>
                 <span class="event-id">ID: {{ event.id }}</span>
@@ -57,88 +58,54 @@
             <form @submit.prevent="handleEventSubmit" class="event-form">
               <div class="form-group">
                 <label for="eventSummary">Summary</label>
-                <input
-                  type="text"
-                  id="eventSummary"
-                  v-model="eventForm.summary"
-                  required
-                  placeholder="Enter event title"
-                  class="form-control"
-                />
+                <input type="text" id="eventSummary" v-model="eventForm.summary" required
+                  placeholder="Enter event title" class="form-control" />
               </div>
               <div class="form-group">
-    <label for="eventStart">Start Time</label>
-    <div class="input-group">
-      <input
-        type="text"
-        id="eventStart"
-        class="form-control flatpickr-input"
-        v-model="eventForm.start"
-        data-input
-        required
-        readonly
-      />
-      <div class="input-group-append">
-        <button class="btn btn-primary" type="button" @click="openStartPicker">
-          <i class="fas fa-calendar"></i>
-        </button>
-      </div>
-    </div>
-  </div>
-  <div class="form-group">
-    <label for="eventEnd">End Time</label>
-    <div class="input-group">
-      <input
-        type="text"
-        id="eventEnd"
-        class="form-control flatpickr-input"
-        v-model="eventForm.end"
-        data-input
-        required
-        readonly
-      />
-      <div class="input-group-append">
-        <button class="btn btn-primary" type="button" @click="openEndPicker">
-          <i class="fas fa-calendar"></i>
-        </button>
-      </div>
-    </div>
-  </div>
+                <label for="eventStart">Start Time</label>
+                <div class="input-group">
+                  <input type="text" id="eventStart" class="form-control flatpickr-input" v-model="eventForm.start"
+                    data-input required readonly />
+                  <div class="input-group-append">
+                    <button class="btn btn-primary" type="button" @click="openStartPicker">
+                      <i class="fas fa-calendar"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="eventEnd">End Time</label>
+                <div class="input-group">
+                  <input type="text" id="eventEnd" class="form-control flatpickr-input" v-model="eventForm.end"
+                    data-input required readonly />
+                  <div class="input-group-append">
+                    <button class="btn btn-primary" type="button" @click="openEndPicker">
+                      <i class="fas fa-calendar"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
               <div class="form-group">
                 <label for="eventDescription">Description</label>
-                <textarea
-                  id="eventDescription"
-                  v-model="eventForm.description"
-                  rows="3"
-                  placeholder="Enter event description"
-                  class="form-control"
-                ></textarea>
+                <textarea id="eventDescription" v-model="eventForm.description" rows="3"
+                  placeholder="Enter event description" class="form-control"></textarea>
               </div>
               <div class="form-actions">
                 <button type="submit" class="btn btn-primary submit-btn">
                   <i class="fas fa-save"></i> {{ selectedEvent ? 'Update Event' : 'Create Event' }}
                 </button>
-                <button
-                  v-if="selectedEvent"
-                  type="button"
-                  @click="deleteEvent"
-                  class="btn btn-danger delete-btn"
-                >
+                <button v-if="selectedEvent" type="button" @click="deleteEvent" class="btn btn-danger delete-btn">
                   <i class="fas fa-trash-alt"></i> Delete Event
                 </button>
               </div>
             </form>
-            <button
-              v-if="selectedEvent"
-              @click="backToCreate"
-              class="btn btn-link back-btn"
-            >
+            <button v-if="selectedEvent" @click="backToCreate" class="btn btn-link back-btn">
               <i class="fas fa-arrow-left"></i> Back to Create
             </button>
           </div>
         </section>
       </div>
-      
+
       <div v-else class="login-prompt">
         <i class="fas fa-lock"></i>
         <p>Please log in to access the Calendar Manager</p>
@@ -151,12 +118,7 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">{{ modalTitle }}</h5>
-            <button 
-              type="button" 
-              class="btn-close" 
-              @click="closeEventActionModal"
-              aria-label="Close"
-            ></button>
+            <button type="button" class="btn-close" @click="closeEventActionModal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <div v-if="modalAction" class="status-badge" :class="modalAction.toLowerCase()">
@@ -169,19 +131,11 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button 
-              type="button" 
-              class="btn-secondary" 
-              @click="closeEventActionModal"
-            >
+            <button type="button" class="btn-secondary" @click="closeEventActionModal">
               Close
             </button>
-            <button 
-              v-if="modalAction === 'Success' && isNewEvent && !invitationsSent" 
-              type="button" 
-              class="btn-primary"
-              @click="showEmailModal"
-            >
+            <button v-if="modalAction === 'Success' && isNewEvent && !invitationsSent" type="button" class="btn-primary"
+              @click="showEmailModal">
               Send Invitations
             </button>
           </div>
@@ -195,24 +149,14 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Send Email Invitations</h5>
-            <button 
-              type="button" 
-              class="btn-close" 
-              @click="closeEmailModal"
-              :disabled="isLoading"
-            ></button>
+            <button type="button" class="btn-close" @click="closeEmailModal" :disabled="isLoading"></button>
           </div>
           <div class="modal-body">
             <div class="form-group">
               <label for="emailList">Enter email addresses (comma-separated)</label>
-              <textarea
-  id="emailList"
-  v-model="emailAddresses"
-  rows="6"
-  placeholder="example1@email.com, example2@email.com, example3@email.com, example4@email.com"
-  class="form-control"
-  :disabled="isLoading"
-></textarea>
+              <textarea id="emailList" v-model="emailAddresses" rows="6"
+                placeholder="example1@email.com, example2@email.com, example3@email.com, example4@email.com"
+                class="form-control" :disabled="isLoading"></textarea>
               <small class="text-muted">Separate multiple email addresses with commas </small>
               <div v-if="emailError" class="text-danger mt-2">
                 {{ emailError }}
@@ -220,20 +164,10 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button 
-              type="button" 
-              class="btn-secondary" 
-              @click="closeEmailModal"
-              :disabled="isLoading"
-            >
+            <button type="button" class="btn-secondary" @click="closeEmailModal" :disabled="isLoading">
               Cancel
             </button>
-            <button 
-              type="button" 
-              class="btn-primary" 
-              @click="sendInvitations"
-              :disabled="!hasValidEmails || isLoading"
-            >
+            <button type="button" class="btn-primary" @click="sendInvitations" :disabled="!hasValidEmails || isLoading">
               <span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
               {{ isLoading ? 'Sending...' : 'Send Invitations' }}
             </button>
@@ -254,6 +188,7 @@ export default {
   name: 'CalendarEmailView',
   data() {
     return {
+      groupEmails: [],
       events: [],
       selectedEvent: null,
       emailAddresses: '',
@@ -284,6 +219,8 @@ export default {
     }
   },
   mounted() {
+    this.getGroup();
+    //Get groups based on display Name stuff
     if (this.email) {
       this.listEvents()
     }
@@ -297,6 +234,30 @@ export default {
     }
   },
   methods: {
+    async getGroup() {
+      try {
+        const response = await axios.get('/api/group/myGroups');
+        this.groupOptions = response.data.groups[0].teamMembers;
+        console.log(this.groupOptions)
+        for (const member of this.groupOptions) {
+          console.log(member.name);
+          await axios.get('/api/user/searchDisplayname/'+member.name)
+          .then(resp=>{
+            console.log(resp.data)
+            this.groupEmails.push(resp.data[0].email)
+          })
+          
+        }
+        console.log(this.groupEmails)
+      } catch (error) {
+        console.error('Error fetching emails:', error);
+        this.$toast.fire({
+          icon: 'error',
+          message: 'Failed to fetch emails',
+        })
+      }
+    },
+
     initDateTimePickers() {
       this.startPicker = flatpickr('#eventStart', {
         enableTime: true,
@@ -321,8 +282,8 @@ export default {
       })
     },
     closeEventActionModal() {
-    this.eventActionModal.hide()
-  },
+      this.eventActionModal.hide()
+    },
 
     // New methods to handle calendar button clicks
     openStartPicker() {
@@ -390,15 +351,15 @@ export default {
 
         let res
         if (this.selectedEvent) {
-        this.isNewEvent = false // Ensure it's false for updates
-        res = await axios.put(`/api/calendar-email/events/${this.selectedEvent.id}?email=${this.email}`, eventData)
-        this.showEventActionModal('Success', res.data)
-      } else {
-        this.isNewEvent = true // Set to true for new events
-        res = await axios.post(`/api/calendar-email/events?email=${this.email}`, eventData)
-        this.createdEvent = res.data
-        this.showEventActionModal('Success', res.data)
-      }
+          this.isNewEvent = false // Ensure it's false for updates
+          res = await axios.put(`/api/calendar-email/events/${this.selectedEvent.id}?email=${this.email}`, eventData)
+          this.showEventActionModal('Success', res.data)
+        } else {
+          this.isNewEvent = true // Set to true for new events
+          res = await axios.post(`/api/calendar-email/events?email=${this.email}`, eventData)
+          this.createdEvent = res.data
+          this.showEventActionModal('Success', res.data)
+        }
 
         await this.listEvents()
         this.selectedEvent = null
@@ -519,7 +480,7 @@ You are invited by ${this.email}
           this.emailAddresses = '';
           this.emailError = '';
           this.createdEvent = null;
-          
+
           this.showEventActionModal('Success', {
             summary: 'Email invitations sent successfully',
             start: { dateTime: event.start.dateTime },
@@ -530,8 +491,8 @@ You are invited by ${this.email}
         }
       } catch (error) {
         console.error('Error sending invitations:', error);
-        this.emailError = error.response?.data?.message || 
-                          'Failed to send email invitations. Please try again.';
+        this.emailError = error.response?.data?.message ||
+          'Failed to send email invitations. Please try again.';
       } finally {
         this.isLoading = false;
       }
@@ -583,6 +544,7 @@ You are invited by ${this.email}
   color: #6c757d;
   font-size: 0.875rem;
 }
+
 .calendar-app {
   font-family: 'Roboto', sans-serif;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -638,7 +600,8 @@ You are invited by ${this.email}
   gap: 2rem;
 }
 
-.events-section, .event-form-section {
+.events-section,
+.event-form-section {
   background-color: white;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -797,7 +760,8 @@ You are invited by ${this.email}
   margin-top: 1rem;
 }
 
-.submit-btn, .delete-btn {
+.submit-btn,
+.delete-btn {
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 5px;
@@ -917,7 +881,7 @@ You are invited by ${this.email}
     flex-direction: column;
   }
 
-  .input-group > .form-control {
+  .input-group>.form-control {
     border-radius: 4px;
     margin-bottom: 0.5rem;
   }
@@ -931,9 +895,10 @@ You are invited by ${this.email}
     justify-content: center;
   }
 }
+
 .custom-modal .modal-content {
   border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .custom-modal .modal-header {
@@ -1006,8 +971,13 @@ You are invited by ${this.email}
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .custom-modal {

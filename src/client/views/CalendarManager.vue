@@ -1,4 +1,3 @@
-<!-- src/client/components/CalendarManager.vue -->
 <template>
   <div>
     <div v-if="!email">
@@ -50,7 +49,7 @@
           <div>
             <label for="attendeeEmail">Add Attendee Email:</label>
             <input type="email" id="attendeeEmail" v-model="newAttendeeEmail">
-            <button @click="getUserGroup">Add Attendee</button>
+            <button @click="getModules">Add Attendee</button>
           </div>
           <div id="attendeesList" class="attendee-list">
             <div v-for="(attendee, index) in attendees" :key="index" class="attendee-item">
@@ -81,6 +80,7 @@ export default {
   name: 'CalendarManager',
   data() {
     return {
+      groupOptions: [],
       email: '',
       tempEmail: '',
       eventId: '',
@@ -94,9 +94,23 @@ export default {
       response: ''
     }
   },
+
   methods: {
-    getUserGroup(){
-      console.log(this.$authStore.currentUser)
+    async getModules() {
+      console.log("Hello")
+      try {
+        const response = await axios.get('/api/group/myGroups');
+        this.groupOptions = response.data.groups;
+        if (this.groupOptions.length > 0) {
+          this.selectedModuleId = this.groupOptions[0]._id;
+        }
+      } catch (error) {
+        console.error('Error fetching modules:', error);
+        this.$toast.fire({
+          icon: 'error',
+          message: 'Failed to fetch modules',
+        })
+      }
     },
     setEmail() {
       if (this.tempEmail && this.validateEmail(this.tempEmail)) {
