@@ -337,10 +337,9 @@ router.post('/api/addMyselfToGroup/', authMiddleware, asyncHandler(async (req, r
 
 router.post('/api/addToGroup/', authMiddleware, asyncHandler(async (req, res) => {
     const {displayName, groupId} = req.body
-    console.log(req.body)
     if(!groupId || groupId === '')
         return res.status(400).json({message: 'No group id provided'});
-    const user = await User.findOne({displayName});
+    const user = await User.findOne({displayName: displayName}).select('-password');
     if(!user) {
         return res.status(400).json({message: 'No user found.'});
     }
