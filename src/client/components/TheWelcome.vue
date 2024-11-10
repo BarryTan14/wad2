@@ -39,6 +39,9 @@ export default {
         if(this.userTask.length!=0){
           return (count / this.userTask.length) * 100
         }
+        else{
+          return 0
+        }
         
     },
   }
@@ -100,17 +103,13 @@ export default {
         <ProgressIcon />
         Progress Dashboard
       </template>
-      <div v-if="userTask.length>0">
+      <div>
         <p>Track your progress!</p>
         <div class="progress-bar">
           <div class="progress" :style="{ width: progressPercentage() + '%' }"></div>
         </div>
         <p>{{ progressPercentage().toFixed(0) }}% of tasks completed.</p>
       </div>
-      <div v-else>
-        <h2>No tasks yet!</h2>
-      </div>
-
     </WelcomeItem>
   </div>
 </template>
