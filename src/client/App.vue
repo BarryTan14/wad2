@@ -157,7 +157,8 @@ export default {
           }
         }).then(resp => {
 
-          const groupId = resp.data.data;
+          const groupId = resp.data.data; 
+          console.log(groupId)
           const groupObj = { groupId: groupId, moduleTitle: this.newModule.moduleName }
           this.userGroups.push({ groupId: groupId, moduleTitle: this.newModule.moduleName })
           for (let i = 0; i < this.newModule.teamMembers.length; i++) {

@@ -225,13 +225,25 @@ export default {
 
   watch: {
     '$route.params.groupId': {
-
       handler(newGroupId) {
         this.groupId = newGroupId;
         this.fetchGroupData();
       },
       immediate: true
-    }
+    },
+    isLoggedIn: {
+    handler(isLoggedIn) {
+      if (isLoggedIn) {
+        this.fetchGroupData();
+        this.fetchTaskData();
+      } else {
+        this.tasks=[]
+        this.gorups = null
+        this.$router.push('/login'); // Redirect to login page
+      }
+    },
+    immediate: true,
+  }
   },
 
   methods: {
@@ -284,11 +296,11 @@ export default {
     async addTask() {
       //creates the unique task id
       const taskIdList = await axios.get('/api/task')
-          .then(response => response.data.data.map(task => task.taskId))
-          .catch(error => {
-            console.error("Error fetching tasks:", error);
-            return []; // Return an empty array in case of an error
-          });
+        .then(response => response.data.data.map(task => task.taskId))
+        .catch(error => {
+          console.error("Error fetching tasks:", error);
+          return []; // Return an empty array in case of an error
+        });
       console.log(taskIdList)
       this.newTask.taskId = this.generateUniqueTaskId(taskIdList)
       this.newTask.groupId = this.groupId
@@ -393,9 +405,10 @@ export default {
         console.error('Failed to fetch group data:', error);
       }
     },
-    
+
     async fetchTaskData() {
       try {
+        console.log(this.groupId)
         await axios.get(`/api/task/getBy/${this.groupId}`)
           .then(resp => {
             console.log(resp.data.data)

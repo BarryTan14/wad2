@@ -49,7 +49,7 @@ router.get('/getBy/:groupId', async (req, res) => {
         const tasks = await Task.find({ groupId: groupId });
         
         if (!tasks || tasks.length === 0) {
-            return res.json({ message: 'No tasks found for the specified group ID' });
+            return res.status(404).json({ message: 'No tasks found for the specified group ID' });
         }
         // Return the found modules as a JSON response
         res.json({
