@@ -79,14 +79,10 @@
 
           <div v-else-if="events.length" class="events-list">
             <div v-for="event in events" :key="event.id" class="event-card">
-              <FlipCard
-                :frontTitle="event.summary"
-                :frontDescription="event.description || 'No description'"
-                :backTitle="'Event Details'"
-                :eventId="event.id"
+              <FlipCard :frontTitle="event.summary" :frontDescription="event.description || 'No description'"
+                :backTitle="'Event Details'" :eventId="event.id"
                 :startDate="formatDateTime(event.start.dateTime || event.start.date)"
-                :endDate="formatDateTime(event.end.dateTime || event.end.date)"
-              >
+                :endDate="formatDateTime(event.end.dateTime || event.end.date)">
                 <template #backActions>
                   <button @click.stop="selectEvent(event)" class="edit-btn">
                     <i class="fas fa-edit"></i> Edit
@@ -140,50 +136,48 @@
       </div>
     </div>
 
-  <!-- Email Invitation Modal -->
-  <div class="modal fade custom-modal" id="emailModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Send Email Invitations</h5>
-          <button type="button" class="btn-close" @click="closeEmailModal" :disabled="isLoading"></button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label>Select Group</label>
-            <select v-model="selectedGroup" class="form-control" :disabled="isLoading">
-              <option value="">Choose a group</option>
-              <option v-for="group in groups" :key="group.id" :value="group">
-                {{ group.name }} ({{ group.membersInCharge.length }} members)
-              </option>
-            </select>
+    <!-- Email Invitation Modal -->
+    <div class="modal fade custom-modal" id="emailModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Send Email Invitations</h5>
+            <button type="button" class="btn-close" @click="closeEmailModal" :disabled="isLoading"></button>
           </div>
-          <div v-if="selectedGroup" class="mt-3">
-            <h6>Group Members:</h6>
-            <div class="member-list">
-              <div v-for="member in selectedGroup.membersInCharge" :key="member" 
-                   class="member-item">
-                {{ member }}
+          <div class="modal-body">
+            <div class="form-group">
+              <label>Select Group</label>
+              <select v-model="selectedGroup" class="form-control" :disabled="isLoading">
+                <option value="">Choose a group</option>
+                <option v-for="group in groups" :key="group.id" :value="group">
+                  {{ group.name }} ({{ group.membersInCharge.length }} members)
+                </option>
+              </select>
+            </div>
+            <div v-if="selectedGroup" class="mt-3">
+              <h6>Group Members:</h6>
+              <div class="member-list">
+                <div v-for="member in selectedGroup.membersInCharge" :key="member" class="member-item">
+                  {{ member }}
+                </div>
               </div>
             </div>
+            <div v-if="emailError" class="alert alert-danger mt-2">
+              {{ emailError }}
+            </div>
           </div>
-          <div v-if="emailError" class="alert alert-danger mt-2">
-            {{ emailError }}
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" @click="closeEmailModal" :disabled="isLoading">
+              Cancel
+            </button>
+            <button type="button" class="btn-primary" @click="sendInvitations" :disabled="!selectedGroup || isLoading">
+              <span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+              {{ isLoading ? 'Sending...' : 'Send Invitations' }}
+            </button>
           </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-secondary" @click="closeEmailModal" :disabled="isLoading">
-            Cancel
-          </button>
-          <button type="button" class="btn-primary" @click="sendInvitations" 
-                  :disabled="!selectedGroup || isLoading">
-            <span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
-            {{ isLoading ? 'Sending...' : 'Send Invitations' }}
-          </button>
         </div>
       </div>
     </div>
-  </div>
   </div>
 </template>
 
@@ -407,20 +401,20 @@ export default {
 
       this.isLoading = true
       this.emailError = ''
-      
+
       try {
         // Get emails for all group members in parallel
         const emailPromises = this.selectedGroup.membersInCharge.map(member =>
-          axios.get(`/api/group/names/${(member)}`)
-        )
-        
+          axios.get(`/api/group/names/${member.name}`)
+        );
+
         const responses = await Promise.allSettled(emailPromises)
-        
+
         // Filter successful responses and extract emails
         const validEmails = responses
-          .filter(response => response.status === 'fulfilled' && 
-                            response.value.data?.success && 
-                            response.value.data?.data?.[0]?.email)
+          .filter(response => response.status === 'fulfilled' &&
+            response.value.data?.success &&
+            response.value.data?.data?.[0]?.email)
           .map(response => response.value.data.data[0].email)
 
         if (validEmails.length === 0) {
@@ -513,7 +507,6 @@ You are invited by ${this.email}
 </script>
 
 <style scoped>
-
 .member-list {
   max-height: 150px;
   overflow-y: auto;
