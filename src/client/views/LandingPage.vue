@@ -1,4 +1,4 @@
-<!-- LandingPage.vue -->
+<!-- LandingPage.vue
 <template>
   <div class="vh-100 position-fixed top-0 start-0 w-100 overflow-hidden">
     <div class="position-absolute top-0 start-0 w-100 h-100">
@@ -154,4 +154,29 @@ video {
 .opacity-90 {
   opacity: 0.9;
 }
-</style>
+</style> -->
+
+<template>
+  <div>
+    <Hero />
+    <About />
+    <Services />
+    <Contact />
+  </div>
+</template>
+
+<script>
+import Hero from '../components/Hero.vue';
+import About from '../components/About.vue';
+import Services from '../components/Services.vue';
+import Contact from '../components/Contact.vue';
+
+export default {
+  components: {
+    Hero,
+    About,
+    Services,
+    Contact
+  }
+};
+</script>
