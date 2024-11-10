@@ -61,6 +61,24 @@ router.get('/getBy/:groupId', async (req, res) => {
         res.status(500).json({ message: "Failed to fetch tasks by groupId", groupId });
     }
 });
+router.get('/getByUser/:displayName', async (req, res) => {
+    const { displayName } = req.params; // Retrieve groupId from URL parameters
+    try {
+        // Find all modules that match the provided groupId
+        const tasks = await Task.find({ "membersInCharge.displayName": displayName });
+        if (!tasks || tasks.length === 0) {
+            return res.status(404).json({ message: 'No tasks found for the displayName' });
+        }
+        // Return the found modules as a JSON response
+        res.json({
+            message: "Successfully retrieved documents",
+            data: tasks
+        });
+    } catch (error) {
+        console.error("Error fetching tasks by displayName:", error);
+        res.status(500).json({ message: "Failed to fetch tasks by displayName", groupId });
+    }
+});
 
 //update Task based on taskId
 router.post('/updateBy/:taskId', async (req, res) => {

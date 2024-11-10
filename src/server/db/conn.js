@@ -11,5 +11,4 @@ try {
     console.log(e)
 }
 let db = conn.db("wad2");
-
 export default db;
