@@ -12,7 +12,7 @@ import {useAuthStore} from './stores/auth.js'
 
 import VueSweetalert2 from 'sweetalert2';
 
-const socket = io({
+let socket = io({
     reconnection: true,
     reconnectionAttempts: 5,
     reconnectionDelay: 3000,
@@ -52,6 +52,7 @@ app.config.globalProperties.$socketManager = {
         if (socket.connected) {
             socket.disconnect()
         }
+        socket = io();
         // Give a small delay before reconnecting
         setTimeout(() => {
             socket.connect()

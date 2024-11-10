@@ -153,6 +153,7 @@ export default {
         }
       };
 
+      if(this.currentRoom)
       this.$swal.fire({
         title: this.currentRoom.name,
         html: `

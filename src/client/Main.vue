@@ -491,7 +491,7 @@ export default {
         localStorage.setItem('theme', newValue ? 'dark' : 'light')
       },
       immediate: true
-    }
+    },
   },
 
   // Load saved theme preference

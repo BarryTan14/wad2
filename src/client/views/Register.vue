@@ -285,14 +285,15 @@ export default {
 
         // Reconnect socket with new auth state
 
-        this.$toast.fire({
-          icon:'success',
-          title:'Registration successful!'
-        })
-
         this.$socketManager.reconnect()
 
-        this.router.push('/profile');
+        await this.$swal.fire({
+          icon:'success',
+          title:'Registered!',
+          showConfirmButton:false,
+          timer: 1000,
+        })
+        window.location.href = '/profile'
       } catch (error) {
         this.handleToastError(error);
       } finally {

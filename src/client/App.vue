@@ -16,6 +16,7 @@ export default {
       isDarkTheme: true,
       isSidebarOpen: false,
       searchQuery: '',
+      isLoggedIn:false,
     }
   },
 
@@ -38,6 +39,7 @@ export default {
 
   // Load saved theme preference
   created() {
+    this.isLoggedIn = this.$authStore.isLoggedIn;
     const savedTheme = localStorage.getItem('theme')
     if (savedTheme) {
       this.isDarkTheme = savedTheme === 'dark'
@@ -50,7 +52,7 @@ export default {
 
 <template>
   <div class="app-container">
-    <Main v-if="this.$authStore.isLoggedIn" />
+    <Main v-if="isLoggedIn" />
     <LandingPage v-else/>
   </div>
 </template>
