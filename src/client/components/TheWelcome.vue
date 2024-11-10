@@ -7,38 +7,38 @@ import WelcomeItem from './WelcomeItem.vue';
 import ParticipationIcon from './icons/IconDocumentation.vue';
 import SchedulerIcon from './icons/IconEcosystem.vue';
 import ToDoIcon from './icons/IconCommunity.vue';
-import ProgressIcon from './icons/IconSupport.vue';        
+import ProgressIcon from './icons/IconSupport.vue';
 
 
 export default {
   name: 'TheWelcome',
   data() {
     return {
-      suggestions: [],
-      showSuggestions: [],
-      tasks: [],
-      groupId: '',
-      group: null,
-      showAddTaskModal: false,
-      newTask: {
-        taskName: '',
-        membersInCharge: [{ name: '' }],
-        deadline: '',
-        status: false
-      },
+      userTask: []
     };
-    
+
   },
-  // async mounted(){
-  //     console.log(this.$authStore.currentUser.displayName)
-  //     //get Tasks for this user.
-  //     await axios.get("/api/task/getByUser/"+this.$authStore.currentUser.displayName)
-  //     .then(resp=>{
-  //       console.log(resp)
-  //     })
-  // },
-  methods(){
-    
+  async mounted() {
+    console.log(this.$authStore.currentUser.displayName)
+    //get Tasks for this user.
+    await axios.get("/api/task/getByUser/" + this.$authStore.currentUser.displayName)
+      .then(resp => {
+        console.log(resp.data.data)
+        this.userTask = resp.data.data
+      })
+  },
+  methods: {
+    progressPercentage() {
+      
+        let count = 0;
+        for (let i = 0; i < this.userTask.length; i++) {
+          if (this.userTask[i].status === true) {
+            count++;
+          }
+        }
+        
+        return (count / this.userTask.length) * 100
+    },
   }
 }
 </script>
@@ -72,30 +72,26 @@ export default {
     </WelcomeItem>
 
     <!-- Project To-Do List -->
-<WelcomeItem>
-  <template #heading>
-    <ToDoIcon />
-    Task-to-Do List
-  </template>
-  <div>
-    <ul>
-      <li v-for="(item, index) in todoItems" :key="item.id" class="todo-item">
-        <input
-          type="checkbox"
-          v-model="item.completed"
-          class="task-checkbox"
-        />
-        <span class="task-text" :class="{ 'completed': item.completed }">{{ item.text }}</span>
-        <div class="action-buttons">
-          <button class="action-button" @click="editTodo(index)">Edit</button>
-          <button class="action-button" @click="deleteTodo(index)">Delete</button>
-        </div>
-      </li>
-    </ul>
-  </div>
-</WelcomeItem>
+    <WelcomeItem>
+      <template #heading>
+        <ToDoIcon />
+        Task-to-Do List
+      </template>
+      <div>
+        <ul>
+          <li v-for="(item, index) in todoItems" :key="item.id" class="todo-item">
+            <input type="checkbox" v-model="item.completed" class="task-checkbox" />
+            <span class="task-text" :class="{ 'completed': item.completed }">{{ item.text }}</span>
+            <div class="action-buttons">
+              <button class="action-button" @click="editTodo(index)">Edit</button>
+              <button class="action-button" @click="deleteTodo(index)">Delete</button>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </WelcomeItem>
 
-    <!-- Progress Dashboard
+    Progress Dashboard
     <WelcomeItem>
       <template #heading>
         <ProgressIcon />
@@ -108,6 +104,6 @@ export default {
         </div>
         <p>{{ progressPercentage().toFixed(0) }}% of tasks completed.</p>
       </div>
-    </WelcomeItem> -->
+    </WelcomeItem>
   </div>
 </template>
