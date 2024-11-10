@@ -278,9 +278,6 @@ export default {
         }
       })
     },
-    closeEventActionModal() {
-      this.eventActionModal.hide()
-    },
 
     openStartPicker() {
       if (this.startPicker) {
@@ -293,34 +290,27 @@ export default {
         this.endPicker.open()
       }
     },
-    showEventActionModal(action, event) {
-      this.modalTitle = action === 'Success' ? 'Event Action Successful' : 'Event Action Failed'
-      this.modalAction = action
-      this.modalEvent = event
-      this.eventActionModal.show()
-    },
-    showEmailModal() {
-      if (this.isNewEvent) {
-        this.eventActionModal.hide()
-        this.emailModal.show()
-      }
-    },
     scrollToTop() {
       window.scrollTo({ top: 0, behavior: 'smooth' })
     },
     async listEvents() {
       try {
-        const res = await axios.get(`/api/calendar-email/events?email=${this.email}`)
-        this.events = res.data.map(event => ({
-          id: event.id,
-          summary: event.summary,
-          description: event.description || 'No description',
-          start: event.start,
-          end: event.end
-        }))
+        await axios.get(`/api/calendar-email/events?email=${this.email}`).then(res => {
+          this.events = res.data.map(event => ({
+            id: event.id,
+            summary: event.summary,
+            description: event.description || 'No description',
+            start: event.start,
+            end: event.end
+          }))}).catch(error => {
+        })
       } catch (error) {
-        console.error('Error fetching events:', error)
-        this.showEventActionModal('Failure', { summary: 'Error fetching events' })
+        this.$swal.fire({
+          icon:'warning',
+          title: 'Error Fetching Events',
+          text: error.message,
+        });
+        //this.showEventActionModal('Failure', { summary: 'Error fetching events' })
       }
     },
     formatDateTime(dateTimeString) {
@@ -364,8 +354,12 @@ export default {
         this.resetEventForm()
         this.scrollToTop()
       } catch (error) {
-        console.error('Error submitting event:', error)
-        this.showEventActionModal('Failure', this.eventForm)
+        this.$swal.fire({
+          icon:'warning',
+          title: 'Error submitting event',
+          text: error.message,
+        });
+        //this.showEventActionModal('Failure', this.eventForm)
       }
     },
     async deleteEvent() {
@@ -381,8 +375,12 @@ export default {
         this.resetEventForm()
         this.scrollToTop()
       } catch (error) {
-        console.error('Error deleting event:', error)
-        this.showEventActionModal('Failure', this.selectedEvent)
+        this.$swal.fire({
+          icon:'warning',
+          title: 'Error deleting event',
+          text: error.message,
+        });
+        //this.showEventActionModal('Failure', this.selectedEvent)
       }
     },
     resetEventForm() {
@@ -471,10 +469,20 @@ You are invited by ${this.email}
       }
     },
     showEventActionModal(action, event) {
-      this.modalTitle = action === 'Success' ? 'Event Action Successful' : 'Event Action Failed'
+      this.$swal.fire({
+        icon: action === 'Success' ? 'success' : 'warning',
+        title: action === 'Success' ? 'Event Action Successful' : 'Event Action Failed',
+        html:`
+                <p><strong>Event:</strong>${event.summary}</p>
+              <p><strong>Start:</strong>${this.formatDateTime(event.start?.dateTime || event.start?.date)}</p>
+              <p><strong>End:</strong>${this.formatDateTime(event.end?.dateTime || event.end?.date)}</p>
+            `,
+        text: event?.message,
+      });
+      /*this.modalTitle = action === 'Success' ? 'Event Action Successful' : 'Event Action Failed'
       this.modalAction = action
       this.modalEvent = event
-      this.eventActionModal.show()
+      this.eventActionModal.show()*/
     },
 
     closeEventActionModal() {
@@ -485,9 +493,122 @@ You are invited by ${this.email}
       }
     },
 
+    async showEventActionModalSwal(event, action, isNewEvent = false, invitationsSent = false) {
+  // Helper function to format date/time (implement your actual formatting logic)
+  const formatDateTime = (dateTime) => {
+    return new Date(dateTime).toLocaleString(); // Replace with your actual formatting
+  };
+
+  // Create the status badge HTML
+  const statusBadgeHtml = action ?
+      `<div class="status-badge ${action.toLowerCase()}">${action}</div>` : '';
+
+  this.$swal.fire({
+    title: action || 'Event Details', // Or whatever your modalTitle would be
+    html: `
+      ${statusBadgeHtml}
+      <div class="event-details">
+        <p><strong>Event:</strong> ${event.summary}</p>
+        <p><strong>Start:</strong> ${formatDateTime(event.start?.dateTime || event.start?.date)}</p>
+        <p><strong>End:</strong> ${formatDateTime(event.end?.dateTime || event.end?.date)}</p>
+      </div>
+    `,
+    showCloseButton: true,
+    showConfirmButton: action === 'Success' && isNewEvent && !invitationsSent,
+    showCancelButton: true,
+    confirmButtonText: 'Send Invitations',
+    cancelButtonText: 'Close',
+    cancelButtonColor: '#6c757d', // Bootstrap secondary color
+    customClass: {
+      container: 'event-action-modal',
+      popup: 'custom-modal',
+      header: 'modal-header',
+      content: 'modal-content',
+      closeButton: 'btn-close',
+      actions: 'modal-footer'
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Handle "Send Invitations" button click
+      this.showEmailInvitationModalSwal(); // Your email modal function
+    }
+  });
+},
+
+    async showEmailInvitationModalSwal() {
+      // Create the group selection HTML
+      const groupOptionsHtml = this.groups.map(group =>
+          `<option value="${group.id}">${group.name} (${group.membersInCharge.length} members)</option>`
+      ).join('');
+
+      const result = await this.$swal.fire({
+        title: 'Send Email Invitations',
+        html: `
+      <div class="form-group">
+        <label>Select Group</label>
+        <select id="groupSelect" class="form-control">
+          <option value="">Choose a group</option>
+          ${groupOptionsHtml}
+        </select>
+      </div>
+      <div id="membersList" class="mt-3" style="display: none;">
+        <h6>Group Members:</h6>
+        <div class="member-list"></div>
+      </div>
+    `,
+        showCancelButton: true,
+        confirmButtonText: 'Send Invitations',
+        cancelButtonText: 'Cancel',
+        showLoaderOnConfirm: true,
+        didOpen: () => {
+          // Add event listener to group select
+          const groupSelect = document.getElementById('groupSelect');
+          groupSelect.addEventListener('change', (e) => {
+            const selectedGroup = this.groups.find(g => g.id === e.target.value);
+            const membersListDiv = document.getElementById('membersList');
+            const memberListContainer = membersListDiv.querySelector('.member-list');
+
+            if (selectedGroup) {
+              memberListContainer.innerHTML = selectedGroup.membersInCharge
+                  .map(member => `<div class="member-item">${member}</div>`)
+                  .join('');
+              membersListDiv.style.display = 'block';
+            } else {
+              membersListDiv.style.display = 'none';
+            }
+          });
+        },
+        preConfirm: async () => {
+          const selectedGroupId = document.getElementById('groupSelect').value;
+          if (!selectedGroupId) {
+            this.$swal.showValidationMessage('Please select a group');
+            return false;
+          }
+
+          try {
+            // Replace this with your actual invitation sending logic
+            await this.sendInvitations(selectedGroupId);
+            return true;
+          } catch (error) {
+            this.$swal.showValidationMessage(error.message || 'Failed to send invitations');
+            return false;
+          }
+        }
+      });
+
+      if (result.isConfirmed) {
+        this.$swal.fire({
+          title: 'Success!',
+          text: 'Invitations have been sent successfully',
+          icon: 'success'
+        });
+      }
+    },
+
     showEmailModal() {
       this.eventActionModal.hide()
       this.emailModal.show()
+
     },
 
     closeEmailModal() {
