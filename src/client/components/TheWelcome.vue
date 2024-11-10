@@ -1,11 +1,19 @@
 <template>
   <div class="daily-planner">
-    <h1 class="planner-title">Daily Planner</h1>
+    <h1 class="planner-title">
+      Daily Planner
+      <span class="date-display">
+        <i class="fas fa-calendar-alt calendar-icon"></i>
+        {{ currentDate }}
+      </span>
+    </h1>
     <div class="planner-grid">
-      
-      <!-- Today's Schedule Section -->
+
+      <!-- Today's Schedule Section with Date beside the header -->
       <div class="schedule-section planner-section">
-        <h2>Today's Schedule</h2>
+        <div class="section-header">
+          <h2>Today's Schedule</h2>
+        </div>
         <div v-for="(task, index) in scheduleTasks" :key="task.id" class="schedule-item">
           <span class="time">{{ task.time }}</span>
           <span class="description">{{ task.description }}</span>
@@ -25,16 +33,19 @@
           <button @click="saveTask" class="btn">Save</button>
         </div>
       </div>
-      
-      <!-- Date Display Section with Calendar Icon -->
-      <div class="date-section planner-section">
-        <h2>Date</h2>
-        <div class="date-display">
-          <i class="fas fa-calendar-alt calendar-icon"></i>
-          <span>{{ currentDate }}</span>
+
+      <!-- Project Work Progress Section -->
+      <div class="project-progress-section planner-section">
+        <h2>Project Work Progress</h2>
+        <div>
+          <p>Track your project progress!</p>
+          <div class="progress-bar">
+            <div class="progress" :style="{ width: progressPercentage() + '%' }"></div>
+          </div>
+          <p>{{ progressPercentage().toFixed(0) }}% of tasks completed.</p>
         </div>
       </div>
-      
+
       <!-- Top Priorities Section -->
       <div class="priorities-section planner-section">
         <h2>Top Priorities</h2>
@@ -48,7 +59,7 @@
         <input v-model="newPriority" placeholder="New Priority" @keyup.enter="addPriority" />
         <button @click="addPriority" class="btn">Add Priority</button>
       </div>
-      
+
       <!-- To-Do List Section -->
       <div class="todo-section planner-section">
         <h2>To Do List</h2>
@@ -68,39 +79,55 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
-  name: 'TheWelcome',
+  name: "TheWelcome",
   data() {
     return {
       currentDate: this.getFormattedDate(),
       scheduleTasks: [
-        { id: 1, time: '06:00', description: 'Yoga Class' },
-        { id: 2, time: '09:30', description: 'Meeting with Em' },
-        { id: 3, time: '12:00', description: 'Lunch' },
-        { id: 4, time: '13:00', description: 'Meeting with John' }
+        { id: 1, time: "06:00", description: "Yoga Class" },
+        { id: 2, time: "09:30", description: "Meeting with Em" },
+        { id: 3, time: "12:00", description: "Lunch" },
+        { id: 4, time: "13:00", description: "Meeting with John" },
       ],
-      topPriorities: ['Drink lots of water!!', 'Meditation', ''],
+      topPriorities: ["Drink lots of water!!", "Meditation", ""],
       toDoList: [
-        { id: 1, text: 'Groceries', completed: false },
-        { id: 2, text: 'Pay credit card', completed: false },
-        { id: 3, text: 'Call Tom', completed: false }
+        { id: 1, text: "Groceries", completed: false },
+        { id: 2, text: "Pay credit card", completed: false },
+        { id: 3, text: "Call Tom", completed: false },
       ],
-      newTaskTime: '',
-      newTaskDescription: '',
+      newTaskTime: "",
+      newTaskDescription: "",
       editingTaskIndex: null,
-      editTaskTime: '',
-      editTaskDescription: '',
-      newPriority: '',
-      newTodoText: ''
+      editTaskTime: "",
+      editTaskDescription: "",
+      newPriority: "",
+      newTodoText: "",
+      userTask: [],
     };
   },
-  mounted() {
+  async mounted() {
     this.updateDate();
+    console.log(this.$authStore.currentUser.displayName);
+    // Get tasks for this user.
+    await axios
+      .get("/api/task/getByUser/" + this.$authStore.currentUser.displayName)
+      .then((resp) => {
+        console.log(resp.data.data);
+        this.userTask = resp.data.data;
+      });
   },
   methods: {
     getFormattedDate() {
       const today = new Date();
-      return today.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      return today.toLocaleDateString("en-GB", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
     },
     updateDate() {
       setInterval(() => {
@@ -112,10 +139,10 @@ export default {
         this.scheduleTasks.push({
           id: Date.now(),
           time: this.newTaskTime,
-          description: this.newTaskDescription
+          description: this.newTaskDescription,
         });
-        this.newTaskTime = '';
-        this.newTaskDescription = '';
+        this.newTaskTime = "";
+        this.newTaskDescription = "";
       }
     },
     editTask(index) {
@@ -128,11 +155,11 @@ export default {
         this.scheduleTasks[this.editingTaskIndex] = {
           ...this.scheduleTasks[this.editingTaskIndex],
           time: this.editTaskTime,
-          description: this.editTaskDescription
+          description: this.editTaskDescription,
         };
         this.editingTaskIndex = null;
-        this.editTaskTime = '';
-        this.editTaskDescription = '';
+        this.editTaskTime = "";
+        this.editTaskDescription = "";
       }
     },
     deleteTask(index) {
@@ -141,7 +168,7 @@ export default {
     addPriority() {
       if (this.newPriority) {
         this.topPriorities.push(this.newPriority);
-        this.newPriority = '';
+        this.newPriority = "";
       }
     },
     editPriority(index) {
@@ -156,9 +183,9 @@ export default {
         this.toDoList.push({
           id: Date.now(),
           text: this.newTodoText,
-          completed: false
+          completed: false,
         });
-        this.newTodoText = '';
+        this.newTodoText = "";
       }
     },
     editTodoItem(index) {
@@ -170,13 +197,22 @@ export default {
     },
     updateProgress() {
       // Logic for progress update
-    }
-  }
+    },
+    progressPercentage() {
+      let count = 0;
+      for (let i = 0; i < this.userTask.length; i++) {
+        if (this.userTask[i].status === true) {
+          count++;
+        }
+      }
+      return this.userTask.length ? (count / this.userTask.length) * 100 : 0;
+    },
+  },
 };
 </script>
 
 <style scoped>
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css");
 
 .daily-planner {
   font-family: Arial, sans-serif;
@@ -184,9 +220,9 @@ export default {
   max-width: 100%;
   margin: auto;
 }
-.planner-title, h2 {
+.planner-title,
+h2 {
   text-align: center;
-  color: var(--bs-purple) !important
 }
 .planner-grid {
   display: grid;
@@ -212,12 +248,15 @@ export default {
   font-size: 1.2rem;
   margin-right: 8px;
 }
-.schedule-item, .priority-item, .todo-item {
+.schedule-item,
+.priority-item,
+.todo-item {
   display: flex;
   justify-content: space-between;
   padding: 5px 0;
 }
-.new-task, .edit-task {
+.new-task,
+.edit-task {
   display: flex;
   gap: 10px;
   margin-top: 10px;
