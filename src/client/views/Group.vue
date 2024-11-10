@@ -248,7 +248,13 @@ export default {
         confirmButtonText: 'Add Task',
         cancelButtonText: 'Cancel',
         customClass,
+        
         didOpen: () => {
+          const removeMemberInput = (memberDiv) => {
+            if (memberDiv) {
+              memberDiv.remove();
+            }
+          };
           // Function to handle suggestions
           const fetchSuggestions = async (query, index) => {
             if (!query) return;
@@ -339,8 +345,11 @@ export default {
             // Set up suggestion listener for new input
             const newInput = newMemberDiv.querySelector('.team-member-input');
             newInput.addEventListener('keyup', () => fetchSuggestions(newInput.value, index));
-          });
 
+            const newRemoveButton = newMemberDiv.querySelector('.remove-member');
+            newRemoveButton.addEventListener('click', () => removeMemberInput(newMemberDiv));
+          });
+          
           // Remove team member input
           document.addEventListener('click', (e) => {
             if (e.target.closest('.remove-member')) {
@@ -478,7 +487,7 @@ export default {
       }
     },
     async deleteTask(index) {
-      const taskId = this.tasks[index]._id;
+      const taskId = this.tasks[index].taskId;
       try {
         const response = await axios.delete(`/api/task/delete/${taskId}`);
         if (response.status === 200) {

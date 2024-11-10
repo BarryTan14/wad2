@@ -135,8 +135,9 @@ router.post("/add", async (req, res) => {
 });
 router.delete("/delete/:id", async (req, res) => {
     try {
-        const { id } = req.params;
-        const deletedTask = await Task.findByIdAndDelete(id);
+        const { taskId } = req.params;
+        console.log(taskId)
+        const deletedTask = await Task.findOne(taskId);
         
         if (!deletedTask) {
             return res.status(404).json({ message: "Task not found" });
