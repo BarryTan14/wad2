@@ -28,7 +28,7 @@ const router = createRouter({
     {
       path: "/pages/landing-pages/about-us",
       name: "about",
-      component: AboutView,
+      /*component: AboutView,*/
       meta: {
         requiresAuth: false,
       }
@@ -36,7 +36,7 @@ const router = createRouter({
     {
       path: "/pages/landing-pages/contact-us",
       name: "contactus",
-      component: ContactView,
+     /* component: ContactView,*/
       meta: {
         requiresAuth: false,
       }
@@ -44,7 +44,7 @@ const router = createRouter({
     {
       path: "/pages/landing-pages/author",
       name: "author",
-      component: AuthorView,
+      /*component: AuthorView,*/
       meta: {
         requiresAuth: false,
       }
@@ -52,7 +52,7 @@ const router = createRouter({
     {
       path: "/pages/landing-pages/basic",
       name: "signin-basic",
-      component: SignInBasicView,
+      /*component: SignInBasicView,*/
       meta: {
         requiresAuth: false,
       }
