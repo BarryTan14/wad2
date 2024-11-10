@@ -243,13 +243,6 @@ export default {
                   Team Members
                   <span class="required">*</span>
                 </label>
-                <button type="button" id="add-member" class="action-button add-button">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M8 3.33334V12.6667" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M12.6667 8L3.33333 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  </svg>
-                  Add Member
-                </button>
               </div>
 
               <div id="team-members-container" class="team-members-container">
@@ -260,6 +253,7 @@ export default {
                         type="text"
                         class="swal2-input custom-input team-member-input"
                         placeholder="Search"
+                        style="width:300px; margin-right: 0"
                         value="${member.name}"
                         data-index="${index}"
                       >
@@ -272,6 +266,14 @@ export default {
                   </div>
                 `).join('')}
               </div>
+
+                <button type="button" id="add-member" class="action-button add-button">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 3.33334V12.6667" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12.6667 8L3.33333 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                  Add Member
+                </button>
             </div>
           </form>
         `,
@@ -295,6 +297,7 @@ export default {
                   type="text"
                   class="swal2-input custom-input team-member-input"
                   placeholder="Search"
+                        style="width:300px; margin-right: 0"
                   data-index="${newIndex}"
                 >
                 <button type="button" class="action-button remove-button remove-member">
