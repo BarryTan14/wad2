@@ -2,125 +2,59 @@
   <div class="group-container">
     <!-- Left side: Group Assignments -->
     <div class="group-section">
-      <h1 v-if="group && group.length > 0" class="card-title">{{ group[0].moduleName || 'Module name not available' }}
-      </h1>
+      <h1 v-if="group && group.length > 0">Module Name: {{ group[0].moduleName || 'Module name not available' }}</h1>
       <h1 v-else>Loading module data...</h1> <!-- Fallback if data is not yet available -->
       <div class="header">
-        <h3 v-if="group && group.length > 0" class="card-title">Group {{ group[0].groupId || 'Module name not available'
-          }}</h3>
-        <h3 v-else>Loading module data...</h3> <!-- Fallback if data is not yet available -->
+        <h2 v-if="group && group.length > 0">Group Number: {{ group[0].groupId || 'Module name not available' }}</h2>
+        <h2 v-else>Loading module data...</h2> <!-- Fallback if data is not yet available -->
       </div>
       <div id="app">
-        <h2>Task Lists</h2>
-        <button @click="openModal">Add New Task</button>
-        <table v-if="tasks && tasks.length > 0" class="table m-2">
-          <tbody>
-            <tr>
-              <th>S/N</th>
-              <th>Name</th>
-              <th>Members in Charge</th>
-              <th>Deadline</th>
-              <th>Done</th>
-              <th>Functions</th>
-            </tr>
-            <tr v-for="(task, indx) in tasks" :key="task._id">
-              <td>{{ indx + 1 }}</td>
-              <td>
-                <input type="text" v-model="task.taskName" :readonly="!task.isEditing" />
-              </td>
+        <div class="task-container">
+          <h2>Task Lists</h2>
+          <table v-if="tasks && tasks.length > 0" class="table">
+            <tbody>
+              <tr>
+                <th>S/N</th>
+                <th>Name</th>
+                <th>Members in Charge</th>
+                <th>Deadline</th>
+                <th>Done</th>
+                <th>Functions</th>
+              </tr>
+              <tr v-for="(task, indx) in tasks" :key="task._id">
+                <td>{{ indx + 1 }}</td>
+                <td>
+                  <span v-if="!task.isEditing">{{ task.taskName }}</span>
+                  <input v-else type="text" v-model="task.taskName" />
+                </td>
+                <td>
+                  <span v-if="!task.isEditing">{{ task.membersInCharge.join(', ') }}</span>
+                  <input v-else type="text" v-model="task.membersInCharge"
+                    @input="task.membersInCharge = task.membersInCharge.split(',')"
+                    placeholder="Separate names with commas" />
+                </td>
+                <td>
+                  <span v-if="!task.isEditing">{{ task.deadline }}</span>
+                  <input v-else type="date" v-model="task.deadline" />
+                </td>
+                <td>
+                  <input type="checkbox" v-model="task.status" :disabled="!task.isEditing" />
+                </td>
+                <td>
+                  <button v-if="!task.isEditing" @click="enableEditing(task)"
+                    class="btn btn-sm btn-primary">Update</button>
+                  <button v-else @click="saveChanges(task)" class="btn btn-sm btn-success">Save</button>
+                  <button @click="deleteTask(indx)" class="btn btn-sm btn-danger">Delete</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <h2 v-else>No tasks yet</h2>
+          <button @click="openAddTaskModal" class="add-task-button">Add New Task</button>
 
-              <!-- Members in Charge Field: Editable if isEditing is true -->
-              <td>
-                <input type="text" v-model="task.membersInCharge" :readonly="!task.isEditing"
-                  @input="task.membersInCharge = task.membersInCharge.split(',')"
-                  placeholder="Separate names with commas" />
-              </td>
-
-              <!-- Deadline Field: Editable if isEditing is true -->
-              <td>
-                <input type="date" v-model="task.deadline" :readonly="!task.isEditing" />
-              </td>
-
-              <!-- Checkbox for Completion Status: Always Editable -->
-              <td><input type="checkbox" v-model="task.status" :disabled="!task.isEditing" /></td>
-
-              <!-- Update/Save and Delete Buttons -->
-              <td>
-                <button v-if="!task.isEditing" @click="enableEditing(task)"
-                  class="btn btn-sm btn-primary">Update</button>
-                <button v-else @click="saveChanges(task)" class="btn btn-sm btn-success">Save</button>
-                <button @click="deleteTask(indx)" class="btn btn-sm btn-danger">Delete</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <h1 v-else>No tasks yet</h1>
+        </div>
       </div>
-
     </div>
-
-    <!-- Right side: Chat Window -->
-    <!-- <div class="chat-section">
-      <div
-          v-if="isLoggedIn"
-          class="chat-container"
-      >
-        <div class="chat-header bg-primary d-flex justify-content-between align-items-center">
-          <h3 class="chat-title mb-0">Group Chat</h3>
-          <button
-              @click="toggleMinimize"
-              class="btn minimize-btn px-3 rounded-start-0 rounded-end-3 rounded-bottom-0"
-          >
-            {{ isMinimized ? '^' : 'v' }}
-          </button>
-        </div>
-
-        <div v-if="!isMinimized" class="chat-content">
-          <div class="messages-container" ref="messagesContainer">
-            <div v-for="msg in messages" :key="msg._id" class="message-item">
-               Profile picture column
-              <div class="avatar">
-                <img
-                    :src="'/profilepicture/' + msg.saidBy.profilePic"
-                    class="profile-pic cursor-pointer"
-                    alt="avatar"
-                    @click="router.push('/profile/'+msg.saidBy._id)"
-                >
-              </div>
-
-              Message content column 
-              <div class="message-content">
-                <div class="message-header">
-                  <a
-                      @click="router.push('/profile/'+msg.saidBy._id)"
-                      class="display-name cursor-pointer"
-                  >
-                    {{ msg.saidBy.displayName }}
-                  </a>
-                  <small class="timestamp">{{ formatTime(msg.createdAt) }}</small>
-                </div>
-                <div class="message-text">{{ msg.message }}</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="input-container">
-            <div class="input-wrapper">
-              <input
-                  v-model="newMessage"
-                  @keyup.enter="sendMessage"
-                  @paste="handleLarge"
-                  placeholder="Type a message..."
-                  type="text"
-                  :maxlength="MAX_MESSAGE_LENGTH"
-                  class="message-input"
-              >
-              <button @click="sendMessage" class="send-button">Send</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div> -->
 
     <!-- Modal for adding a new task -->
     <div v-if="showAddTaskModal" class="modal-overlay">
@@ -139,7 +73,6 @@
                 <input type="text" v-model="member.name" @input="fetchMemberSuggestions(member.name, index)"
                   @focus="showSuggestions[index] = true" @blur="closeSuggestions(index)"
                   placeholder="Type to search team members" required />
-
                 <!-- Suggestions Dropdown -->
                 <ul v-if="showSuggestions[index]" class="suggestions-list">
                   <li v-for="suggestion in suggestions[index]" :key="suggestion.displayName"
@@ -177,17 +110,14 @@ import axios from 'axios';
 
 export default {
   name: 'GroupView',
-
-
   data() {
     return {
-      suggestions: [], // Store fetched suggestions
-      showSuggestions: [], // Control visibility of suggestions
-      // Modal Data
-      tasks: [], // array of task objects
+      suggestions: [],
+      showSuggestions: [],
+      tasks: [],
       groupId: '',
       group: null,
-      showAddTaskModal: false, // Controls modal visibility
+      showAddTaskModal: false,
       newTask: {
         taskName: '',
         membersInCharge: [{ name: '' }],
@@ -199,30 +129,25 @@ export default {
       isMinimized: false,
       MAX_MESSAGE_LENGTH: 500,
       connectionEstablished: false,
-      isLoggedIn: true, // You should tie this to your auth store
+      isLoggedIn: true,
       router: null,
       groupSocket: io(),
     };
   },
-
-
   created() {
     this.isLoggedIn = this.$authStore.checkAuth();
     const route = useRoute();
     this.groupId = route.params.groupId;
     this.router = useRouter();
   },
-
   mounted() {
     this.fetchGroupData();
     this.fetchTaskData();
     this.setupSocketListeners();
   },
-
   beforeUnmount() {
     this.cleanupSocketListeners();
   },
-
   watch: {
     '$route.params.groupId': {
       handler(newGroupId) {
@@ -232,51 +157,256 @@ export default {
       immediate: true
     },
     isLoggedIn: {
-    handler(isLoggedIn) {
-      if (isLoggedIn) {
-        this.fetchGroupData();
-        this.fetchTaskData();
-      } else {
-        this.tasks=[]
-        this.gorups = null
-        this.$router.push('/login'); // Redirect to login page
+      handler(isLoggedIn) {
+        if (isLoggedIn) {
+          this.fetchGroupData();
+          this.fetchTaskData();
+        } else {
+          this.tasks = []
+          this.gorups = null
+          this.$router.push('/login');
+        }
+      },
+      immediate: true,
+    }
+  },
+  methods: {
+
+    async openAddTaskModal() {
+      const customClass = {
+        container: 'custom-swal-container',
+        popup: 'custom-swal-popup',
+        header: 'custom-swal-header',
+        title: 'custom-swal-title',
+        closeButton: 'custom-swal-close',
+        content: 'custom-swal-content',
+        input: 'custom-swal-input',
+        actions: 'custom-swal-actions',
+        confirmButton: 'custom-swal-confirm',
+        cancelButton: 'custom-swal-cancel',
+      };
+
+      const result = await this.$swal.fire({
+        title: 'Add New Task',
+        html: `
+      <form id="task-form" class="task-form">
+        <div class="form-section">
+          <label class="form-label" for="task-name">
+            Task Name
+            <span class="required">*</span>
+          </label>
+          <input
+            id="task-name"
+            class="swal2-input custom-input"
+            placeholder="Enter task name"
+            value="${this.newTask.taskName || ''}">
+        </div>
+
+        <div class="form-section">
+          <label class="form-label">Team members</label>
+          <div id="team-members-container" class="team-members-container">
+            ${this.newTask.membersInCharge.map((member, index) => `
+              <div class="member-input-group">
+                <div class="input-wrapper">
+                  <input data-index="${index}"
+                    type="text"
+                    class="swal2-input custom-input team-member-input"
+                    placeholder="Type to search team members"
+                    value="${member.name || ''}"
+
+
+                  >
+                  <button type="button" class="action-button remove-button remove-member">
+                    Remove
+                  </button>
+                  <ul class="suggestions-list" id="suggestions-${index}" style="display: none;"></ul>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <button type="button" id="add-member" class="action-button add-button" style="text-align: left;">
+            Add Team Member
+          </button>
+        </div>
+
+        <div class="form-section">
+          <label class="form-label" for="deadline" style="text-align: left;">
+            Deadline
+            <span class="required">*</span>
+          </label>
+          <input
+            id="deadline"
+            type="date"
+            class="swal2-input custom-input"
+            value="${this.newTask.deadline || ''}"
+            style="text-align: left;"
+          >
+        </div>
+      </form>
+    `,
+        showCancelButton: true,
+        confirmButtonText: 'Add Task',
+        cancelButtonText: 'Cancel',
+        customClass,
+        didOpen: () => {
+          // Function to handle suggestions
+          const fetchSuggestions = async (query, index) => {
+            if (!query) return;
+            try {
+              const response = await axios.get(`/api/user/searchDisplayName/${query}`);
+              const suggestions = response.data;
+              displaySuggestions(suggestions, index);
+            } catch (error) {
+              console.error("Error fetching suggestions:", error);
+            }
+          };
+
+          // Display suggestions in dropdown
+          const displaySuggestions = (suggestions, index) => {
+            console.log("Displaying suggestions for index:", index, suggestions); // Debugging log
+            const suggestionsList = document.getElementById(`suggestions-${index}`);
+
+            if (!suggestionsList) {
+              console.warn(`Suggestions list with id "suggestions-${index}" not found.`);
+              return;
+            }
+
+            suggestionsList.innerHTML = '';
+            if (suggestions.length) {
+              suggestionsList.style.display = 'block';
+              suggestions.forEach((suggestion) => {
+                const listItem = document.createElement('li');
+                listItem.classList.add('suggestion-item');
+                listItem.textContent = suggestion.displayName;
+                listItem.onclick = () => selectSuggestion(suggestion, index);
+                suggestionsList.appendChild(listItem);
+              });
+            } else {
+              suggestionsList.style.display = 'none';
+            }
+          };
+
+          // Select suggestion and close dropdown
+          const selectSuggestion = (suggestion, index) => {
+            // Select the input field by data index
+            const inputField = document.querySelector(`[data-index="${index}"]`);
+            if (inputField) {
+              console.log(inputField)
+              // Set the input field value to the selected suggestion
+              inputField.value = suggestion.displayName;
+              
+              // Trigger an input event to ensure Vue detects the change
+              inputField.dispatchEvent(new Event('input', { bubbles: true }));
+
+              // Hide the suggestions list for this input
+              const suggestionsList = document.getElementById(`suggestions-${index}`);
+              if (suggestionsList) {
+                suggestionsList.style.display = 'none';
+              }
+            } else {
+              console.error(`Input field with data-index "${index}" not found.`);
+            }
+          };
+
+          // Event listener for each input to fetch suggestions
+          document.querySelectorAll('.team-member-input').forEach((input) => {
+            const index = input.getAttribute('data-index');
+            input.addEventListener('keyup', () => fetchSuggestions(input.value, index));
+          });
+
+          // Add new team member input
+          document.getElementById('add-member').addEventListener('click', () => {
+            const container = document.getElementById('team-members-container');
+            const index = container.children.length;
+            const newMemberDiv = document.createElement('div');
+            newMemberDiv.innerHTML = `
+          <div class="input-wrapper">
+            <input
+              type="text"
+              class="swal2-input custom-input team-member-input"
+              placeholder="Type to search team members"
+              data-index="${index}"
+              style="text-align: left;"
+            >
+            <button type="button" class="action-button remove-button remove-member">
+              Remove
+            </button>
+            <ul class="suggestions-list" id="suggestions-${index}" style="display: none;"></ul>
+          </div>
+        `;
+            container.appendChild(newMemberDiv);
+
+            // Set up suggestion listener for new input
+            const newInput = newMemberDiv.querySelector('.team-member-input');
+            newInput.addEventListener('keyup', () => fetchSuggestions(newInput.value, index));
+          });
+
+          // Remove team member input
+          document.addEventListener('click', (e) => {
+            if (e.target.closest('.remove-member')) {
+              e.target.closest('.member-input-group').remove();
+            }
+          });
+        },
+        preConfirm: () => {
+          const taskName = document.getElementById('task-name').value;
+          const deadline = document.getElementById('deadline').value;
+          const membersInCharge = Array.from(document.querySelectorAll('.team-member-input'))
+            .map(input => ({ name: input.value }))
+            .filter(member => member.name.trim() !== '');
+
+          if (!taskName) {
+            this.$swal.showValidationMessage('Please enter a task name');
+            return false;
+          }
+
+          if (membersInCharge.length === 0) {
+            this.$swal.showValidationMessage('Please add at least one team member');
+            return false;
+          }
+
+          if (!deadline) {
+            this.$swal.showValidationMessage('Please select a deadline');
+            return false;
+          }
+
+          return { taskName, membersInCharge, deadline };
+        }
+      });
+
+      if (result.isConfirmed) {
+        this.newTask.taskName = result.value.taskName;
+        this.newTask.membersInCharge = result.value.membersInCharge;
+        this.newTask.deadline = result.value.deadline;
+        await this.addTask();
       }
     },
-    immediate: true,
-  }
-  },
-
-  methods: {
     addTeamMember() {
       this.newTask.membersInCharge.push({ name: "" });
-      this.suggestions.push([]); // Initialize suggestions for new input
-      this.showSuggestions.push(false); // Initialize visibility control for new input
+      this.suggestions.push([]);
+      this.showSuggestions.push(false);
     },
-    // Remove a team member input
     removeTeamMember(index) {
       this.newTask.membersInCharge.splice(index, 1);
-      this.suggestions.splice(index, 1); // Remove corresponding suggestions
-      this.showSuggestions.splice(index, 1); // Remove corresponding visibility control
+      this.suggestions.splice(index, 1);
+      this.showSuggestions.splice(index, 1);
     },
     async fetchMemberSuggestions(query, index) {
       if (query.length < 1) {
         this.suggestions[index] = [];
         return;
       }
-
       try {
         const response = await axios.get(`/api/user/searchDisplayName/${query}`,);
-        console.log(response.data)
-        this.suggestions[index] = response.data; // Assuming response is an array of suggestions
-        this.showSuggestions[index] = true; // Ensure suggestions are shown after fetch
+        this.suggestions[index] = response.data;
+        this.showSuggestions[index] = true;
       } catch (error) {
         console.error("Error fetching suggestions:", error);
       }
     },
-    // Select a suggestion
     selectSuggestion(index, suggestion) {
       this.newTask.membersInCharge[index].name = suggestion.displayName;
-      this.showSuggestions[index] = false; // Hide suggestions after selection
+      this.showSuggestions[index] = false;
     },
     closeSuggestions(index) {
       setTimeout(() => {
@@ -285,57 +415,40 @@ export default {
     },
     generateUniqueTaskId(taskIdList) {
       let newTaskId;
-
       do {
-        // Generate a random ID, e.g., a random number or a UUID
         newTaskId = `t${Math.floor(Math.random() * 100)}`;
       } while (taskIdList.includes(newTaskId));
-
       return newTaskId;
     },
     async addTask() {
-      //creates the unique task id
       const taskIdList = await axios.get('/api/task')
         .then(response => response.data.data.map(task => task.taskId))
         .catch(error => {
           console.error("Error fetching tasks:", error);
-          return []; // Return an empty array in case of an error
+          return [];
         });
-      console.log(taskIdList)
       this.newTask.taskId = this.generateUniqueTaskId(taskIdList)
       this.newTask.groupId = this.groupId
-      console.log(this.groupId)
-      //Push the task after created
       this.tasks.push(this.newTask)
       this.newTask.membersInCharge = this.newTask.membersInCharge.map(member => member.name.trim())
       try {
-        const response = await axios.post('/api/task/add', this.newTask, {
+        await axios.post('/api/task/add', this.newTask, {
           headers: {
             'Content-Type': 'application/json'
           }
         });
-
-        console.log('Workspace added:', response.data);
-        //ToDo: Append the task ID to the relevant group id
-        // Optionally, refresh the workspaces list or handle UI updates
       } catch (error) {
         console.error('Error adding workspace:', error);
       }
-
       this.closeModal()
     },
     openModal() {
       this.showAddTaskModal = true;
     },
-
-    // Method to close the modal
     closeModal() {
       this.showAddTaskModal = false;
       this.resetNewTask();
     },
-
-
-    // Method to reset new task form data
     resetNewTask() {
       this.newTask = {
         taskName: '',
@@ -344,24 +457,13 @@ export default {
         status: false
       };
     },
-
-    // Method to handle form submission
-    // Enable edit mode for the selected post
     enableEditing(task) {
       task.isEditing = true;
     },
-
-    // Save changes and disable edit mode for the selected post
     async saveChanges(task) {
       task.isEditing = false;
       try {
-        console.log("Sending task data to server:", {
-          taskName: task.taskName,
-          membersInCharge: task.membersInCharge,
-          deadline: task.deadline,
-          status: task.status
-        });
-        const response = await axios.post(`/api/task/updateBy/${task._id}`, {
+        await axios.post(`/api/task/updateBy/${task._id}`, {
           taskName: task.taskName,
           membersInCharge: task.membersInCharge,
           deadline: task.deadline,
@@ -371,25 +473,16 @@ export default {
             'Content-Type': 'application/json'
           }
         });
-
-        console.log('Response:', response.data);
-      }
-      catch (error) {
+      } catch (error) {
         console.error('Error updating task:', error);
       }
     },
-    // Delete the selected post
     async deleteTask(index) {
-      const taskId = this.tasks[index]._id; // Get the task's _id
-
+      const taskId = this.tasks[index]._id;
       try {
-        // Send delete request to the backend
         const response = await axios.delete(`/api/task/delete/${taskId}`);
-
         if (response.status === 200) {
-          // Remove the task from the local array if the delete was successful
           this.tasks.splice(index, 1);
-          console.log("Deleted task at index:", index);
         } else {
           console.error("Failed to delete task:", response.data.message);
         }
@@ -405,13 +498,10 @@ export default {
         console.error('Failed to fetch group data:', error);
       }
     },
-
     async fetchTaskData() {
       try {
-        console.log(this.groupId)
         await axios.get(`/api/task/getBy/${this.groupId}`)
           .then(resp => {
-            console.log(resp.data.data)
             this.tasks = resp.data.data
           })
           .catch(err => {
@@ -426,99 +516,79 @@ export default {
         this.connectionEstablished = true;
         this.groupSocket.emit('join-room')
       });
-
       this.groupSocket.on('previous-messages', ({ messages }) => {
         this.messages = messages;
         this.$nextTick(this.scrollToBottom);
       });
-
       this.groupSocket.on('new-message', (message) => {
         this.messages.push(message);
         this.$nextTick(this.scrollToBottom);
       });
     },
-
     cleanupSocketListeners() {
       this.groupSocket.off('connect');
       this.groupSocket.off('previous-messages');
       this.groupSocket.off('new-message');
     },
-
     sendMessage() {
       if (!this.newMessage.trim() || !this.isLoggedIn) return;
-
       if (this.newMessage.length > this.MAX_MESSAGE_LENGTH) {
         this.showError(`Message cannot exceed ${this.MAX_MESSAGE_LENGTH} characters`);
         return;
       }
-
       this.groupSocket.emit('chat-message', {
         roomId: this.groupId,
         message: this.newMessage
       });
-
       this.newMessage = '';
     },
-
     handleLarge(event) {
       event.preventDefault();
       const pastedText = event.clipboardData.getData('text');
       const currentPosition = event.target.selectionStart;
       const currentValue = this.newMessage;
-
       const remainingSpace = this.MAX_MESSAGE_LENGTH - (currentValue.length - (event.target.selectionEnd - currentPosition));
       const trimmedText = pastedText.slice(0, remainingSpace);
-
       this.newMessage = currentValue.slice(0, currentPosition) +
         trimmedText +
         currentValue.slice(event.target.selectionEnd);
-
       if (pastedText.length > remainingSpace) {
         this.showError(`Pasted text was trimmed to fit ${this.MAX_MESSAGE_LENGTH} character limit`);
       }
     },
-
     toggleMinimize() {
       this.isMinimized = !this.isMinimized;
     },
-
     formatTime(timestamp) {
-      // Reuse the same formatTime logic from ChatWindow.vue
       const messageDate = new Date(timestamp);
       const todayMidnight = new Date();
       todayMidnight.setHours(0, 0, 0, 0);
       const yesterdayMidnight = new Date(todayMidnight);
       yesterdayMidnight.setDate(yesterdayMidnight.getDate() - 1);
-
       const getTimeString = (date) => {
         return date.toLocaleTimeString([], {
           hour: '2-digit',
           minute: '2-digit'
         });
       };
-
       if (messageDate >= todayMidnight) {
         return `Today at ${getTimeString(messageDate)}`;
       }
       if (messageDate >= yesterdayMidnight) {
         return `Yesterday at ${getTimeString(messageDate)}`;
       }
-
       return messageDate.toLocaleDateString('en-US', {
         month: 'long',
         day: 'numeric',
         year: 'numeric'
       }) + ` at ${getTimeString(messageDate)}`;
     },
-
     scrollToBottom() {
       if (this.$refs.messagesContainer) {
         this.$refs.messagesContainer.scrollTop = this.$refs.messagesContainer.scrollHeight;
       }
     },
-
     showError(message) {
-      // Implement your error handling here
       console.error(message);
     },
   }
@@ -526,250 +596,90 @@ export default {
 </script>
 
 <style scoped>
-.suggestions-list {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background-color: #fff;
-  color: black;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin-top: 4px;
-  max-height: 150px;
-  overflow-y: auto;
-  z-index: 10;
-}
-
-.suggestions-list li {
-  padding: 8px 12px;
-  cursor: pointer;
-}
-
-.suggestions-list li:hover {
-  background-color: #f0f0f0;
-}
-
-.group-container {
+/* Center the layout */
+#app {
   display: flex;
-  width: 100%;
-  max-width: 2400px;
-  margin: 0 auto;
-  gap: 20px;
-  height: calc(75vh);
-}
-
-.group-section {
-  flex: 1;
-  overflow-y: auto;
-}
-
-.chat-section {
-  flex: 0.6;
-  position: relative;
-}
-
-.chat-container {
-  height: 100%;
-  background: #f3f1ff;
-  border: 1px solid #ddd;
-  border-radius: 8px 8px 0 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.chat-header {
-  background-color: var(--bs-purple) !important;
-  padding: 10px 20px;
-  border-radius: 8px 8px 0 0;
-  display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  flex-shrink: 0;
-}
-
-.chat-title {
-  color: white;
+  flex-direction: column;
+  padding: 0;
   margin: 0;
-  font-size: 1.2rem;
 }
 
-.minimize-btn {
-  background: transparent;
-  border: none;
-  color: white;
-  cursor: pointer;
-}
-
-.chat-content {
+/* Container for task list header and button */
+.task-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 0;
-}
-
-.messages-container {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-}
-
-.messages-container::-webkit-scrollbar {
-  width: 6px;
-}
-
-.messages-container::-webkit-scrollbar-track {
-  background: #f3f1ff;
-}
-
-.messages-container::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 3px;
-}
-
-.message-item {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.avatar {
-  flex-shrink: 0;
-}
-
-.profile-pic {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.message-content {
-  flex: 1;
-}
-
-.message-header {
-  display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
+  width: 100%;
+  max-width: 100%;
+  /* Ensure the container takes full width */
+  padding: 0;
 }
 
-.display-name {
-  font-weight: bold;
-  color: var(--bs-purple);
-  text-decoration: none;
-}
-
-.cursor-pointer {
-  cursor: pointer;
-}
-
-.timestamp {
-  color: #6c757d;
-}
-
-.message-text {
-  color: #212529;
-  word-break: break-word;
-}
-
-.input-container {
-  padding: 16px;
-  border-top: 1px solid #ddd;
-  background: #f3f1ff;
-}
-
-.input-wrapper {
-  display: flex;
-  gap: 8px;
-}
-
-.message-input {
-  flex: 1;
-  padding: 8px 12px;
+/* Center and expand the table */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
   border: 1px solid #ddd;
-  border-radius: 4px;
-  background: white;
-  color: #212529;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 0;
+  /* Remove any margin */
 }
 
-.send-button {
-  padding: 8px 16px;
-  background: var(--bs-purple);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+/* Table cell styles for text wrapping and spacing */
+.table th,
+.table td {
+  padding: 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  vertical-align: middle;
+  word-wrap: break-word;
+  white-space: normal;
+  max-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.send-button:hover {
-  background: #563d7c;
+/* Remove any white space around table in container */
+.table-container {
+  width: 100%;
+  padding: 0;
+  margin: 0;
 }
 
-/* Group section styles */
-.header {
-  display: flex;
-  justify-content: space-between;
+
+/* Button styling */
+.table .btn {
+  min-height: 44px;
+  display: inline-flex;
   align-items: center;
-  margin-bottom: 20px;
+  justify-content: center;
+  padding: 5px 7.5px;
+  font-size: 0.9em;
+  border-radius: 4px;
+  margin-left: 10px;
+  /* Remove any default margin */
 }
 
-.add-button {
-  padding: 8px 16px;
-  background-color: #4CAF50;
+/* Add Task button styling */
+.add-task-button {
+  margin-top: 15px;
+  padding: 10px 20px;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  font-size: 1rem;
 }
 
-.add-button:hover {
-  background-color: #45a049;
+.add-task-button:hover {
+  background-color: #5548cc;
 }
 
-@media (max-width: 1024px) {
-  .group-container {
-    flex-direction: column;
-    height: auto;
-  }
-
-  .chat-section {
-    height: 500px;
-  }
-
-  .input-wrapper {
-    flex-direction: column;
-  }
-
-  .send-button {
-    padding: 12px;
-    font-size: 1.1em;
-  }
-}
-
-@media (max-width: 480px) {
-  .chat-header h3 {
-    font-size: 1.1em;
-  }
-
-  .messages-container {
-    padding: 10px;
-  }
-
-  .message-item {
-    gap: 8px;
-  }
-
-  .profile-pic {
-    width: 32px;
-    height: 32px;
-  }
-}
-
+/* Modal overlay styling */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -783,6 +693,7 @@ export default {
   z-index: 1000;
 }
 
+/* Modal content styling */
 .modal-content {
   background: grey;
   padding: 20px;
@@ -792,18 +703,78 @@ export default {
   box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
 }
 
-.modal-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+
+  .table th,
+  .table td {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .add-task-button,
+  .btn,
+  .form-select,
+  textarea {
+    min-height: 44px;
+  }
+
+  /* Button styling adjustments */
+  .btn-group {
+    gap: 0.5rem;
+  }
+
+  .form-select-sm {
+    padding: 0.25rem 2rem 0.25rem 0.5rem;
+    background-position: right 0.5rem center;
+    max-width: 200px;
+    border-color: #dee2e6;
+    background-color: #fff;
+  }
+
+  /* Card style for table container in mobile */
+  .table-container {
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+  }
+
+  .card-subtitle,
+  .card-text {
+    font-size: 0.875rem;
+    transition: all 0.2s ease-in-out;
+  }
 }
 
-.btn-secondary {
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  cursor: pointer;
+/* Expansion animation */
+.expand-animation {
+  animation: expand 0.3s ease-out forwards;
+  transform-origin: top;
+}
+
+@keyframes expand {
+  0% {
+    max-height: 0;
+    transform: scaleY(0);
+  }
+
+  100% {
+    max-height: 100px;
+    transform: scaleY(1);
+  }
+}
+
+.expand-animation>* {
+  animation: maintainScale 0.3s ease-out forwards;
+}
+
+@keyframes maintainScale {
+  0% {
+    transform: scaleY(0);
+  }
+
+  100% {
+    transform: scaleY(1);
+  }
 }
 </style>
