@@ -1,5 +1,5 @@
 import express from 'express';
-import { CalendarEmailService } from '../services/calendarEmailService.js';
+import { CalendarEmailService } from '../services/calendaremailservice.js';
 
 const router = express.Router();
 const calendarEmailService = new CalendarEmailService();
