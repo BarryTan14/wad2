@@ -10,5 +10,5 @@ try {
 } catch (e) {
     console.log(e)
 }
-let db = conn.db("wad2");
+let db = conn.db("test");
 export default db;
