@@ -30,6 +30,9 @@ const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
     cors: {
+        origin: process.env.NODE_ENV === 'production' 
+            ? process.env.PRODUCTION_URL 
+            : 'http://localhost:3000',
         methods: ["GET", "POST"]
     }
 });

@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import UserProfile from "../views/UserProfile.vue";
 import LandingPage from "../views/LandingPage.vue";
+
 import Group from "../views/Group.vue"
 
 const checkAuth = async () => {
@@ -18,8 +19,40 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'landing',
-      component: HomeView,
+      name: 'Home',
+      component: LandingPage,
+      meta: {
+        requiresAuth: false,
+      }
+    },
+    {
+      path: "/pages/landing-pages/about-us",
+      name: "about",
+      component: AboutView,
+      meta: {
+        requiresAuth: false,
+      }
+    },
+    {
+      path: "/pages/landing-pages/contact-us",
+      name: "contactus",
+      component: ContactView,
+      meta: {
+        requiresAuth: false,
+      }
+    },
+    {
+      path: "/pages/landing-pages/author",
+      name: "author",
+      component: AuthorView,
+      meta: {
+        requiresAuth: false,
+      }
+    },
+    {
+      path: "/pages/landing-pages/basic",
+      name: "signin-basic",
+      component: SignInBasicView,
       meta: {
         requiresAuth: false,
       }
@@ -116,6 +149,12 @@ const router = createRouter({
     component: () => import('../views/CalendarEmailView.vue')
   },
   ],
+  scrollBehavior(to, from, savedPosition) {
+    if (to.hash) {
+      return { el: to.hash, behavior: 'smooth' };
+    }
+    return { top: 0 };
+  }
 })
 
 export default router
