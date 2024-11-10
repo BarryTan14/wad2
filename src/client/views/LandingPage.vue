@@ -156,7 +156,7 @@ video {
 }
 </style> -->
 
-<!-- <template>
+ <template>
   <div>
 <!--    <Hero />
     <About />
