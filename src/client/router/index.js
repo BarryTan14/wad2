@@ -3,9 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import UserProfile from "../views/UserProfile.vue";
 import LandingPage from "../views/LandingPage.vue";
 
-=======
 import Group from "../views/Group.vue"
->>>>>>> 83cfefeb98143327d9fbd6d9a51b620e6776b19a
 
 const checkAuth = async () => {
   try {
