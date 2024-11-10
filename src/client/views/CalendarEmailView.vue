@@ -7,10 +7,56 @@
           <span class="welcome-message">
             Welcome, <strong>{{ email }}</strong>
           </span>
+          <button @click="logout" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </button>
         </div>
       </header>
 
       <div v-if="email" class="main-content">
+        <section class="events-section">
+          <div class="section-header">
+            <h2 class="section-title">Your Events</h2>
+            <button @click="listEvents" class="refresh-btn">
+              <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+          </div>
+
+          <div v-if="isLoading" class="loading-indicator">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+          </div>
+
+          <div v-else-if="events.length" class="events-list">
+            <div v-for="event in events" :key="event.id" class="event-card"
+              :class="{ 'selected': selectedEvent?.id === event.id }">
+              <div class="event-header">
+                <h3 class="event-title">{{ event.summary }}</h3>
+                <span class="event-id">ID: {{ event.id }}</span>
+              </div>
+              <div class="event-details">
+                <p class="event-time">
+                  <i class="far fa-clock"></i> Start: {{ formatDateTime(event.start.dateTime || event.start.date) }}
+                </p>
+                <p class="event-time">
+                  <i class="far fa-clock"></i> End: {{ formatDateTime(event.end.dateTime || event.end.date) }}
+                </p>
+                <p v-if="event.description" class="event-description">
+                  <i class="far fa-file-alt"></i> {{ event.description }}
+                </p>
+              </div>
+              <button @click="selectEvent(event)" class="edit-btn">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+            </div>
+          </div>
+          <div v-else class="no-events">
+            <i class="far fa-calendar-times"></i>
+            <p>No events found</p>
+            <span>Create your first event to get started!</span>
+          </div>
+        </section>
+
         <section class="event-form-section">
           <div class="form-card">
             <h2 class="form-title">{{ selectedEvent ? 'Edit Event' : 'Create New Event' }}</h2>
@@ -63,38 +109,7 @@
             </button>
           </div>
         </section>
-
-        <section class="events-section">
-        <div class="section-header">
-          <h2 class="section-title">Your Events</h2>
-          <button @click="listEvents" class="refresh-btn">
-            <i class="fas fa-sync-alt"></i> Refresh
-          </button>
-        </div>
-
-        <div v-if="isLoading" class="loading-indicator">
-          <div class="spinner"></div>
-          <p>Loading...</p>
-        </div>
-
-        <div v-else-if="events.length" class="events-list">
-          <FlipCard
-            v-for="event in events"
-            :key="event.id"
-            :frontTitle="event.summary"
-            :frontSubtitle="`ID: ${event.id}`"
-            :backTitle="'Event Details'"
-            :backContent="`Start: ${formatDateTime(event.start.dateTime || event.start.date)}
-End: ${formatDateTime(event.end.dateTime || event.end.date)}`"
-          />
-        </div>
-        <div v-else class="no-events">
-          <i class="far fa-calendar-times"></i>
-          <p>No events found</p>
-          <span>Create your first event to get started!</span>
-        </div>
-      </section>
-    </div>
+      </div>
 
       <div v-else class="login-prompt">
         <i class="fas fa-lock"></i>
@@ -173,13 +188,9 @@ import axios from 'axios'
 import { Modal } from 'bootstrap'
 import flatpickr from 'flatpickr'
 import 'flatpickr/dist/flatpickr.min.css'
-import FlipCard from '../components/FlipCard.vue'
 
 export default {
   name: 'CalendarEmailView',
-  components: {
-    FlipCard
-  },
   data() {
     return {
       groupEmails: [],
@@ -242,9 +253,11 @@ export default {
         }
         
         console.log(this.groupEmails);
+        // Only show success toast after all data is loaded
         this.$toast.success('Successfully fetched group emails');
       } catch (error) {
         console.error('Error fetching emails:', error);
+        // Only show error toast if the API call fails
         this.$toast.error('Failed to fetch emails');
       } finally {
         this.isLoading = false;
@@ -258,6 +271,7 @@ export default {
         time_24hr: true,
         onChange: (selectedDates, dateStr) => {
           this.eventForm.start = dateStr
+          // Update end picker min date
           if (this.endPicker) {
             this.endPicker.set('minDate', selectedDates[0])
           }
@@ -302,6 +316,10 @@ export default {
     },
     scrollToTop() {
       window.scrollTo({ top: 0, behavior: 'smooth' })
+    },
+    logout() {
+      this.$authStore.logout()
+      this.$router.push('/login')
     },
     async listEvents() {
       try {
@@ -521,59 +539,21 @@ You are invited by ${this.email}
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css?family=Roboto+Mono');
-
-.refresh-btn {
-  background-color: #3498db;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.text-danger {
+  color: #dc3545;
+  font-size: 0.875rem;
 }
 
-.refresh-btn:hover {
-  background-color: #2980b9;
-}
-
-.refresh-btn i {
-  font-size: 1rem;
-}
-
-.events-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
-}
-
-* {
-  box-sizing: border-box;
-  font-weight: normal;
-}
-
-body {
-  color: #555;
-  background: #222;
-  text-align: center;
-  font-family: 'Roboto Mono', monospace;
-  padding: 1em;
-}
-
-h1 {
-  font-size: 2.2em;
+.text-muted {
+  color: #6c757d;
+  font-size: 0.875rem;
 }
 
 .calendar-app {
-  font-family: 'Roboto Mono', monospace;
-  background: #222;
+  font-family: 'Roboto', sans-serif;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   min-height: 100vh;
   padding: 2rem;
-  color: #555;
 }
 
 .calendar-container {
@@ -588,7 +568,7 @@ h1 {
 
 .app-title {
   font-size: 2.5rem;
-  color: #fff;
+  color: #2c3e50;
   margin-bottom: 1rem;
 }
 
@@ -601,7 +581,21 @@ h1 {
 
 .welcome-message {
   font-size: 1.1rem;
-  color: #fff;
+  color: #34495e;
+}
+
+.logout-btn {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+  background-color: #c0392b;
 }
 
 .main-content {
@@ -612,7 +606,7 @@ h1 {
 
 .events-section,
 .event-form-section {
-  background-color: #313131;
+  background-color: white;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   padding: 2rem;
@@ -627,7 +621,7 @@ h1 {
 
 .section-title {
   font-size: 1.5rem;
-  color: #fff;
+  color: #2c3e50;
 }
 
 .refresh-btn {
@@ -638,35 +632,106 @@ h1 {
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .refresh-btn:hover {
   background-color: #2980b9;
 }
 
-.refresh-btn i {
-  font-size: 1rem;
+.events-list {
+  display: grid;
+  gap: 1rem;
+  max-height: 600px;
+  overflow-y: auto;
 }
 
-.events-list {
+.event-card {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  transition: all 0.3s ease;
+  border-left: 4px solid #3498db;
+}
+
+.event-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.event-card.selected {
+  background-color: #e8f4fd;
+  border-left-color: #2980b9;
+}
+
+.event-header {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.event-title {
+  font-size: 1.2rem;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.event-id {
+  font-size: 0.8rem;
+  color: #7f8c8d;
+}
+
+.event-details p {
+  margin: 0.25rem 0;
+  color: #34495e;
+}
+
+.event-time {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.event-description {
+  font-style: italic;
+  color: #7f8c8d;
+}
+
+.edit-btn {
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+.edit-btn:hover {
+  background-color: #27ae60;
+}
+
+.no-events {
+  text-align: center;
+  color: #7f8c8d;
+  padding: 2rem;
+}
+
+.no-events i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
 }
 
 .form-card {
-  background-color: #313131;
+  background-color: white;
   border-radius: 10px;
   padding: 2rem;
 }
 
 .form-title {
   font-size: 1.5rem;
-  color: #fff;
+  color: #2c3e50;
   margin-bottom: 1.5rem;
 }
 
@@ -682,17 +747,15 @@ h1 {
 
 .form-group label {
   margin-bottom: 0.5rem;
-  color: #fff;
+  color: #34495e;
 }
 
 .form-group input,
 .form-group textarea {
   padding: 0.5rem;
-  border: 1px solid #555;
+  border: 1px solid #bdc3c7;
   border-radius: 5px;
   font-size: 1rem;
-  background-color: #444;
-  color: #fff;
 }
 
 .form-actions {
@@ -742,33 +805,67 @@ h1 {
 }
 
 .custom-modal .modal-content {
-  background-color: #313131;
+  border-radius: 10px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 15px;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.status-badge.success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-badge.failure {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Date and Time Picker Styles */
+.input-group-text {
+  background-color: #3498db;
+  border-color: #3498db;
+  color: white;
+}
+
+.input-group-text:hover {
+  background-color: #2980b9;
+}
+
+.datetimepicker-input {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* Custom styles for Tempus Dominus Bootstrap 4 */
+.bootstrap-datetimepicker-widget {
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.bootstrap-datetimepicker-widget table td.active,
+.bootstrap-datetimepicker-widget table td.active:hover {
+  background-color: #3498db;
   color: #fff;
 }
 
-.custom-modal .modal-header,
-.custom-modal .modal-footer {
-  border-color: #444;
+.bootstrap-datetimepicker-widget table td span.active {
+  background-color: #3498db;
 }
 
-.custom-modal .btn-close {
-  color: #fff;
-}
-
-.custom-modal .form-control {
-  background-color: #444;
-  color: #fff;
-  border-color: #555;
-}
-
-.custom-modal .btn-primary {
+.bootstrap-datetimepicker-widget .btn-primary {
   background-color: #3498db;
   border-color: #3498db;
 }
 
-.custom-modal .btn-secondary {
-  background-color: #95a5a6;
-  border-color: #95a5a6;
+.bootstrap-datetimepicker-widget .btn-primary:hover {
+  background-color: #2980b9;
+  border-color: #2980b9;
 }
 
 @media (max-width: 768px) {
@@ -801,5 +898,93 @@ h1 {
     border-radius: 4px;
     justify-content: center;
   }
+}
+
+.custom-modal .modal-content {
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.custom-modal .modal-header {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.custom-modal .modal-footer {
+  border-top: none;
+  padding-top: 0;
+}
+
+.custom-modal .btn-close:focus {
+  box-shadow: none;
+}
+
+.custom-modal .form-control:focus {
+  box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+.custom-modal .form-control {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.custom-modal .btn-primary {
+  background-color: #3498db;
+  border-color: #3498db;
+  transition: all 0.3s ease;
+}
+
+.custom-modal .btn-primary:hover {
+  background-color: #2980b9;
+  border-color: #2980b9;
+}
+
+.custom-modal .btn-secondary {
+  background-color: #95a5a6;
+  border-color: #95a5a6;
+  transition: all 0.3s ease;
+}
+
+.custom-modal .btn-secondary:hover {
+  background-color: #7f8c8d;
+  border-color: #7f8c8d;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 15px;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.status-badge.success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-badge.failure {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.spinner-border {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.2em;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.custom-modal {
+  animation: fadeIn 0.3s ease-out;
 }
 </style>
