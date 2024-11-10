@@ -1,7 +1,7 @@
 <script>
 import { RouterLink, RouterView } from 'vue-router'
 import { Moon, Sun, Menu } from 'lucide-vue-next'
-// import './assets/styles.css'
+import './assets/styles.css'
 import ChatWindow from './components/ChatWindow.vue'
 import ToastContainer from "./components/ToastContainer.vue"
 import AuthDropdown from './components/AuthDropdown.vue'
