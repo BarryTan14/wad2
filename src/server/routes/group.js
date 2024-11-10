@@ -90,6 +90,43 @@ router.get("/name/:displayName", async (req, res) => {
         res.status(500).send("Failed to connect to MongoDB collection: " + e.message);
     }
 });
+//Testing for another name
+router.get("/names/:displayName", async (req, res) => {
+    const { displayName } = req.params;
+    try {
+        // Ensure displayName is a string and handle potential JSON objects
+        const searchName = typeof displayName === 'object' ? 
+            displayName.toString() : 
+            decodeURIComponent(displayName);
+            
+        const user = await User.findOne({ displayName: searchName });
+        
+        if (!user) {
+            return res.status(404).json({ 
+                success: false,
+                message: 'User not found',
+                data: [] 
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: "Successfully retrieved user",
+            data: [{
+                email: user.email,
+                displayName: user.displayName
+            }]
+        });
+    } catch (e) {
+        console.error("Error fetching user:", e);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch user",
+            error: e.message
+        });
+    }
+});
+
 
 router.get('/:groupId', async (req, res) => {
     const { groupId } = req.params; // Retrieve groupId from URL parameters
