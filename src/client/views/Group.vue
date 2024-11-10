@@ -212,14 +212,17 @@ export default {
                     type="text"
                     class="swal2-input custom-input team-member-input"
                     placeholder="Type to search team members"
+                        style="width:300px; margin-right: 0"
                     value="${member.name || ''}"
 
 
                   >
-                  <button type="button" class="action-button remove-button remove-member">
-                    Remove
+                  <button type="button" class="action-button remove-button remove-member btn">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12.6667 8L3.33333 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
                   </button>
-                  <ul class="suggestions-list" id="suggestions-${index}" style="display: none;"></ul>
+                  <ul class="suggestions-list dropdown" id="suggestions-${index}" style="display: none;"></ul>
                 </div>
               </div>
             `).join('')}
@@ -229,17 +232,16 @@ export default {
           </button>
         </div>
 
-        <div class="form-section">
-          <label class="form-label" for="deadline" style="text-align: left;">
+        <div class="form-section text-center d-flex flex-column g-0">
+          <label class="form-label d-flex text-center" for="deadline">
             Deadline
             <span class="required">*</span>
           </label>
           <input
             id="deadline"
             type="date"
-            class="swal2-input custom-input"
+            class="swal2-input custom-input d-flex text-center"
             value="${this.newTask.deadline || ''}"
-            style="text-align: left;"
           >
         </div>
       </form>
@@ -281,8 +283,9 @@ export default {
             if (suggestions.length) {
               suggestionsList.style.display = 'block';
               suggestions.forEach((suggestion) => {
-                const listItem = document.createElement('li');
+                const listItem = document.createElement('li')
                 listItem.classList.add('suggestion-item');
+                listItem.style = "background: black;"
                 listItem.textContent = suggestion.displayName;
                 listItem.onclick = () => selectSuggestion(suggestion, index);
                 suggestionsList.appendChild(listItem);
@@ -331,12 +334,15 @@ export default {
               type="text"
               class="swal2-input custom-input team-member-input"
               placeholder="Type to search team members"
+                        style="width:300px; margin-right: 0"
               data-index="${index}"
               style="text-align: left;"
             >
-            <button type="button" class="action-button remove-button remove-member">
-              Remove
-            </button>
+                <button type="button" class="action-button remove-button remove-member">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12.6667 8L3.33333 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </button>
             <ul class="suggestions-list" id="suggestions-${index}" style="display: none;"></ul>
           </div>
         `;
