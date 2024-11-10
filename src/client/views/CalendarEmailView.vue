@@ -78,23 +78,23 @@
           </div>
 
           <div v-else-if="events.length" class="events-list">
-    <div v-for="event in events" :key="event.id" class="event-card">
-      <FlipCard
-        :frontTitle="event.summary"
-        :frontDescription="event.description || 'No description'"
-        :backTitle="'Event Details'"
-        :eventId="event.id"
-        :startDate="formatDateTime(event.start.dateTime || event.start.date)"
-        :endDate="formatDateTime(event.end.dateTime || event.end.date)"
-      >
-        <template #backActions>
-          <button @click.stop="selectEvent(event)" class="edit-btn">
-            <i class="fas fa-edit"></i> Edit
-          </button>
-        </template>
-      </FlipCard>
-    </div>
-  </div>
+            <div v-for="event in events" :key="event.id" class="event-card">
+              <FlipCard
+                :frontTitle="event.summary"
+                :frontDescription="event.description || 'No description'"
+                :backTitle="'Event Details'"
+                :eventId="event.id"
+                :startDate="formatDateTime(event.start.dateTime || event.start.date)"
+                :endDate="formatDateTime(event.end.dateTime || event.end.date)"
+              >
+                <template #backActions>
+                  <button @click.stop="selectEvent(event)" class="edit-btn">
+                    <i class="fas fa-edit"></i> Edit
+                  </button>
+                </template>
+              </FlipCard>
+            </div>
+          </div>
           <div v-else class="no-events">
             <i class="far fa-calendar-times"></i>
             <p>No events found</p>
@@ -150,21 +150,23 @@
           </div>
           <div class="modal-body">
             <div class="form-group">
-              <label for="emailList">Enter email addresses (comma-separated)</label>
-              <textarea id="emailList" v-model="emailAddresses" rows="6"
-                placeholder="example1@email.com, example2@email.com, example3@email.com, example4@email.com"
-                class="form-control" :disabled="isLoading"></textarea>
-              <small class="text-muted">Separate multiple email addresses with commas </small>
-              <div v-if="emailError" class="text-danger mt-2">
-                {{ emailError }}
-              </div>
+              <label>Select Group</label>
+              <select v-model="selectedGroup" class="form-control" :disabled="isLoading">
+                <option value="">Choose a group</option>
+                <option v-for="group in groups" :key="group.id" :value="group.id">
+                  {{ group.name }}
+                </option>
+              </select>
+            </div>
+            <div v-if="emailError" class="text-danger mt-2">
+              {{ emailError }}
             </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn-secondary" @click="closeEmailModal" :disabled="isLoading">
               Cancel
             </button>
-            <button type="button" class="btn-primary" @click="sendInvitations" :disabled="!hasValidEmails || isLoading">
+            <button type="button" class="btn-primary" @click="sendInvitations" :disabled="!selectedGroup || isLoading">
               <span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
               {{ isLoading ? 'Sending...' : 'Send Invitations' }}
             </button>
@@ -189,10 +191,8 @@ export default {
   },
   data() {
     return {
-      groupEmails: [],
       events: [],
       selectedEvent: null,
-      emailAddresses: '',
       createdEvent: null,
       eventForm: {
         summary: '',
@@ -202,7 +202,6 @@ export default {
       },
       isLoading: false,
       emailError: '',
-      hasValidEmails: false,
       modalTitle: '',
       modalAction: '',
       modalEvent: {},
@@ -211,7 +210,9 @@ export default {
       startPicker: null,
       endPicker: null,
       isNewEvent: true,
-      invitationsSent: false
+      invitationsSent: false,
+      selectedGroup: null,
+      groups: [{ id: '', name: '', membersInCharge: [] }],
     }
   },
   computed: {
@@ -228,31 +229,26 @@ export default {
     this.emailModal = new Modal(document.getElementById('emailModal'))
     this.initDateTimePickers()
   },
-  watch: {
-    emailAddresses(newValue) {
-      this.validateEmails(newValue)
-    }
-  },
   methods: {
     async getGroup() {
       this.isLoading = true;
       try {
         const response = await axios.get('/api/group/myGroups');
-        this.groupOptions = response.data.groups[0].teamMembers;
-        console.log(this.groupOptions);
-        
-        for (const member of this.groupOptions) {
-          console.log(member.name);
-          const resp = await axios.get('/api/user/searchDisplayname/'+member.name);
-          console.log(resp.data);
-          this.groupEmails.push(resp.data[0].email);
+        if (response.data && response.data.groups) {
+          this.groups = response.data.groups.map(group => ({
+            id: group.groupId,
+            name: group.moduleName,
+            membersInCharge: group.teamMembers || []
+          }));
+        } else {
+          this.groups = [];
         }
-        
-        console.log(this.groupEmails);
-        this.$toast.success('Successfully fetched group emails');
+        console.log('Fetched groups:', this.groups);
+        this.$toast.success('Successfully fetched groups');
       } catch (error) {
-        console.error('Error fetching emails:', error);
-        this.$toast.error('Failed to fetch emails');
+        console.error('Error fetching groups:', error);
+        this.$toast.error('Failed to fetch groups');
+        this.groups = [];
       } finally {
         this.isLoading = false;
       }
@@ -395,108 +391,106 @@ export default {
       this.startPicker.clear()
       this.endPicker.clear()
     },
-    validateEmails(emails) {
-      if (!emails.trim()) {
-        this.emailError = 'Please enter at least one email address';
-        this.hasValidEmails = false;
-        return;
-      }
-
-      const emailList = emails
-        .split(',')
-        .map(e => e.trim())
-        .filter(Boolean);
-
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const invalidEmails = emailList.filter(email => !emailRegex.test(email));
-
-      if (invalidEmails.length > 0) {
-        this.emailError = `Invalid email format: ${invalidEmails.join(', ')}`;
-        this.hasValidEmails = false;
-      } else if (emailList.length === 0) {
-        this.emailError = 'Please enter at least one email address';
-        this.hasValidEmails = false;
-      } else {
-        this.emailError = '';
-        this.hasValidEmails = true;
-      }
-    },
-
     async sendInvitations() {
-      if (!this.createdEvent) return;
-
-      const recipients = this.emailAddresses
-        .split(',')
-        .map(e => e.trim())
-        .filter(e => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e));
-
-      if (recipients.length === 0) {
-        this.emailError = 'Please enter at least one valid email address';
+    if (!this.selectedGroup) {
+        this.emailError = 'Please select a group';
         return;
-      }
+    }
 
-      const event = this.createdEvent
-      const startDateTime = this.formatDateTime(event.start.dateTime || event.start.date)
-      const endDateTime = this.formatDateTime(event.end.dateTime || event.end.date)
+    this.isLoading = true;
+    try {
+        const selectedGroupData = this.groups.find(group => group.id === this.selectedGroup);
+        if (!selectedGroupData || !selectedGroupData.membersInCharge || selectedGroupData.membersInCharge.length === 0) {
+            throw new Error('No members found for the selected group');
+        }
 
-      const invitationData = {
-        to: recipients,
-        subject: `Event Invitation: ${event.summary}`,
-        text: `
+        // Batch fetch all member emails in parallel
+        const emailPromises = selectedGroupData.membersInCharge.map(async (member) => {
+            try {
+                // Extract displayName properly regardless of member format
+                const displayName = typeof member === 'object' ? member.displayName : member;
+                if (!displayName) {
+                    console.error('Invalid member data:', member);
+                    return null;
+                }
+
+                // Use the names endpoint to fetch user email
+                const response = await axios.get(`/api/group/names/${encodeURIComponent(displayName)}`);
+                
+                if (response.data.success && response.data.data && response.data.data.length > 0) {
+                    return response.data.data[0].email;
+                }
+                console.warn(`No email found for member: ${displayName}`);
+                return null;
+            } catch (error) {
+                console.error('Error fetching email:', error);
+                return null;
+            }
+        });
+
+        // Wait for all email fetching to complete
+        const emails = await Promise.all(emailPromises);
+        const validEmails = emails.filter(email => email !== null);
+
+        if (validEmails.length === 0) {
+            throw new Error('No valid email addresses found for group members');
+        }
+
+        const event = this.createdEvent;
+        const eventData = {
+            to: validEmails,
+            subject: `Event Invitation: ${event.summary}`,
+            text: `
 You are invited to the following event:
 
 Event: ${event.summary}
-Start: ${startDateTime}
-End: ${endDateTime}
+Start: ${this.formatDateTime(event.start.dateTime || event.start.date)}
+End: ${this.formatDateTime(event.end.dateTime || event.end.date)}
 Description: ${event.description || 'No description provided'}
 
 You are invited by ${this.email}
-        `.trim(),
-        html: `
+            `.trim(),
+            html: `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-  <h2 style="color: #2c3e50;">Event Invitation</h2>
-  <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px;">
-    <h3 style="color: #3498db;">${event.summary}</h3>
-    <p><strong>Start:</strong> ${startDateTime}</p>
-    <p><strong>End:</strong> ${endDateTime}</p>
-    <p><strong>Description:</strong> ${event.description || 'No description provided'}</p>
-    <p><strong>Invited by:</strong> ${this.email}</p>
-  </div>
+    <h2 style="color: #2c3e50;">Event Invitation</h2>
+    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px;">
+        <h3 style="color: #3498db;">${event.summary}</h3>
+        <p><strong>Start:</strong> ${this.formatDateTime(event.start.dateTime || event.start.date)}</p>
+        <p><strong>End:</strong> ${this.formatDateTime(event.end.dateTime || event.end.date)}</p>
+        <p><strong>Description:</strong> ${event.description || 'No description provided'}</p>
+        <p><strong>Invited by:</strong> ${this.email}</p>
+    </div>
 </div>
-        `.trim()
-      };
+            `.trim()
+        };
 
-      this.isLoading = true;
-      try {
-        const response = await axios.post('/api/email/send', invitationData, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
+        const response = await axios.post('/api/email/send', eventData);
 
         if (response.data.success) {
-          this.invitationsSent = true;
-          this.emailModal.hide();
-          this.emailAddresses = '';
-          this.emailError = '';
-          this.createdEvent = null;
-
-          this.showEventActionModal('Success', {
-            summary: 'Email invitations sent successfully',
-            start: { dateTime: event.start.dateTime },
-            end: { dateTime: event.end.dateTime }
-          });
+            this.invitationsSent = true;
+            this.emailModal.hide();
+            this.selectedGroup = null;
+            this.emailError = '';
+            this.createdEvent = null;
+            
+            // Show success message with invitation details
+            this.showEventActionModal('Success', {
+                summary: `Invitations sent successfully to ${validEmails.length} recipients`,
+                start: { dateTime: event.start.dateTime },
+                end: { dateTime: event.end.dateTime }
+            });
         } else {
-          throw new Error(response.data.message || 'Failed to send invitations');
+            throw new Error(response.data.message || 'Failed to send invitations');
         }
-      } catch (error) {
+    } catch (error) {
         console.error('Error sending invitations:', error);
-        this.emailError = error.response?.data?.message ||
-          'Failed to send email invitations. Please try again.';
-      } finally {
+        this.emailError = error.response?.data?.message || 
+                         error.message || 
+                         'Failed to send email invitations. Please try again.';
+    } finally {
         this.isLoading = false;
-      }
-    },
+    }
+},
 
     showEventActionModal(action, event) {
       this.modalTitle = action === 'Success' ? 'Event Action Successful' : 'Event Action Failed'
@@ -621,6 +615,7 @@ You are invited by ${this.email}
   height: 200px;
   margin-bottom: 1rem;
 }
+
 .no-events {
   text-align: center;
   color: #7f8c8d;
