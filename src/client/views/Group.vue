@@ -89,10 +89,19 @@
           <button type="button" @click="addTeamMember" class="add-member-button">
             Add Team Member
           </button>
-          <label>
+          <!-- <label>
             Deadline:
             <input type="date" v-model="newTask.deadline" required />
-          </label>
+          </label> -->
+          <div class="input-group">
+            <input type="text" id="eventStart" class="form-control flatpickr-input" v-model="newTask.deadline"
+              data-input required readonly />
+              <div class="input-group-append">
+                <button class="btn btn-primary" type="button" @click="openStartPicker">
+                  <i class="fas fa-calendar"></i>
+                  </button>
+              </div>
+            </div>
           <div class="modal-buttons">
             <button type="submit" @click="addTask" class="btn btn-primary">Add Task</button>
             <button type="button" @click="closeModal" class="btn btn-secondary">Cancel</button>
