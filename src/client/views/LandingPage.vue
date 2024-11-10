@@ -1,183 +1,229 @@
-<!-- LandingPage.vue
+<!-- LandingPage.vue -->
 <template>
-  <div class="vh-100 position-fixed top-0 start-0 w-100 overflow-hidden">
-    <div class="position-absolute top-0 start-0 w-100 h-100">
+  <div class="landing-container">
+    <!-- Video Background Container -->
+    <div class="video-container">
       <video
-          v-for="(_, index) in 2"
+          v-for="(video, index) in videos"
           :key="index"
           :ref="el => videoRefs[index] = el"
-          class="position-absolute top-50 start-50 translate-middle min-w-100 min-h-100 w-auto h-auto object-fit-cover"
-          :class="{ 'opacity-0': currentVideoIndex !== index }"
+          class="background-video"
+          :class="{ 'fade-in': currentVideoIndex === index }"
           muted
           playsinline
-          @timeupdate="handleTimeUpdate"
-          @ended="handleVideoEnd"
+          loop
+          :src="video"
       ></video>
     </div>
 
-    <div class="position-relative vh-100 d-flex justify-content-center align-items-center bg-dark bg-opacity-50">
-      <div class="text-center text-white p-4 rounded-3 glass-effect">
-        <img src="../assets/logo.svg" alt="SMU Buddy Logo" class="mb-3" width="120" height="120">
-        <h1 class="display-3 fw-bold mb-0 text-shadow">SMU Buddy</h1>
-        <p class="fs-4 my-3 opacity-90">Your Ultimate Student Companion</p>
-        <router-link
-            to="/login"
-            class="btn btn-success btn-lg px-4 rounded-pill shadow-sm gradient-button"
-        >
-          Get Started
-        </router-link>
+    <!-- Content Overlay -->
+    <div class="content-overlay">
+      <div class="content-card">
+        <template v-if="$route.path === '/'">
+          <img
+              src="/circledlogo.svg"
+              alt="SMU Buddy Logo"
+              class="logo"
+          >
+          <h1 class="title">SMU Buddy</h1>
+          <p class="subtitle">Your Ultimate Student Companion</p>
+          <router-link
+              to="/Register"
+              class="cta-button"
+          >
+            Get Started
+          </router-link>
+          <router-link
+              to="/Login"
+              class="cta-button"
+          >
+            Login
+          </router-link>
+        </template>
+        <router-view v-slot="{ Component }" v-if="$route.path !== '/'">
+          <transition name="fade" mode="out-in">
+            <component :is="Component" :key="$route.path"/>
+          </transition>
+        </router-view>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import {RouterView} from "vue-router";
+
 export default {
   name: 'LandingPage',
+  components: {RouterView},
+
   data() {
     return {
       videos: [
-        '/landingvideo/mixkit-young-man-sitting-scrolling-on-his-cell-phone-4801-hd-ready.mp4',
         '/landingvideo/mixkit-person-typing-on-a-computer-in-detail-4907-hd-ready.mp4',
         '/landingvideo/mixkit-reflection-of-a-screen-in-glasses-221-hd-ready.mp4',
+        '/landingvideo/mixkit-young-man-sitting-scrolling-on-his-cell-phone-4801-hd-ready.mp4',
         '/landingvideo/mixkit-people-having-a-work-meeting-around-a-table-4547-hd-ready.mp4',
-        '/landingvideo/100123-video-720.mp4',
       ],
-      videoIndex: 0,
       currentVideoIndex: 0,
       videoRefs: [],
-      isTransitioning: false,
-      TRANSITION_THRESHOLD: 0.5 // Start transition 0.5 seconds before video ends
+      transitionInterval: null
     }
   },
+
   methods: {
-    handleTimeUpdate(event) {
-      if (this.isTransitioning) return;
-
-      const video = event.target;
-      const timeRemaining = video.duration - video.currentTime;
-
-      // Start transition when video is near the end
-      if (timeRemaining <= this.TRANSITION_THRESHOLD) {
-        this.isTransitioning = true;
-        this.prepareNextVideo();
-      }
-    },
-    async prepareNextVideo() {
-      const nextVideoIndex = (this.videoIndex + 1) % this.videos.length;
-      const nextPlayerIndex = (this.currentVideoIndex + 1) % 2;
-
-      // Set up next video in the inactive player
-      const nextPlayer = this.videoRefs[nextPlayerIndex];
-      nextPlayer.src = this.videos[nextVideoIndex];
-      await nextPlayer.load();
-
-      try {
-        // Start playing the next video
-        await nextPlayer.play();
-
-        // Switch to the next video with crossfade
-        this.currentVideoIndex = nextPlayerIndex;
-        this.videoIndex = nextVideoIndex;
-
-        // Reset transition flag after transition duration
-        setTimeout(() => {
-          this.isTransitioning = false;
-        }, 1000); // Match this with the CSS transition duration
-      } catch (e) {
-        console.warn('Autoplay prevented:', e);
-        this.isTransitioning = false;
-      }
-    },
-    handleVideoEnd() {
-      // This is now just a backup in case timeupdate somehow misses
-      if (!this.isTransitioning) {
-        this.isTransitioning = true;
-        this.prepareNextVideo();
-      }
-    },
     async initializeVideos() {
-      // Set up initial video
-      const firstPlayer = this.videoRefs[0];
-      firstPlayer.src = this.videos[0];
-      await firstPlayer.load();
+      try {
+        // Initialize first video
+        const firstVideo = this.videoRefs[0];
+        if (firstVideo) {
+          await firstVideo.play();
+
+          // Set up video rotation
+          this.transitionInterval = setInterval(() => {
+            this.rotateVideo();
+          }, 8000); // Change video every 8 seconds
+        }
+      } catch (error) {
+        console.error('Video playback failed:', error);
+      }
+    },
+
+    async rotateVideo() {
+      const nextIndex = (this.currentVideoIndex + 1) % this.videos.length;
+      const nextVideo = this.videoRefs[nextIndex];
 
       try {
-        await firstPlayer.play();
-        this.currentVideoIndex = 0;
-      } catch (e) {
-        console.warn('Autoplay prevented:', e);
+        if (nextVideo) {
+          await nextVideo.play();
+          this.currentVideoIndex = nextIndex;
+        }
+      } catch (error) {
+        console.error('Video rotation failed:', error);
       }
     }
   },
+
   mounted() {
     this.initializeVideos();
+  },
+
+  beforeUnmount() {
+    // Clean up interval when component is destroyed
+    if (this.transitionInterval) {
+      clearInterval(this.transitionInterval);
+    }
   }
 }
 </script>
 
 <style scoped>
-/* Custom styles that aren't available in Bootstrap */
-.glass-effect {
-  backdrop-filter: blur(8px);
-  background: rgba(255, 255, 255, 0.1);
+.landing-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
 }
 
-.text-shadow {
+.video-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.background-video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}
+
+.background-video.fade-in {
+  opacity: 1;
+}
+
+.content-overlay {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(31, 41, 55, 0.7); /* Matches dark theme bg-primary with opacity */
+  z-index: 1;
+}
+
+.content-card {
+  text-align: center;
+  padding: 2.5rem;
+  border-radius: 1rem;
+  background: rgba(124, 58, 237, 0.1); /* Using purple-primary with low opacity */
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.2);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+}
+
+.logo {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 1.5rem;
+}
+
+.title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.gradient-button {
-  background: linear-gradient(135deg, #4CAF50, #45a049);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+.subtitle {
+  font-size: 1.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 1rem 0 2rem;
 }
 
-.gradient-button:hover {
+.cta-button {
+  display: block;
+  padding: 1rem 2.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: white;
+  background: var(--purple-primary);
+  border-radius: 9999px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(124, 58, 237, 0.3);
+}
+
+.cta-button:hover {
+  background: var(--purple-light);
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 6px 12px rgba(124, 58, 237, 0.4);
 }
 
-/* Video transition effects */
-video {
-  transition: opacity 1s ease;
+.cta-button:active {
+  background: var(--purple-dark);
+  transform: translateY(0);
 }
 
-/* Bootstrap utility classes that might not be available */
-.min-w-100 {
-  min-width: 100%;
+/* Dark theme specific adjustments */
+[data-bs-theme="dark"] .content-card {
+  background: rgba(124, 58, 237, 0.15);
+  border-color: rgba(124, 58, 237, 0.3);
 }
 
-.min-h-100 {
-  min-height: 100%;
+[data-bs-theme="dark"] .subtitle {
+  color: var(--text-secondary);
 }
-
-.opacity-90 {
-  opacity: 0.9;
-}
-</style> -->
-
- <template>
-  <div>
-<!--    <Hero />
-    <About />
-    <Services />
-    <Contact />-->
-  </div>
-</template>
-
-<script>
-/*import Hero from '../components/Hero.vue';
-import About from '../components/About.vue';
-import Services from '../components/Services.vue';
-import Contact from '../components/Contact.vue';*/
-
-export default {
-  components: {
-
-    /*Hero,
-    About,
-    Services,
-    Contact*/
-  }
-};
-</script> -->
+</style>

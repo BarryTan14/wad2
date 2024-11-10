@@ -1,4 +1,4 @@
-// import './assets/main.css'
+import './assets/main.css'
 
 import {createApp} from 'vue'
 import App from './App.vue'
@@ -105,7 +105,7 @@ router.beforeEach(async (to, from, next) => {
                     icon: 'info',
                     title: 'You have been redirected.'
                 })*/
-                next('/')
+                next('/dashboard')
                 return
             }
         } else if (authStore.loading) {
@@ -141,7 +141,7 @@ router.beforeEach(async (to, from, next) => {
                     icon: 'info',
                     title: 'You have been redirected.'
                 })*/
-                next('/')
+                next('/dashboard')
                 return
             }
         }

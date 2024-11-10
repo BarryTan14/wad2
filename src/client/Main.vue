@@ -12,7 +12,6 @@ export default {
 
   components: {
     ChatWindow,
-    ToastContainer,
     Moon,
     Sun,
     Menu,
@@ -37,7 +36,7 @@ export default {
       isSidebarOpen: false,
       searchQuery: '',
       navigationRoutes: [
-        { path: '/', name: 'Dashboard', icon: '📊' },
+        { path: '/dashboard', name: 'Dashboard', icon: '📊' },
         { path: '/transcribe', name: 'Class Participation', icon: '👥' },
         { path: '/calendaremailview', name: 'Event Planner', icon: '🗓️' },
         // { path: '/progress', name: 'Progress', icon: '📈' },
@@ -282,8 +281,6 @@ export default {
         customClass,
         didOpen: () => {
           // Add custom styles
-          const style = document.createElement('style')
-          document.head.appendChild(style);
 
           // Add member button handler
           document.getElementById('add-member').addEventListener('click', () => {
@@ -297,7 +294,7 @@ export default {
                 <input
                   type="text"
                   class="swal2-input custom-input team-member-input"
-                  placeholder="Search and select team member"
+                  placeholder="Search"
                   data-index="${newIndex}"
                 >
                 <button type="button" class="action-button remove-button remove-member">
@@ -519,7 +516,7 @@ export default {
     <aside class="sidebar" :class="{ 'sidebar-open': isSidebarOpen }">
       <div class="close-button" v-if="isSidebarOpen" @click="toggleSidebar">&times;</div>
       <div class="brand">
-        <img src="./assets/logo.svg" alt="CultureOS" class="logo">
+        <img src="/circledlogo.svg" alt="SMU Buddy" class="logo">
         <h1 class="brand-title">SMU Buddy</h1>
       </div>
 
@@ -593,7 +590,7 @@ export default {
   </div>
 </template>
 
-<style scoped>
+<style>
 
 .input-wrapper {
   position: relative;
