@@ -283,7 +283,7 @@ export default {
             if (suggestions.length) {
               suggestionsList.style.display = 'block';
               suggestions.forEach((suggestion) => {
-                const listItem = document.createElement('li');
+                const listItem = document.createElement('li')
                 listItem.classList.add('suggestion-item');
                 listItem.style = "background: black;"
                 listItem.textContent = suggestion.displayName;
