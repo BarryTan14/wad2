@@ -29,7 +29,7 @@ export default {
   },
   methods: {
     progressPercentage() {
-      
+        console.log(this.userTask)
         let count = 0;
         for (let i = 0; i < this.userTask.length; i++) {
           if (this.userTask[i].status === true) {
@@ -45,7 +45,7 @@ export default {
 
 <template>
   <div class="dashboard-container">
-    <!-- Speech-to-Text for Class Participation -->
+    <!-- Speech-to-Text for Class Participation
     <WelcomeItem>
       <template #heading>
         <ParticipationIcon />
@@ -58,7 +58,7 @@ export default {
       </div>
     </WelcomeItem>
 
-    <!-- Meeting Scheduler -->
+    Meeting Scheduler
     <WelcomeItem>
       <template #heading>
         <SchedulerIcon />
@@ -69,8 +69,11 @@ export default {
           📅 Schedule a Meeting
         </button>
       </div>
-    </WelcomeItem>
+    </WelcomeItem> -->
 
+    
+
+    <h1>Progress Dashboard</h1>
     <!-- Project To-Do List -->
     <WelcomeItem>
       <template #heading>
@@ -79,19 +82,17 @@ export default {
       </template>
       <div>
         <ul>
-          <li v-for="(item, index) in todoItems" :key="item.id" class="todo-item">
-            <input type="checkbox" v-model="item.completed" class="task-checkbox" />
-            <span class="task-text" :class="{ 'completed': item.completed }">{{ item.text }}</span>
-            <div class="action-buttons">
+          <li v-for="(item, index) in userTask" :key="item.taskId" class="todo-item">
+            <!-- <input type="checkbox" v-model="item.completed" class="task-checkbox" /> -->
+            <span v-if="item.status==false" class="task-text" :class="{ 'completed': item.status }">{{(index+1)+". "+ item.taskName }}</span>
+            <!-- <div class="action-buttons">
               <button class="action-button" @click="editTodo(index)">Edit</button>
               <button class="action-button" @click="deleteTodo(index)">Delete</button>
-            </div>
+            </div> -->
           </li>
         </ul>
       </div>
     </WelcomeItem>
-
-    Progress Dashboard
     <WelcomeItem>
       <template #heading>
         <ProgressIcon />
