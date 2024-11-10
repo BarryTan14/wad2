@@ -173,6 +173,7 @@ import Contact from '../components/Contact.vue';*/
 
 export default {
   components: {
+
     /*Hero,
     About,
     Services,
