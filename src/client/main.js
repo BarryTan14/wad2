@@ -5,8 +5,8 @@ import App from './App.vue'
 import router from './router'
 import {createPinia} from 'pinia'
 import {useAuthStore} from './stores/auth.js'
-import { defineConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
+/*import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';*/
 
 //import {useToastStore} from "./stores/toast.js";
 
@@ -95,7 +95,7 @@ router.beforeEach(async (to, from, next) => {
                 return
             }
             if (isAuthenticated && !requiresAuth) {
-                VueSweetalert2.mixin({
+                /*VueSweetalert2.mixin({
                     toast: true,
                     position: 'top-end',
                     showConfirmButton: true,
@@ -104,7 +104,7 @@ router.beforeEach(async (to, from, next) => {
                 }).fire({
                     icon: 'info',
                     title: 'You have been redirected.'
-                })
+                })*/
                 next('/')
                 return
             }
@@ -131,7 +131,7 @@ router.beforeEach(async (to, from, next) => {
             }
 
             if (authStore.isAuthenticated && !requiresAuth) {
-                VueSweetalert2.mixin({
+                /*VueSweetalert2.mixin({
                     toast: true,
                     position: 'top-end',
                     showConfirmButton: true,
@@ -140,7 +140,7 @@ router.beforeEach(async (to, from, next) => {
                 }).fire({
                     icon: 'info',
                     title: 'You have been redirected.'
-                })
+                })*/
                 next('/')
                 return
             }

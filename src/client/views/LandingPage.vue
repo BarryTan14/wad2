@@ -158,25 +158,25 @@ video {
 
 <template>
   <div>
-    <Hero />
+<!--    <Hero />
     <About />
     <Services />
-    <Contact />
+    <Contact />-->
   </div>
 </template>
 
 <script>
-import Hero from '../components/Hero.vue';
+/*import Hero from '../components/Hero.vue';
 import About from '../components/About.vue';
 import Services from '../components/Services.vue';
-import Contact from '../components/Contact.vue';
+import Contact from '../components/Contact.vue';*/
 
 export default {
   components: {
-    Hero,
+    /*Hero,
     About,
     Services,
-    Contact
+    Contact*/
   }
 };
 </script>

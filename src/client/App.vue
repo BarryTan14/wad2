@@ -5,12 +5,14 @@ import { Moon, Sun, Menu } from 'lucide-vue-next'
 import ChatWindow from './components/ChatWindow.vue'
 import ToastContainer from "./components/ToastContainer.vue"
 import AuthDropdown from './components/AuthDropdown.vue'
+import Main from "./Main.vue";
 
 
 export default {
   name: 'App',
 
   components: {
+    Main,
     ChatWindow,
     ToastContainer,
     Moon,
@@ -23,65 +25,13 @@ export default {
 
   data() {
     return {
-      userGroups: [],
-      isModalOpen: false,
-      suggestions: [], // Stores suggestions for each team member input
-      showSuggestions: [], // Controls visibility of suggestions for each input
-      newModule: {
-        groupId: '',
-        moduleTitle: '',
-        teamMembers: [{ name: '' }],
-        // Initial team member input
-      },
       isDarkTheme: true,
       isSidebarOpen: false,
       searchQuery: '',
-      navigationRoutes: [
-        { path: '/', name: 'Dashboard', icon: '📊' },
-        { path: '/transcribe', name: 'Class Participation', icon: '👥' },
-        { path: '/calendaremailview', name: 'Event Planner', icon: '🗓️' },
-        // { path: '/progress', name: 'Progress', icon: '📈' },
-        // { path: '/team', name: 'Team Members', icon: '👥' },
-        // { path: '/messages', name: 'Messages', icon: '💬' }
-      ],
-      // workspaces: [
-      //   { name: 'Interactive Design & Prototyping', icon: '🎨', groupId: 101, path: '/group' },
-      //   { name: 'Computational Thinking', icon: '🧮', groupId: 102, path: '/group' },
-      //   { name: 'Web Application & Development', icon: '💻', groupId: 103, path: '/group' }
-      // ],
-      teamMembers: [
-        { id: 1, profilePic: '/profilepicture/avatar.png' },
-        { id: 2, profilePic: '/profilepicture/avatar.png' },
-        { id: 3, profilePic: '/profilepicture/avatar.png' }
-      ],
-      fallbackImage: 'avatar.png',
-      chatKey: 0,
-      showChat: true
     }
   },
 
   methods: {
-    reinitializeChat() {
-      // Temporarily remove the component
-      this.showChat = false
-
-      // Increment key to force a fresh mount
-      this.chatKey++
-
-      // Use nextTick to ensure DOM updates before showing again
-      this.$nextTick(() => {
-        this.showChat = true
-      })
-    },
-    async fetchUserGroups() {
-      try {
-        const response = await axios.get(`/api/user/searchDisplayName/${this.$authStore.currentUser.displayName}`,);
-        this.userGroups = response.data[0].joinedGroups
-        
-      } catch (error) {
-        console.error("Error fetching suggestions:", error);
-      }
-    },
     toggleTheme() {
       this.isDarkTheme = !this.isDarkTheme
       document.body.setAttribute('data-bs-theme', this.isDarkTheme ? 'dark' : 'light')
@@ -120,80 +70,6 @@ export default {
       this.suggestions = [[]];
       this.showSuggestions = [false];
     },
-    // Fetch suggestions based on user input
-    async fetchSuggestions(query, index) {
-      if (query.length < 1) {
-        this.suggestions[index] = [];
-        return;
-      }
-
-      try {
-        const response = await axios.get(`/api/user/searchDisplayName/${query}`,);
-        console.log(response.data)
-        this.suggestions[index] = response.data; // Assuming response is an array of suggestions
-        this.showSuggestions[index] = true; // Ensure suggestions are shown after fetch
-      } catch (error) {
-        console.error("Error fetching suggestions:", error);
-      }
-    },
-    // Select a suggestion from the list
-    selectSuggestion(index, suggestion) {
-      this.newModule.teamMembers[index].name = suggestion.displayName;
-      this.showSuggestions[index] = false; // Hide suggestions after selection
-    },
-    // Close suggestions with a delay to allow selection click to process
-    closeSuggestions(index) {
-      setTimeout(() => {
-        this.showSuggestions[index] = false;
-      }, 100);
-    },
-    // Submit the workspace data
-    async addGroup() {
-      try {
-        // Add group into database
-        await axios.post('/api/group/add', this.newModule, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }).then(resp => {
-
-          const groupId = resp.data.data; 
-          console.log(groupId)
-          const groupObj = { groupId: groupId, moduleTitle: this.newModule.moduleName }
-          this.userGroups.push({ groupId: groupId, moduleTitle: this.newModule.moduleName })
-          for (let i = 0; i < this.newModule.teamMembers.length; i++) {
-            const member = this.newModule.teamMembers[i];
-            // Post request to add the group ID to each team member
-            axios.post(`/api/user/addToGroup/${member.name}`, groupObj,
-              {
-                headers: {
-                  'Content-Type': 'application/json'
-                }
-              });
-
-            console.log(`Added group to member: ${member.name}`);
-          }
-          axios.post(`/api/user/addToGroup/${this.$authStore.currentUser.displayName}`,groupObj, {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          });
-
-        })
-          ;
-
-        //add the group id to all the users in the new module.
-
-        // Proceed to the second request using the retrieved group ID
-
-      }
-      catch (err) {
-        console.error("Error:", err);
-      } finally {
-        // Close modal whether requests succeed or fail
-        this.closeModal();
-      }
-    },
     beforeEnter(el) {
       // Called before the entering element is inserted
       console.log('Before enter')
@@ -227,7 +103,6 @@ export default {
       this.isDarkTheme = savedTheme === 'dark'
       document.body.setAttribute('data-bs-theme', savedTheme)
     }
-    this.fetchUserGroups();
   }
 };
 
@@ -235,212 +110,214 @@ export default {
 
 <template>
   <div class="app-container" :class="{ 'theme-light': !isDarkTheme }">
-    <ChatWindow v-if="showChat" :key="chatKey"
-                @reinitialize="reinitializeChat" />
-    <ToastContainer />
-    <div class="layout-wrapper">
-      <!-- Sidebar -->
-      <aside class="sidebar" :class="{ 'sidebar-open': isSidebarOpen }">
-        <div class="close-button" v-if="isSidebarOpen" @click="toggleSidebar">&times;</div>
-        <div class="brand">
-          <img src="./assets/logo.svg" alt="CultureOS" class="logo">
-          <h1 class="brand-title">SMU Buddy</h1>
-        </div>
-
-        <!-- Main Navigation -->
-        <nav class="main-nav">
-          <ul class="nav-list">
-            <li v-for="route in navigationRoutes" :key="route.path">
-              <RouterLink :to="route.path" class="nav-link" :class="{ 'active': $route.path === route.path }">
-                <span class="nav-icon">{{ route.icon }}</span>
-                {{ route.name }}
-              </RouterLink>
-            </li>
-          </ul>
-        </nav>
-
-        <!-- Workspaces -->
-        <div class="workspaces">
-          <h2 class="section-title">Groups <button @click="openModal">Add Group</button></h2>
-          <ul class="nav-list">
-            <li v-for="group in userGroups">
-              <RouterLink :to="'/group/' + group.groupId" class="nav-link"
-                :class="{ 'active': $route.path === '/group/' + group.groupId }">
-                <!-- <span class="nav-icon">{{ workspace.icon }}</span> -->
-                {{ group.moduleTitle }}
-              </RouterLink>
-            </li>
-          </ul>
-        </div>
-
-        <!-- Theme Toggle -->
-        <div class="theme-toggle-wrapper">
-          <button @click="toggleTheme" class="theme-toggle">
-            <component :is="isDarkTheme ? 'Sun' : 'Moon'" class="icon" />
-            <span>{{ isDarkTheme ? 'Light' : 'Dark' }} Mode</span>
-          </button>
-        </div>
-      </aside>
-
-      <!-- Main Content Area -->
-      <div class="main-area">
-        <!-- Top Navigation -->
-        <nav class="top-nav">
-          <div class="top-nav-left">
-            <button @click="toggleSidebar" class="menu-button">
-              <Menu class="icon"/>
-            </button>
-            <!-- <div class="search-container">
-              <input type="text" v-model="searchQuery" placeholder="Search" class="search-input">
-            </div> -->
-          </div>
-          <div class="top-nav-right">
-            <!-- <div class="team-members">
-              <img v-for="member in teamMembers" :key="member.id" :src="member.profilePic"
-                :alt="'Team Member ' + member.id" class="team-member-avatar">
-              <button class="more-members">+2</button>
-            </div> -->
-            <AuthDropdown />
-          </div>
-        </nav>
-
-        <!-- Main Content -->
-        <main class="content">
-          <!--<RouterView />-->
-          <router-view v-slot="{ Component }">
-            <transition name="fade" mode="out-in">
-              <component :is="Component" :key="$route.path" />
-            </transition>
-          </router-view>
-        </main>
-      </div>
-    </div>
-  </div>
-
-  <div v-if="isModalOpen" class="modal-overlay">
-    <div class="modal-content">
-      <h2>Add New Workspace</h2>
-      <form @submit.prevent="addGroup" class="workspace-form">
-
-        <!-- Module Title -->
-        <label>
-          Module Title:
-          <input type="text" v-model="newModule.moduleName" required />
-        </label>
-
-        <!-- Team Members with Autocomplete -->
-        <h3>Team Members</h3>
-        <div v-for="(member, index) in newModule.teamMembers" :key="index" class="team-member-row">
-          <!-- Team Member Name with Autocomplete -->
-          <label>
-            Team Member:
-            <div class="input-wrapper">
-              <input type="text" v-model="member.name" @input="fetchSuggestions(member.name, index)"
-                @focus="showSuggestions[index] = true" @blur="closeSuggestions(index)"
-                placeholder="Type to search team members" required />
-
-              <!-- Suggestions Dropdown -->
-              <ul v-if="showSuggestions[index]" class="suggestions-list">
-                <li v-for="suggestion in suggestions[index]" :key="suggestion.displayName"
-                  @click="selectSuggestion(index, suggestion)">
-                  {{ suggestion.displayName }}
-                </li>
-              </ul>
-            </div>
-          </label>
-          <button type="button" @click="removeTeamMember(index)" class="remove-member-button">
-            Remove
-          </button>
-        </div>
-        <button type="button" @click="addTeamMember" class="add-member-button">
-          Add Team Member
-        </button>
-
-        <!-- Submit and Cancel Buttons -->
-        <button type="submit">Submit</button>
-        <button type="button" @click="closeModal">Cancel</button>
-      </form>
-    </div>
+    <Main />
   </div>
 </template>
 <style>
-.input-wrapper {
-  position: relative;
-  width: 100%;
+/* Base theme variables */
+:root {
+  /* Brand colors */
+  --purple-primary: #7C3AED;  /* Main purple */
+  --purple-light: #8B5CF6;    /* Lighter purple for hover */
+  --purple-dark: #6D28D9;     /* Darker purple for active */
+  --success-color: #10B981;   /* Green for positive actions */
+  --danger-color: #EF4444;    /* Red for dangerous actions */
+  --warning-color: #F59E0B;   /* Amber for warnings */
+
+  /* Light theme colors */
+  --text-primary: #1a1a1a;
+  --text-secondary: #4B5563;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f3f4f6;
+  --border-color: #e5e7eb;
+  --modal-bg: #ffffff;
+  --input-bg: #ffffff;
+  --input-text: #1a1a1a;
+  --dropdown-bg: #ffffff;
+  --hover-bg: #f3f4f6;
 }
 
-.input-wrapper input {
-  width: 100%;
-  padding: 8px 12px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  outline: none;
+/* Dark theme colors */
+[data-bs-theme="dark"] {
+  --text-primary: #f3f4f6;
+  --text-secondary: #9CA3AF;
+  --bg-primary: #1f2937;
+  --bg-secondary: #374151;
+  --border-color: #4b5563;
+  --modal-bg: #1f2937;
+  --input-bg: #374151;
+  --input-text: #f3f4f6;
+  --dropdown-bg: #1f2937;
+  --hover-bg: #374151;
 }
 
-.suggestions-list {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background-color: #fff;
-  color: black;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin-top: 4px;
-  max-height: 150px;
-  overflow-y: auto;
-  z-index: 10;
+/* Modal styles */
+.custom-swal-popup {
+  background-color: var(--modal-bg) !important;
+  color: var(--text-primary) !important;
+  border-radius: 12px !important;
 }
 
-.suggestions-list li {
-  padding: 8px 12px;
-  cursor: pointer;
+.custom-swal-title {
+  color: var(--text-primary) !important;
+  font-weight: 600 !important;
 }
 
-.suggestions-list li:hover {
-  background-color: #f0f0f0;
+.custom-swal-content {
+  color: var(--text-secondary) !important;
 }
 
-/* Fade transition */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
+/* Form inputs */
+.custom-input {
+  background-color: var(--input-bg) !important;
+  color: var(--input-text) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px !important;
+  transition: border-color 0.2s ease !important;
 }
 
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+.custom-input:focus {
+  border-color: var(--purple-primary) !important;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2) !important;
 }
 
-/* Slide transition (alternative) */
-.slide-enter-active,
-.slide-leave-active {
-  transition: transform 0.3s ease;
+.custom-input::placeholder {
+  color: var(--text-secondary) !important;
+  opacity: 0.7;
 }
 
-.slide-enter-from {
-  transform: translateX(100%);
+/* Suggestions dropdown */
+.suggestions-dropdown {
+  background-color: var(--dropdown-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
 }
 
-.slide-leave-to {
-  transform: translateX(-100%);
+.suggestion-item {
+  color: var(--text-primary) !important;
+  transition: background-color 0.2s ease !important;
 }
 
-/* Slide fade transition (combines both) */
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-  transition: all 0.3s ease;
+.suggestion-item:hover {
+  background-color: var(--purple-primary) !important;
+  color: white !important;
 }
 
-.slide-fade-enter-from {
-  transform: translateX(20px);
-  opacity: 0;
+/* Action Buttons */
+.action-button {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 6px !important;
+  transition: all 0.2s ease !important;
 }
 
-.slide-fade-leave-to {
-  transform: translateX(-20px);
-  opacity: 0;
+.action-button:hover {
+  background-color: var(--purple-light) !important;
+  color: white !important;
+  border-color: var(--purple-light) !important;
+}
+
+.add-button {
+  background-color: var(--purple-primary) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.add-button:hover {
+  background-color: var(--purple-light) !important;
+}
+
+.remove-button {
+  background-color: transparent !important;
+  color: var(--danger-color) !important;
+  border: 1px solid var(--danger-color) !important;
+}
+
+.remove-button:hover {
+  background-color: var(--danger-color) !important;
+  color: white !important;
+}
+
+/* SweetAlert2 specific overrides */
+.swal2-popup {
+  background-color: var(--modal-bg) !important;
+  border-radius: 12px !important;
+}
+
+.swal2-title, .swal2-html-container {
+  color: var(--text-primary) !important;
+}
+
+.swal2-input, .swal2-textarea {
+  background-color: var(--input-bg) !important;
+  color: var(--input-text) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px !important;
+}
+
+/* Confirm button - Primary action */
+.swal2-confirm {
+  background-color: var(--purple-primary) !important;
+  color: white !important;
+  border-radius: 6px !important;
+  padding: 10px 24px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+.swal2-confirm:hover {
+  background-color: var(--purple-light) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Cancel button - Secondary action */
+.swal2-cancel {
+  background-color: transparent !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 6px !important;
+  padding: 10px 24px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+.swal2-cancel:hover {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--text-secondary) !important;
+}
+
+/* Delete/Dangerous action button */
+.swal2-deny {
+  background-color: transparent !important;
+  color: var(--danger-color) !important;
+  border: 1px solid var(--danger-color) !important;
+  border-radius: 6px !important;
+  padding: 10px 24px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+.swal2-deny:hover {
+  background-color: var(--danger-color) !important;
+  color: white !important;
+}
+
+/* Form section styling */
+.form-section {
+  margin-bottom: 1.5rem !important;
+}
+
+.form-label {
+  color: var(--text-primary) !important;
+  font-weight: 500 !important;
+  margin-bottom: 0.5rem !important;
+  display: inline-block !important;
+}
+
+.required {
+  color: var(--danger-color) !important;
+  margin-left: 0.25rem !important;
 }
 </style>
