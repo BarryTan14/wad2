@@ -1,5 +1,5 @@
-<script setup lang="ts">
-import { ref, computed } from 'vue';
+<script>
+import { ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import '../assets/styles.css';
 
@@ -7,42 +7,42 @@ import WelcomeItem from './WelcomeItem.vue';
 import ParticipationIcon from './icons/IconDocumentation.vue';
 import SchedulerIcon from './icons/IconEcosystem.vue';
 import ToDoIcon from './icons/IconCommunity.vue';
-import ProgressIcon from './icons/IconSupport.vue';
+import ProgressIcon from './icons/IconSupport.vue';        
 
-const todoItems = ref([
-  { id: 1, text: 'IDP Iteration 2', completed: false },
-  { id: 2, text: 'CT Project', completed: false },
-  { id: 3, text: 'WAD2 Project', completed: false },
-]);
+import { useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
 
-const addTodo = () => {
-  const newItem = { id: Date.now(), text: "New Task", completed: false };
-  todoItems.value.push(newItem);
-};
-
-const editTodo = (index) => {
-  const newText = prompt("Edit task:", todoItems.value[index].text);
-  if (newText !== null) {
-    todoItems.value[index].text = newText;
+export default {
+  name: 'TheWelcome',
+  data() {
+    return {
+      suggestions: [],
+      showSuggestions: [],
+      tasks: [],
+      groupId: '',
+      group: null,
+      showAddTaskModal: false,
+      newTask: {
+        taskName: '',
+        membersInCharge: [{ name: '' }],
+        deadline: '',
+        status: false
+      },
+    };
+    
+  },
+  // async mounted(){
+  //     console.log(this.$authStore.currentUser.displayName)
+  //     //get Tasks for this user.
+  //     await axios.get("/api/task/getByUser/"+this.$authStore.currentUser.displayName)
+  //     .then(resp=>{
+  //       console.log(resp)
+  //     })
+  // },
+  methods(){
+    
   }
-};
-
-const deleteTodo = (index) => {
-  todoItems.value.splice(index, 1);
-};
-
-const toggleComplete = (index) => {
-  todoItems.value[index].completed = !todoItems.value[index].completed;
-};
-
-const progressPercentage = () => {
-  const completedCount = todoItems.value.filter(todo => todo.completed).length;
-  return (completedCount / todoItems.value.length) * 100;
-};
-
-const openScheduler = () => {
-  window.open('https://www.when2meet.com/', '_blank');
-};
+}
 </script>
 
 <template>
@@ -77,10 +77,9 @@ const openScheduler = () => {
 <WelcomeItem>
   <template #heading>
     <ToDoIcon />
-    Project To-Do List
+    Task-to-Do List
   </template>
   <div>
-    <input type="text" v-model="newTodoText" placeholder="Add a new task" @keyup.enter="addTodo()" />
     <ul>
       <li v-for="(item, index) in todoItems" :key="item.id" class="todo-item">
         <input
@@ -98,7 +97,7 @@ const openScheduler = () => {
   </div>
 </WelcomeItem>
 
-    <!-- Progress Dashboard -->
+    <!-- Progress Dashboard
     <WelcomeItem>
       <template #heading>
         <ProgressIcon />
@@ -111,6 +110,6 @@ const openScheduler = () => {
         </div>
         <p>{{ progressPercentage().toFixed(0) }}% of tasks completed.</p>
       </div>
-    </WelcomeItem>
+    </WelcomeItem> -->
   </div>
 </template>
