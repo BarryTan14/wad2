@@ -31,7 +31,6 @@ export default {
         groupId: '',
         moduleTitle: '',
         teamMembers: [{ name: '' }],
-        taskList: [],
         // Initial team member input
       },
       isDarkTheme: true,
@@ -288,7 +287,7 @@ export default {
         <nav class="top-nav">
           <div class="top-nav-left">
             <button @click="toggleSidebar" class="menu-button">
-              <Menu class="icon" />
+              <Menu class="icon"/>
             </button>
             <!-- <div class="search-container">
               <input type="text" v-model="searchQuery" placeholder="Search" class="search-input">

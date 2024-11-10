@@ -58,7 +58,7 @@ router.get('/getBy/:groupId', async (req, res) => {
         });
     } catch (error) {
         console.error("Error fetching tasks by groupId:", error);
-        res.status(500).json({ message: "Failed to fetch tasks by groupId", error: error.message });
+        res.status(500).json({ message: "Failed to fetch tasks by groupId", groupId });
     }
 });
 
