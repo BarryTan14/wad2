@@ -140,40 +140,50 @@
       </div>
     </div>
 
-    <!-- Email Invitation Modal -->
-    <div class="modal fade custom-modal" id="emailModal" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Send Email Invitations</h5>
-            <button type="button" class="btn-close" @click="closeEmailModal" :disabled="isLoading"></button>
+  <!-- Email Invitation Modal -->
+  <div class="modal fade custom-modal" id="emailModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Send Email Invitations</h5>
+          <button type="button" class="btn-close" @click="closeEmailModal" :disabled="isLoading"></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Select Group</label>
+            <select v-model="selectedGroup" class="form-control" :disabled="isLoading">
+              <option value="">Choose a group</option>
+              <option v-for="group in groups" :key="group.id" :value="group">
+                {{ group.name }} ({{ group.membersInCharge.length }} members)
+              </option>
+            </select>
           </div>
-          <div class="modal-body">
-            <div class="form-group">
-              <label>Select Group</label>
-              <select v-model="selectedGroup" class="form-control" :disabled="isLoading">
-                <option value="">Choose a group</option>
-                <option v-for="group in groups" :key="group.id" :value="group.id">
-                  {{ group.name }}
-                </option>
-              </select>
+          <div v-if="selectedGroup" class="mt-3">
+            <h6>Group Members:</h6>
+            <div class="member-list">
+              <div v-for="member in selectedGroup.membersInCharge" :key="member" 
+                   class="member-item">
+                {{ member }}
+              </div>
             </div>
-            <div v-if="emailError" class="text-danger mt-2">
-              {{ emailError }}
-            </div>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn-secondary" @click="closeEmailModal" :disabled="isLoading">
-              Cancel
-            </button>
-            <button type="button" class="btn-primary" @click="sendInvitations" :disabled="!selectedGroup || isLoading">
-              <span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
-              {{ isLoading ? 'Sending...' : 'Send Invitations' }}
-            </button>
+          <div v-if="emailError" class="alert alert-danger mt-2">
+            {{ emailError }}
           </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" @click="closeEmailModal" :disabled="isLoading">
+            Cancel
+          </button>
+          <button type="button" class="btn-primary" @click="sendInvitations" 
+                  :disabled="!selectedGroup || isLoading">
+            <span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+            {{ isLoading ? 'Sending...' : 'Send Invitations' }}
+          </button>
         </div>
       </div>
     </div>
+  </div>
   </div>
 </template>
 
@@ -231,26 +241,24 @@ export default {
   },
   methods: {
     async getGroup() {
-      this.isLoading = true;
+      this.isLoading = true
       try {
-        const response = await axios.get('/api/group/myGroups');
-        if (response.data && response.data.groups) {
+        const response = await axios.get('/api/group/myGroups')
+        if (response.data?.success && response.data?.groups) {
           this.groups = response.data.groups.map(group => ({
             id: group.groupId,
             name: group.moduleName,
             membersInCharge: group.teamMembers || []
-          }));
+          }))
         } else {
-          this.groups = [];
+          throw new Error('No groups data received')
         }
-        console.log('Fetched groups:', this.groups);
-        this.$toast.success('Successfully fetched groups');
       } catch (error) {
-        console.error('Error fetching groups:', error);
-        this.$toast.error('Failed to fetch groups');
-        this.groups = [];
+        console.error('Error fetching groups:', error)
+        this.emailError = error.message || 'Failed to fetch groups'
+        this.groups = []
       } finally {
-        this.isLoading = false;
+        this.isLoading = false
       }
     },
 
@@ -392,55 +400,38 @@ export default {
       this.endPicker.clear()
     },
     async sendInvitations() {
-    if (!this.selectedGroup) {
-        this.emailError = 'Please select a group';
-        return;
-    }
+      if (!this.selectedGroup) {
+        this.emailError = 'Please select a group'
+        return
+      }
 
-    this.isLoading = true;
-    try {
-        const selectedGroupData = this.groups.find(group => group.id === this.selectedGroup);
-        if (!selectedGroupData || !selectedGroupData.membersInCharge || selectedGroupData.membersInCharge.length === 0) {
-            throw new Error('No members found for the selected group');
-        }
-
-        // Batch fetch all member emails in parallel
-        const emailPromises = selectedGroupData.membersInCharge.map(async (member) => {
-            try {
-                // Extract displayName properly regardless of member format
-                const displayName = typeof member === 'object' ? member.displayName : member;
-                if (!displayName) {
-                    console.error('Invalid member data:', member);
-                    return null;
-                }
-
-                // Use the names endpoint to fetch user email
-                const response = await axios.get(`/api/group/names/${encodeURIComponent(displayName)}`);
-                
-                if (response.data.success && response.data.data && response.data.data.length > 0) {
-                    return response.data.data[0].email;
-                }
-                console.warn(`No email found for member: ${displayName}`);
-                return null;
-            } catch (error) {
-                console.error('Error fetching email:', error);
-                return null;
-            }
-        });
-
-        // Wait for all email fetching to complete
-        const emails = await Promise.all(emailPromises);
-        const validEmails = emails.filter(email => email !== null);
+      this.isLoading = true
+      this.emailError = ''
+      
+      try {
+        // Get emails for all group members in parallel
+        const emailPromises = this.selectedGroup.membersInCharge.map(member =>
+          axios.get(`/api/group/names/${(member)}`)
+        )
+        
+        const responses = await Promise.allSettled(emailPromises)
+        
+        // Filter successful responses and extract emails
+        const validEmails = responses
+          .filter(response => response.status === 'fulfilled' && 
+                            response.value.data?.success && 
+                            response.value.data?.data?.[0]?.email)
+          .map(response => response.value.data.data[0].email)
 
         if (validEmails.length === 0) {
-            throw new Error('No valid email addresses found for group members');
+          throw new Error('No valid email addresses found for group members')
         }
 
-        const event = this.createdEvent;
+        const event = this.createdEvent
         const eventData = {
-            to: validEmails,
-            subject: `Event Invitation: ${event.summary}`,
-            text: `
+          to: validEmails,
+          subject: `Event Invitation: ${event.summary}`,
+          text: `
 You are invited to the following event:
 
 Event: ${event.summary}
@@ -449,8 +440,8 @@ End: ${this.formatDateTime(event.end.dateTime || event.end.date)}
 Description: ${event.description || 'No description provided'}
 
 You are invited by ${this.email}
-            `.trim(),
-            html: `
+`.trim(),
+          html: `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
     <h2 style="color: #2c3e50;">Event Invitation</h2>
     <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px;">
@@ -461,37 +452,30 @@ You are invited by ${this.email}
         <p><strong>Invited by:</strong> ${this.email}</p>
     </div>
 </div>
-            `.trim()
-        };
-
-        const response = await axios.post('/api/email/send', eventData);
-
-        if (response.data.success) {
-            this.invitationsSent = true;
-            this.emailModal.hide();
-            this.selectedGroup = null;
-            this.emailError = '';
-            this.createdEvent = null;
-            
-            // Show success message with invitation details
-            this.showEventActionModal('Success', {
-                summary: `Invitations sent successfully to ${validEmails.length} recipients`,
-                start: { dateTime: event.start.dateTime },
-                end: { dateTime: event.end.dateTime }
-            });
-        } else {
-            throw new Error(response.data.message || 'Failed to send invitations');
+`.trim()
         }
-    } catch (error) {
-        console.error('Error sending invitations:', error);
-        this.emailError = error.response?.data?.message || 
-                         error.message || 
-                         'Failed to send email invitations. Please try again.';
-    } finally {
-        this.isLoading = false;
-    }
-},
 
+        const response = await axios.post('/api/email/send', eventData)
+
+        if (response.data?.success) {
+          this.invitationsSent = true
+          this.emailModal.hide()
+          this.selectedGroup = null
+          this.emailError = ''
+          this.createdEvent = null
+          // Use a toast notification if available in your app
+          this.toast?.success(`Invitations sent successfully to ${validEmails.length} recipients`)
+        } else {
+          throw new Error(response.data?.message || 'Failed to send invitations')
+        }
+      } catch (error) {
+        console.error('Error sending invitations:', error)
+        this.emailError = error.message || 'Failed to send email invitations. Please try again.'
+        this.toast?.error(this.emailError)
+      } finally {
+        this.isLoading = false
+      }
+    },
     showEventActionModal(action, event) {
       this.modalTitle = action === 'Success' ? 'Event Action Successful' : 'Event Action Failed'
       this.modalAction = action
@@ -529,6 +513,38 @@ You are invited by ${this.email}
 </script>
 
 <style scoped>
+
+.member-list {
+  max-height: 150px;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.member-item {
+  padding: 0.25rem 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.member-item:last-child {
+  border-bottom: none;
+}
+
+.alert {
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+}
+
+.alert-danger {
+  color: #721c24;
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+}
+
 .calendar-app {
   font-family: 'Roboto', sans-serif;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
