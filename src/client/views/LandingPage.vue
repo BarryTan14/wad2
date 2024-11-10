@@ -156,7 +156,7 @@ video {
 }
 </style> -->
 
-<template>
+<!-- <template>
   <div>
     <Hero />
     <About />
@@ -179,4 +179,4 @@ export default {
     Contact
   }
 };
-</script>
+</script> -->
