@@ -78,6 +78,7 @@ export default {
       try {
         const response = await axios.get(`/api/user/searchDisplayName/${this.$authStore.currentUser.displayName}`,);
         this.userGroups = response.data[0].joinedGroups
+        
       } catch (error) {
         console.error("Error fetching suggestions:", error);
       }
@@ -275,7 +276,7 @@ export default {
         <!-- Theme Toggle -->
         <div class="theme-toggle-wrapper">
           <button @click="toggleTheme" class="theme-toggle">
-            <component :is="isDarkTheme ? Sun : Moon" class="icon" />
+            <component :is="isDarkTheme ? 'Sun' : 'Moon'" class="icon" />
             <span>{{ isDarkTheme ? 'Light' : 'Dark' }} Mode</span>
           </button>
         </div>

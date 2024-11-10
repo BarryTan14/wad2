@@ -56,7 +56,7 @@ app.use('/api/email', emailRouter);
 app.use('/api/calendar', calendarRouter);
 app.use('/api/calendar-email', calendarEmailRoutes);
 
-app.use('/group', groupRouter);
+app.use('/api/group', groupRouter);
 
 // Serve the frontend
 app.get('/', (req, res) => {

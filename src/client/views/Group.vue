@@ -224,6 +224,7 @@ export default {
 
   watch: {
     '$route.params.groupId': {
+      
       handler(newGroupId) {
         this.groupId = newGroupId;
         this.fetchGroupData();
