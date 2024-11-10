@@ -31,7 +31,6 @@ export default {
         groupId: '',
         moduleTitle: '',
         teamMembers: [{ name: '' }],
-        taskList: [],
         // Initial team member input
       },
       isDarkTheme: true,
@@ -78,6 +77,7 @@ export default {
       try {
         const response = await axios.get(`/api/user/searchDisplayName/${this.$authStore.currentUser.displayName}`,);
         this.userGroups = response.data[0].joinedGroups
+        
       } catch (error) {
         console.error("Error fetching suggestions:", error);
       }
@@ -275,7 +275,7 @@ export default {
         <!-- Theme Toggle -->
         <div class="theme-toggle-wrapper">
           <button @click="toggleTheme" class="theme-toggle">
-            <component :is="isDarkTheme ? Sun : Moon" class="icon" />
+            <component :is="isDarkTheme ? 'Sun' : 'Moon'" class="icon" />
             <span>{{ isDarkTheme ? 'Light' : 'Dark' }} Mode</span>
           </button>
         </div>
@@ -287,7 +287,7 @@ export default {
         <nav class="top-nav">
           <div class="top-nav-left">
             <button @click="toggleSidebar" class="menu-button">
-              <Menu class="icon" />
+              <Menu class="icon"/>
             </button>
             <!-- <div class="search-container">
               <input type="text" v-model="searchQuery" placeholder="Search" class="search-input">

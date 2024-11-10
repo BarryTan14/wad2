@@ -2,10 +2,10 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import UserProfile from "../views/UserProfile.vue";
 import LandingPage from "../views/LandingPage.vue";
-import AboutView from "../views/LandingPages/AboutUs/AboutView.vue";
-import ContactView from "../views/LandingPages/ContactUs/ContactView.vue";
-import AuthorView from "../views/LandingPages/Author/AuthorView.vue";
-import SignInBasicView from "../views/LandingPages/SignIn/BasicView.vue";
+
+=======
+import Group from "../views/Group.vue"
+>>>>>>> 83cfefeb98143327d9fbd6d9a51b620e6776b19a
 
 const checkAuth = async () => {
   try {
@@ -81,6 +81,23 @@ const router = createRouter({
       component: () => import('../views/Register.vue'),
       meta: {
         requiresAuth:false,
+      },
+    },
+    {
+      path: '/group',
+      component: Group,
+      children: [
+        {
+          path: '',  
+          component: Group
+        },
+        {
+          path: ':groupId',  
+          component: Group
+        }
+      ],
+      meta: {
+        requiresAuth:true,
       },
     },
     {

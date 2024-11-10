@@ -15,42 +15,43 @@
         <button @click="openModal">Add New Task</button>
         <table v-if="tasks && tasks.length > 0" class="table m-2">
           <tbody>
-          <tr>
-            <th>S/N</th>
-            <th>Name</th>
-            <th>Members in Charge</th>
-            <th>Deadline</th>
-            <th>Done</th>
-            <th>Functions</th>
-          </tr>
-          <tr v-for="(task, indx) in tasks" :key="task._id">
-            <td>{{ indx + 1 }}</td>
-            <td>
-              <input type="text" v-model="task.taskName" :readonly="!task.isEditing" />
-            </td>
+            <tr>
+              <th>S/N</th>
+              <th>Name</th>
+              <th>Members in Charge</th>
+              <th>Deadline</th>
+              <th>Done</th>
+              <th>Functions</th>
+            </tr>
+            <tr v-for="(task, indx) in tasks" :key="task._id">
+              <td>{{ indx + 1 }}</td>
+              <td>
+                <input type="text" v-model="task.taskName" :readonly="!task.isEditing" />
+              </td>
 
-            <!-- Members in Charge Field: Editable if isEditing is true -->
-            <td>
-              <input type="text" v-model="task.membersInCharge" :readonly="!task.isEditing"
-                @input="task.membersInCharge = task.membersInCharge.split(',')"
-                placeholder="Separate names with commas" />
-            </td>
+              <!-- Members in Charge Field: Editable if isEditing is true -->
+              <td>
+                <input type="text" v-model="task.membersInCharge" :readonly="!task.isEditing"
+                  @input="task.membersInCharge = task.membersInCharge.split(',')"
+                  placeholder="Separate names with commas" />
+              </td>
 
-            <!-- Deadline Field: Editable if isEditing is true -->
-            <td>
-              <input type="date" v-model="task.deadline" :readonly="!task.isEditing" />
-            </td>
+              <!-- Deadline Field: Editable if isEditing is true -->
+              <td>
+                <input type="date" v-model="task.deadline" :readonly="!task.isEditing" />
+              </td>
 
-            <!-- Checkbox for Completion Status: Always Editable -->
-            <td><input type="checkbox" v-model="task.status" :disabled="!task.isEditing" /></td>
+              <!-- Checkbox for Completion Status: Always Editable -->
+              <td><input type="checkbox" v-model="task.status" :disabled="!task.isEditing" /></td>
 
-            <!-- Update/Save and Delete Buttons -->
-            <td>
-              <button v-if="!task.isEditing" @click="enableEditing(task)" class="btn btn-sm btn-primary">Update</button>
-              <button v-else @click="saveChanges(task)" class="btn btn-sm btn-success">Save</button>
-              <button @click="deleteTask(indx)" class="btn btn-sm btn-danger">Delete</button>
-            </td>
-          </tr>
+              <!-- Update/Save and Delete Buttons -->
+              <td>
+                <button v-if="!task.isEditing" @click="enableEditing(task)"
+                  class="btn btn-sm btn-primary">Update</button>
+                <button v-else @click="saveChanges(task)" class="btn btn-sm btn-success">Save</button>
+                <button @click="deleteTask(indx)" class="btn btn-sm btn-danger">Delete</button>
+              </td>
+            </tr>
           </tbody>
         </table>
         <h1 v-else>No tasks yet</h1>
@@ -224,6 +225,7 @@ export default {
 
   watch: {
     '$route.params.groupId': {
+
       handler(newGroupId) {
         this.groupId = newGroupId;
         this.fetchGroupData();
@@ -269,10 +271,30 @@ export default {
         this.showSuggestions[index] = false;
       }, 100);
     },
+    generateUniqueTaskId(taskIdList) {
+      let newTaskId;
+
+      do {
+        // Generate a random ID, e.g., a random number or a UUID
+        newTaskId = `t${Math.floor(Math.random() * 100)}`;
+      } while (taskIdList.includes(newTaskId));
+
+      return newTaskId;
+    },
     async addTask() {
-      //ToDo: Create task Id accordingly
-      this.newTask.taskId = 't100'
+      //creates the unique task id
+      const taskIdList = await axios.get('/api/task')
+          .then(response => response.data.data.map(task => task.taskId))
+          .catch(error => {
+            console.error("Error fetching tasks:", error);
+            return []; // Return an empty array in case of an error
+          });
+      console.log(taskIdList)
+      this.newTask.taskId = this.generateUniqueTaskId(taskIdList)
       this.newTask.groupId = this.groupId
+      console.log(this.groupId)
+      //Push the task after created
+      this.tasks.push(this.newTask)
       this.newTask.membersInCharge = this.newTask.membersInCharge.map(member => member.name.trim())
       try {
         const response = await axios.post('/api/task/add', this.newTask, {
@@ -345,7 +367,6 @@ export default {
       }
     },
     // Delete the selected post
-    //ToDo: delete the task in the database
     async deleteTask(index) {
       const taskId = this.tasks[index]._id; // Get the task's _id
 
@@ -372,14 +393,15 @@ export default {
         console.error('Failed to fetch group data:', error);
       }
     },
+    
     async fetchTaskData() {
       try {
-        //get data back based on group or group i
         await axios.get(`/api/task/getBy/${this.groupId}`)
           .then(resp => {
+            console.log(resp.data.data)
             this.tasks = resp.data.data
           })
-          .catch(err=>{
+          .catch(err => {
             console.log(err)
           })
       } catch (error) {

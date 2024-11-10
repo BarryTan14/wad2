@@ -7,6 +7,7 @@ import calendarEmailRoutes from './routes/calendaremailservice.js';
 import config from './config/index.js';
 import dotenv from 'dotenv';
 import groupRouter from './routes/group.js';
+import taskRouter from './routes/task.js';
 
 
 dotenv.config();
@@ -55,8 +56,8 @@ app.use(express.static('public'));
 app.use('/api/email', emailRouter);
 app.use('/api/calendar', calendarRouter);
 app.use('/api/calendar-email', calendarEmailRoutes);
-
-app.use('/group', groupRouter);
+app.use('/api/task', taskRouter);
+app.use('/api/group', groupRouter);
 
 // Serve the frontend
 app.get('/', (req, res) => {
