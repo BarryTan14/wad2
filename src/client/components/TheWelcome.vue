@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import '../assets/styles.css';
 
@@ -7,7 +7,7 @@ import WelcomeItem from './WelcomeItem.vue';
 import ParticipationIcon from './icons/IconDocumentation.vue';
 import SchedulerIcon from './icons/IconEcosystem.vue';
 import ToDoIcon from './icons/IconCommunity.vue';
-import ProgressIcon from './icons/IconSupport.vue';
+import ProgressIcon from './icons/IconSupport.vue';                                                         
 
 const todoItems = ref([
   { id: 1, text: 'IDP Iteration 2', completed: false },
