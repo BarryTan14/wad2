@@ -1,26 +1,14 @@
 <script>
-import { RouterLink, RouterView } from 'vue-router'
-import { Moon, Sun, Menu } from 'lucide-vue-next'
-// import './assets/styles.css'
-import ChatWindow from './components/ChatWindow.vue'
-import ToastContainer from "./components/ToastContainer.vue"
-import AuthDropdown from './components/AuthDropdown.vue'
 import Main from "./Main.vue";
+import LandingPage from "./views/LandingPage.vue";
 
 
 export default {
   name: 'App',
 
   components: {
+    LandingPage,
     Main,
-    ChatWindow,
-    ToastContainer,
-    Moon,
-    Sun,
-    Menu,
-    RouterLink,
-    RouterView,
-    AuthDropdown,
   },
 
   data() {
@@ -28,62 +16,15 @@ export default {
       isDarkTheme: true,
       isSidebarOpen: false,
       searchQuery: '',
+      isLoggedIn:false,
     }
   },
 
   methods: {
     toggleTheme() {
-      this.isDarkTheme = !this.isDarkTheme
-      document.body.setAttribute('data-bs-theme', this.isDarkTheme ? 'dark' : 'light')
-    },
-
-    toggleSidebar() {
-      this.isSidebarOpen = !this.isSidebarOpen
-    },
-    // Open the modal
-    openModal() {
-      this.isModalOpen = true;
-    },
-    // Close the modal and reset form
-    closeModal() {
-      this.isModalOpen = false;
-      this.resetForm();
-    },
-    // Add a new team member input
-    addTeamMember() {
-      this.newModule.teamMembers.push({ name: "" });
-      this.suggestions.push([]); // Initialize suggestions for new input
-      this.showSuggestions.push(false); // Initialize visibility control for new input
-    },
-    // Remove a team member input
-    removeTeamMember(index) {
-      this.newModule.teamMembers.splice(index, 1);
-      this.suggestions.splice(index, 1); // Remove corresponding suggestions
-      this.showSuggestions.splice(index, 1); // Remove corresponding visibility control
-    },
-    // Reset form fields
-    resetForm() {
-      this.newModule = {
-        moduleName: "",
-        teamMembers: [{ name: "" }]
-      };
-      this.suggestions = [[]];
-      this.showSuggestions = [false];
-    },
-    beforeEnter(el) {
-      // Called before the entering element is inserted
-      console.log('Before enter')
-    },
-    enter(el, done) {
-      // Called when the entering element is inserted
-      console.log('Enter')
-      done()
-    },
-    afterEnter(el) {
-      // Called when the enter transition finishes
-      console.log('After enter')
+      this.isDarkTheme = !this.isDarkTheme;
+      document.documentElement.setAttribute('data-bs-theme', this.isDarkTheme ? 'dark' : 'light');
     }
-
   },
 
   // Save theme preference
@@ -98,6 +39,7 @@ export default {
 
   // Load saved theme preference
   created() {
+    this.isLoggedIn = this.$authStore.isLoggedIn;
     const savedTheme = localStorage.getItem('theme')
     if (savedTheme) {
       this.isDarkTheme = savedTheme === 'dark'
@@ -109,8 +51,9 @@ export default {
 </script>
 
 <template>
-  <div class="app-container" :class="{ 'theme-light': !isDarkTheme }">
-    <Main />
+  <div class="app-container">
+    <Main v-if="isLoggedIn" />
+    <LandingPage v-else/>
   </div>
 </template>
 <style>

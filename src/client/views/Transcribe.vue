@@ -1,6 +1,6 @@
 <!-- src/components/VoiceTranscription.vue -->
 <template>
-  <div class="container py-4">
+  <div class="py-4">
     <h2 class="mb-4">Class Participation Transcription</h2>
 
     <div v-if="!isSupported" class="alert alert-danger">
@@ -712,7 +712,7 @@ export default {
   }
 }
 
-.expand-animation > * {
+.expand-animation{
   animation: maintainScale 0.3s ease-out forwards;
 }
 

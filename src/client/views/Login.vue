@@ -97,11 +97,17 @@ export default {
         )
 
         // Reconnect socket with new auth state
-        this.$socketManager.reconnect()
 
-        this.handleToastSuccess(response.message);
+        //this.$socketManager.reconnect()
 
-        this.router.push('/profile')
+        //this.handleToastSuccess(response.message);
+        await this.$swal.fire({
+          icon:'success',
+          title:'Login successful!',
+          showConfirmButton:false,
+          timer: 1000,
+        })
+        window.location.href = '/dashboard'
       } catch (error) {
         this.handleToastError(error);
       } finally {

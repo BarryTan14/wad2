@@ -12,7 +12,7 @@ import {useAuthStore} from './stores/auth.js'
 
 import VueSweetalert2 from 'sweetalert2';
 
-const socket = io({
+let socket = io({
     reconnection: true,
     reconnectionAttempts: 5,
     reconnectionDelay: 3000,
@@ -52,6 +52,7 @@ app.config.globalProperties.$socketManager = {
         if (socket.connected) {
             socket.disconnect()
         }
+        socket = io();
         // Give a small delay before reconnecting
         setTimeout(() => {
             socket.connect()
@@ -105,7 +106,7 @@ router.beforeEach(async (to, from, next) => {
                     icon: 'info',
                     title: 'You have been redirected.'
                 })*/
-                next('/')
+                next('/dashboard')
                 return
             }
         } else if (authStore.loading) {
@@ -141,7 +142,7 @@ router.beforeEach(async (to, from, next) => {
                     icon: 'info',
                     title: 'You have been redirected.'
                 })*/
-                next('/')
+                next('/dashboard')
                 return
             }
         }

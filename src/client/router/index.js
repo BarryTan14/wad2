@@ -26,38 +26,6 @@ const router = createRouter({
       }
     },
     {
-      path: "/pages/landing-pages/about-us",
-      name: "about",
-      /*component: AboutView,*/
-      meta: {
-        requiresAuth: false,
-      }
-    },
-    {
-      path: "/pages/landing-pages/contact-us",
-      name: "contactus",
-     /* component: ContactView,*/
-      meta: {
-        requiresAuth: false,
-      }
-    },
-    {
-      path: "/pages/landing-pages/author",
-      name: "author",
-      /*component: AuthorView,*/
-      meta: {
-        requiresAuth: false,
-      }
-    },
-    {
-      path: "/pages/landing-pages/basic",
-      name: "signin-basic",
-      /*component: SignInBasicView,*/
-      meta: {
-        requiresAuth: false,
-      }
-    },
-    {
       path: '/dashboard',
       name: 'home',
       component: HomeView,
@@ -111,14 +79,6 @@ const router = createRouter({
           component: UserProfile
         }
       ],
-      meta: {
-        requiresAuth:true,
-      },
-    },
-    {
-      path: '/logout',
-      name: 'logout',
-      component: () => import('../views/Logout.vue'),
       meta: {
         requiresAuth:true,
       },

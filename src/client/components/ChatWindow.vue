@@ -153,6 +153,7 @@ export default {
         }
       };
 
+      if(this.currentRoom)
       this.$swal.fire({
         title: this.currentRoom.name,
         html: `
@@ -445,7 +446,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 
 .chatwindow {
   backdrop-filter: blur(6px);

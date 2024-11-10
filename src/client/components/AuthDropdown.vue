@@ -38,12 +38,14 @@ export default {
         await this.$authStore.logout()
         this.$socket.disconnect();
         this.eraseCookie('roomId')
-        this.$toast.fire({
-          showConfirmButton: true,
-          icon: 'success',
-          title: 'Logged out successfully'
+        await this.$swal.fire({
+          icon:'info',
+          title:'Logout Successful',
+          showConfirmButton:false,
+          timer: 1000,
         })
-        this.$router.push('/')
+        //this.$router.push('/')
+        window.location.href = '/';
       }
     },
     eraseCookie(name) {
