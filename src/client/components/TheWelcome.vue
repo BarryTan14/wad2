@@ -9,8 +9,6 @@ import SchedulerIcon from './icons/IconEcosystem.vue';
 import ToDoIcon from './icons/IconCommunity.vue';
 import ProgressIcon from './icons/IconSupport.vue';        
 
-import { useRoute } from 'vue-router';
-import { useRouter } from 'vue-router';
 
 export default {
   name: 'TheWelcome',
