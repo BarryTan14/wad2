@@ -7,56 +7,10 @@
           <span class="welcome-message">
             Welcome, <strong>{{ email }}</strong>
           </span>
-          <button @click="logout" class="logout-btn">
-            <i class="fas fa-sign-out-alt"></i> Logout
-          </button>
         </div>
       </header>
 
       <div v-if="email" class="main-content">
-        <section class="events-section">
-          <div class="section-header">
-            <h2 class="section-title">Your Events</h2>
-            <button @click="listEvents" class="refresh-btn">
-              <i class="fas fa-sync-alt"></i> Refresh
-            </button>
-          </div>
-
-          <div v-if="isLoading" class="loading-indicator">
-            <div class="spinner"></div>
-            <p>Loading...</p>
-          </div>
-
-          <div v-else-if="events.length" class="events-list">
-            <div v-for="event in events" :key="event.id" class="event-card"
-              :class="{ 'selected': selectedEvent?.id === event.id }">
-              <div class="event-header">
-                <h3 class="event-title">{{ event.summary }}</h3>
-                <span class="event-id">ID: {{ event.id }}</span>
-              </div>
-              <div class="event-details">
-                <p class="event-time">
-                  <i class="far fa-clock"></i> Start: {{ formatDateTime(event.start.dateTime || event.start.date) }}
-                </p>
-                <p class="event-time">
-                  <i class="far fa-clock"></i> End: {{ formatDateTime(event.end.dateTime || event.end.date) }}
-                </p>
-                <p v-if="event.description" class="event-description">
-                  <i class="far fa-file-alt"></i> {{ event.description }}
-                </p>
-              </div>
-              <button @click="selectEvent(event)" class="edit-btn">
-                <i class="fas fa-edit"></i> Edit
-              </button>
-            </div>
-          </div>
-          <div v-else class="no-events">
-            <i class="far fa-calendar-times"></i>
-            <p>No events found</p>
-            <span>Create your first event to get started!</span>
-          </div>
-        </section>
-
         <section class="event-form-section">
           <div class="form-card">
             <h2 class="form-title">{{ selectedEvent ? 'Edit Event' : 'Create New Event' }}</h2>
@@ -107,6 +61,44 @@
             <button v-if="selectedEvent" @click="backToCreate" class="btn btn-link back-btn">
               <i class="fas fa-arrow-left"></i> Back to Create
             </button>
+          </div>
+        </section>
+
+        <section class="events-section">
+          <div class="section-header">
+            <h2 class="section-title">Your Events</h2>
+            <button @click="listEvents" class="refresh-btn">
+              <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+          </div>
+
+          <div v-if="isLoading" class="loading-indicator">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+          </div>
+
+          <div v-else-if="events.length" class="events-list">
+    <div v-for="event in events" :key="event.id" class="event-card">
+      <FlipCard
+        :frontTitle="event.summary"
+        :frontDescription="event.description || 'No description'"
+        :backTitle="'Event Details'"
+        :eventId="event.id"
+        :startDate="formatDateTime(event.start.dateTime || event.start.date)"
+        :endDate="formatDateTime(event.end.dateTime || event.end.date)"
+      >
+        <template #backActions>
+          <button @click.stop="selectEvent(event)" class="edit-btn">
+            <i class="fas fa-edit"></i> Edit
+          </button>
+        </template>
+      </FlipCard>
+    </div>
+  </div>
+          <div v-else class="no-events">
+            <i class="far fa-calendar-times"></i>
+            <p>No events found</p>
+            <span>Create your first event to get started!</span>
           </div>
         </section>
       </div>
@@ -188,9 +180,13 @@ import axios from 'axios'
 import { Modal } from 'bootstrap'
 import flatpickr from 'flatpickr'
 import 'flatpickr/dist/flatpickr.min.css'
+import FlipCard from '../components/FlipCard.vue'
 
 export default {
   name: 'CalendarEmailView',
+  components: {
+    FlipCard
+  },
   data() {
     return {
       groupEmails: [],
@@ -253,11 +249,9 @@ export default {
         }
         
         console.log(this.groupEmails);
-        // Only show success toast after all data is loaded
         this.$toast.success('Successfully fetched group emails');
       } catch (error) {
         console.error('Error fetching emails:', error);
-        // Only show error toast if the API call fails
         this.$toast.error('Failed to fetch emails');
       } finally {
         this.isLoading = false;
@@ -271,7 +265,6 @@ export default {
         time_24hr: true,
         onChange: (selectedDates, dateStr) => {
           this.eventForm.start = dateStr
-          // Update end picker min date
           if (this.endPicker) {
             this.endPicker.set('minDate', selectedDates[0])
           }
@@ -317,14 +310,16 @@ export default {
     scrollToTop() {
       window.scrollTo({ top: 0, behavior: 'smooth' })
     },
-    logout() {
-      this.$authStore.logout()
-      this.$router.push('/login')
-    },
     async listEvents() {
       try {
         const res = await axios.get(`/api/calendar-email/events?email=${this.email}`)
-        this.events = res.data
+        this.events = res.data.map(event => ({
+          id: event.id,
+          summary: event.summary,
+          description: event.description || 'No description',
+          start: event.start,
+          end: event.end
+        }))
       } catch (error) {
         console.error('Error fetching events:', error)
         this.showEventActionModal('Failure', { summary: 'Error fetching events' })
@@ -343,6 +338,7 @@ export default {
       this.eventForm.description = event.description || ''
       this.startPicker.setDate(this.eventForm.start)
       this.endPicker.setDate(this.eventForm.end)
+      this.scrollToTop()
     },
     async handleEventSubmit() {
       try {
@@ -539,16 +535,6 @@ You are invited by ${this.email}
 </script>
 
 <style scoped>
-.text-danger {
-  color: #dc3545;
-  font-size: 0.875rem;
-}
-
-.text-muted {
-  color: #6c757d;
-  font-size: 0.875rem;
-}
-
 .calendar-app {
   font-family: 'Roboto', sans-serif;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -584,28 +570,15 @@ You are invited by ${this.email}
   color: #34495e;
 }
 
-.logout-btn {
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.logout-btn:hover {
-  background-color: #c0392b;
-}
-
 .main-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: row-reverse;
   gap: 2rem;
 }
 
 .events-section,
 .event-form-section {
+  flex: 1;
   background-color: white;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -640,78 +613,14 @@ You are invited by ${this.email}
 
 .events-list {
   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1rem;
-  max-height: 600px;
-  overflow-y: auto;
 }
 
 .event-card {
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  padding: 1rem;
-  transition: all 0.3s ease;
-  border-left: 4px solid #3498db;
+  height: 200px;
+  margin-bottom: 1rem;
 }
-
-.event-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.event-card.selected {
-  background-color: #e8f4fd;
-  border-left-color: #2980b9;
-}
-
-.event-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.event-title {
-  font-size: 1.2rem;
-  color: #2c3e50;
-  margin: 0;
-}
-
-.event-id {
-  font-size: 0.8rem;
-  color: #7f8c8d;
-}
-
-.event-details p {
-  margin: 0.25rem 0;
-  color: #34495e;
-}
-
-.event-time {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.event-description {
-  font-style: italic;
-  color: #7f8c8d;
-}
-
-.edit-btn {
-  background-color: #2ecc71;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  margin-top: 0.5rem;
-}
-
-.edit-btn:hover {
-  background-color: #27ae60;
-}
-
 .no-events {
   text-align: center;
   color: #7f8c8d;
@@ -826,51 +735,9 @@ You are invited by ${this.email}
   color: #721c24;
 }
 
-/* Date and Time Picker Styles */
-.input-group-text {
-  background-color: #3498db;
-  border-color: #3498db;
-  color: white;
-}
-
-.input-group-text:hover {
-  background-color: #2980b9;
-}
-
-.datetimepicker-input {
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-}
-
-/* Custom styles for Tempus Dominus Bootstrap 4 */
-.bootstrap-datetimepicker-widget {
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.bootstrap-datetimepicker-widget table td.active,
-.bootstrap-datetimepicker-widget table td.active:hover {
-  background-color: #3498db;
-  color: #fff;
-}
-
-.bootstrap-datetimepicker-widget table td span.active {
-  background-color: #3498db;
-}
-
-.bootstrap-datetimepicker-widget .btn-primary {
-  background-color: #3498db;
-  border-color: #3498db;
-}
-
-.bootstrap-datetimepicker-widget .btn-primary:hover {
-  background-color: #2980b9;
-  border-color: #2980b9;
-}
-
 @media (max-width: 768px) {
   .main-content {
-    grid-template-columns: 1fr;
+    flex-direction: column;
   }
 
   .calendar-app {
@@ -948,24 +815,6 @@ You are invited by ${this.email}
 .custom-modal .btn-secondary:hover {
   background-color: #7f8c8d;
   border-color: #7f8c8d;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 0.25rem 0.5rem;
-  border-radius: 15px;
-  font-weight: 600;
-  margin-bottom: 1rem;
-}
-
-.status-badge.success {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-.status-badge.failure {
-  background-color: #f8d7da;
-  color: #721c24;
 }
 
 .spinner-border {
