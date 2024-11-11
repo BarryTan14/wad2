@@ -306,7 +306,7 @@ export default {
         })
       } catch (error) {
         this.$swal.fire({
-          icon:'warning',
+          icon:'error',
           title: 'Error Fetching Events',
           text: error.message,
         });
@@ -355,7 +355,7 @@ export default {
         this.scrollToTop()
       } catch (error) {
         this.$swal.fire({
-          icon:'warning',
+          icon:'error',
           title: 'Error submitting event',
           text: error.message,
         });
@@ -376,7 +376,7 @@ export default {
         this.scrollToTop()
       } catch (error) {
         this.$swal.fire({
-          icon:'warning',
+          icon:'error',
           title: 'Error deleting event',
           text: error.message,
         });
@@ -456,7 +456,13 @@ You are invited by ${this.email}
           this.emailError = ''
           this.createdEvent = null
           // Use a toast notification if available in your app
-          this.toast?.success(`Invitations sent successfully to ${validEmails.length} recipients`)
+          this.$toast.fire({
+            icon: 'success',
+            title: 'Invitations sent successfully',
+            text: `Invitations sent successfully to ${validEmails.length} recipients`,
+            timer: 10000,
+          })
+          //this.toast?.success(`Invitations sent successfully to ${validEmails.length} recipients`)
         } else {
           throw new Error(response.data?.message || 'Failed to send invitations')
         }
@@ -464,12 +470,17 @@ You are invited by ${this.email}
         console.error('Error sending invitations:', error)
         this.emailError = error.message || 'Failed to send email invitations. Please try again.'
         this.toast?.error(this.emailError)
+        this.$toast.fire({
+          icon: 'error',
+          title:this.emailError,
+          timer:5000,
+        })
       } finally {
         this.isLoading = false
       }
     },
     showEventActionModal(action, event) {
-      this.$swal.fire({
+      /*this.$swal.fire({
         icon: action === 'Success' ? 'success' : 'warning',
         title: action === 'Success' ? 'Event Action Successful' : 'Event Action Failed',
         html:`
@@ -478,11 +489,11 @@ You are invited by ${this.email}
               <p><strong>End:</strong>${this.formatDateTime(event.end?.dateTime || event.end?.date)}</p>
             `,
         text: event?.message,
-      });
-      /*this.modalTitle = action === 'Success' ? 'Event Action Successful' : 'Event Action Failed'
+      });*/
+      this.modalTitle = action === 'Success' ? 'Event Action Successful' : 'Event Action Failed'
       this.modalAction = action
       this.modalEvent = event
-      this.eventActionModal.show()*/
+      this.eventActionModal.show()
     },
 
     closeEventActionModal() {
