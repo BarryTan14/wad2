@@ -587,10 +587,10 @@ export default {
 
       <!-- Theme Toggle -->
       <div class="theme-toggle-wrapper">
-        <button @click="toggleTheme" class="theme-toggle">
+        <!-- <button @click="toggleTheme" class="theme-toggle">
           <component :is="isDarkTheme ? 'Sun' : 'Moon'" class="icon"/>
           <span>{{ isDarkTheme ? 'Light' : 'Dark' }} Mode</span>
-        </button>
+        </button> -->
       </div>
     </aside>
 

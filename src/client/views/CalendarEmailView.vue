@@ -19,14 +19,12 @@
               </h2>
 
               <form @submit.prevent="handleEventSubmit">
-                <div class="space-y-4">
-                  <!-- Event Name -->
-                  <div class="mb-4">
-                    <label for="eventSummary" class="form-label">Event Name</label>
-                    <input type="text" id="eventSummary" v-model="eventForm.summary"
-                      class="form-control form-control-lg w-full px-4 py-2 text-black bg-white border border-gray-300 rounded"
-                      placeholder="Enter event title" required />
-                  </div>
+                <div class="mb-4">
+                  <label for="eventSummary" class="form-label">Event Name</label>
+                  <input type="text" style="background-color: white; color: black;" id="eventSummary"
+                    v-model="eventForm.summary" class="form-control form-control-lg" placeholder="Enter event title"
+                    required />
+                </div>
 
                   <!-- Start Date & Time -->
                   <div class="mb-4">
@@ -50,13 +48,11 @@
                     </div>
                   </div>
 
-                  <!-- Description -->
-                  <div class="mb-4">
-                    <label for="eventDescription" class="form-label">Description</label>
-                    <textarea id="eventDescription" v-model="eventForm.description"
-                      class="form-control w-full px-4 py-2 text-black bg-white border border-gray-300 rounded" rows="4"
-                      placeholder="Enter event description"></textarea>
-                  </div>
+                <div class="mb-4">
+                  <label for="eventDescription" class="form-label">Description</label>
+                  <textarea style="background-color: white; color: black;" id="eventDescription"
+                    v-model="eventForm.description" class="form-control" rows="4"
+                    placeholder="Enter event description"></textarea>
                 </div>
 
                 <div class="d-flex gap-3 justify-content-between align-items-center">
@@ -236,6 +232,7 @@ import { Modal } from 'bootstrap'
 import flatpickr from 'flatpickr'
 // import 'flatpickr/dist/flatpickr.min.css'
 import FlipCard from '../components/FlipCard.vue'
+import 'bootstrap/dist/css/bootstrap.min.css'
 import '@fortawesome/fontawesome-free/css/all.min.css'
 
 export default {

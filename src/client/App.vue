@@ -272,4 +272,12 @@ export default {
   color: var(--danger-color) !important;
   margin-left: 0.25rem !important;
 }
+
+:root {
+  --main-font: 'Roboto', sans-serif;
+}
+
+body {
+  font-family: var(--main-font);
+}
 </style>
