@@ -110,12 +110,9 @@ export default {
   },
   async mounted() {
     this.updateDate();
-    console.log(this.$authStore.currentUser.displayName);
-    // Get tasks for this user.
     await axios
       .get("/api/task/getByUser/" + this.$authStore.currentUser.displayName)
       .then((resp) => {
-        console.log(resp.data.data);
         this.userTask = resp.data.data;
       });
   },

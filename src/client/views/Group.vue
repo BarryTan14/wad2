@@ -22,29 +22,34 @@
                 <th>Functions</th>
               </tr>
               <tr v-for="(task, indx) in tasks" :key="task._id">
-                <td>{{ indx + 1 }}</td>
-                <td>
+                <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">{{ indx + 1 }}</td>
+                <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">
                   <span v-if="!task.isEditing">{{ task.taskName }}</span>
                   <input v-else type="text" v-model="task.taskName" />
                 </td>
-                <td>
+                <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">
                   <span v-if="!task.isEditing">{{ task.membersInCharge.join(', ') }}</span>
                   <input v-else type="text" v-model="task.membersInCharge"
                     @input="task.membersInCharge = task.membersInCharge.split(',')"
                     placeholder="Separate names with commas" />
                 </td>
-                <td>
+                <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">
                   <span v-if="!task.isEditing">{{ task.deadline }}</span>
                   <input v-else type="date" v-model="task.deadline" />
                 </td>
-                <td>
+                <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">
                   <input type="checkbox" v-model="task.status" :disabled="!task.isEditing" />
                 </td>
-                <td>
-                  <button v-if="!task.isEditing" @click="enableEditing(task)"
-                    class="btn btn-sm btn-primary">Update</button>
-                  <button v-else @click="saveChanges(task)" class="btn btn-sm btn-success">Save</button>
-                  <button @click="deleteTask(indx)" class="btn btn-sm btn-danger">Delete</button>
+                <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">
+                  <button v-if="!task.isEditing" @click="enableEditing(task)" class="btn btn-sm btn-primary">
+                    Update
+                  </button>
+                  <button v-else @click="saveChanges(task)" class="btn btn-sm btn-success">
+                    Save
+                  </button>
+                  <button @click="deleteTask(indx)" class="btn btn-sm btn-danger">
+                    Delete
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -96,12 +101,12 @@
           <div class="input-group">
             <input type="text" id="eventStart" class="form-control flatpickr-input" v-model="newTask.deadline"
               data-input required readonly />
-              <div class="input-group-append">
-                <button class="btn btn-primary" type="button" @click="openStartPicker">
-                  <i class="fas fa-calendar"></i>
-                  </button>
-              </div>
+            <div class="input-group-append">
+              <button class="btn btn-primary" type="button" @click="openStartPicker">
+                <i class="fas fa-calendar"></i>
+              </button>
             </div>
+          </div>
           <div class="modal-buttons">
             <button type="submit" @click="addTask" class="btn btn-primary">Add Task</button>
             <button type="button" @click="closeModal" class="btn btn-secondary">Cancel</button>
@@ -180,7 +185,20 @@ export default {
     }
   },
   methods: {
+    isDeadlineApproaching(deadline) {
+      const deadlineDate = new Date(deadline);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const oneWeekFromNow = new Date();
+      oneWeekFromNow.setDate(today.getDate() + 7);
+      oneWeekFromNow.setHours(0, 0, 0, 0);
 
+      // Debugging output to check the difference in days
+      const daysUntilDeadline = Math.floor((deadlineDate - today) / (1000 * 60 * 60 * 24));
+
+      // Check if the deadline is within the next week
+      return daysUntilDeadline < 7;
+    },
     async openAddTaskModal() {
       const customClass = {
         container: 'custom-swal-container',
@@ -259,7 +277,7 @@ export default {
         confirmButtonText: 'Add Task',
         cancelButtonText: 'Cancel',
         customClass,
-        
+
         didOpen: () => {
           const removeMemberInput = (memberDiv) => {
             if (memberDiv) {
@@ -280,9 +298,7 @@ export default {
 
           // Display suggestions in dropdown
           const displaySuggestions = (suggestions, index) => {
-            console.log("Displaying suggestions for index:", index, suggestions); // Debugging log
             const suggestionsList = document.getElementById(`suggestions-${index}`);
-
             if (!suggestionsList) {
               console.warn(`Suggestions list with id "suggestions-${index}" not found.`);
               return;
@@ -309,10 +325,9 @@ export default {
             // Select the input field by data index
             const inputField = document.querySelector(`[data-index="${index}"]`);
             if (inputField) {
-              console.log(inputField)
               // Set the input field value to the selected suggestion
               inputField.value = suggestion.displayName;
-              
+
               // Trigger an input event to ensure Vue detects the change
               inputField.dispatchEvent(new Event('input', { bubbles: true }));
 
@@ -364,7 +379,7 @@ export default {
             const newRemoveButton = newMemberDiv.querySelector('.remove-member');
             newRemoveButton.addEventListener('click', () => removeMemberInput(newMemberDiv));
           });
-          
+
           // Remove team member input
           document.addEventListener('click', (e) => {
             if (e.target.closest('.remove-member')) {
@@ -524,15 +539,17 @@ export default {
     },
     async fetchTaskData() {
       try {
-        await axios.get(`/api/task/getBy/${this.groupId}`)
-          .then(resp => {
-            this.tasks = resp.data.data
-          })
-          .catch(err => {
-            console.log(err)
-          })
-      } catch (error) {
-        console.error('Failed to fetch group data:', error);
+        const resp = await axios.get(`/api/task/getBy/${this.groupId}`);
+        this.tasks = resp.data.data;
+      } catch (err) {
+        if (err.response && err.response.status === 404) {
+          console.warn("No tasks found for this group."); // Gracefully handle 404
+          this.tasks = []; // Set tasks to an empty array if no tasks are found
+        } else if (err.response) {
+          console.error(`Error ${err.response.status}: ${err.response.statusText}`);
+        } else {
+          console.error("An error occurred:", err.message); // Handle network or other errors
+        }
       }
     },
     setupSocketListeners() {
@@ -620,6 +637,11 @@ export default {
 </script>
 
 <style scoped>
+.highlight-row {
+  background-color: lightcoral;
+  color: black;
+}
+
 /* Center the layout */
 #app {
   display: flex;
@@ -641,16 +663,14 @@ export default {
   padding: 0;
 }
 
+
 /* Center and expand the table */
 .table {
   width: 100%;
   border-collapse: collapse;
   background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
   overflow: hidden;
   margin: 0;
-  /* Remove any margin */
 }
 
 /* Table cell styles for text wrapping and spacing */
@@ -658,7 +678,6 @@ export default {
 .table td {
   padding: 0.5rem;
   text-align: left;
-  border-bottom: 1px solid #ddd;
   vertical-align: middle;
   word-wrap: break-word;
   white-space: normal;
@@ -677,7 +696,8 @@ export default {
 
 /* Button styling */
 .table .btn {
-  min-height: 44px;
+  width: 80px;
+  height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -757,11 +777,11 @@ export default {
   }
 
   /* Card style for table container in mobile */
-  .table-container {
+  /* .table-container {
     border-radius: 0.75rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     padding: 1rem;
-  }
+  } */
 
   .card-subtitle,
   .card-text {
