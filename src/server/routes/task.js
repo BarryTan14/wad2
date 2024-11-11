@@ -48,12 +48,12 @@ router.get('/getBy/:groupId', async (req, res) => {
         // Find all modules that match the provided groupId
         const tasks = await Task.find({ groupId: groupId });
         
-        if (!tasks || tasks.length === 0) {
-            return res.status(404).json({ message: 'No tasks found for the specified group ID' });
-        }
+        // if (!tasks || tasks.length === 0) {
+        //     return res.status(404).json({ message: 'No tasks found for the specified group ID' });
+        // }
         // Return the found modules as a JSON response
         res.json({
-            message: "Successfully retrieved documents",
+            message: tasks.length > 0 ? "Successfully retrieved documents" : "No tasks found for the specified group ID",
             data: tasks
         });
     } catch (error) {

@@ -3,7 +3,6 @@ import { RouterLink, RouterView } from 'vue-router'
 import { Moon, Sun, Menu } from 'lucide-vue-next'
 import './assets/styles.css'
 import ChatWindow from './components/ChatWindow.vue'
-import ToastContainer from "./components/ToastContainer.vue"
 import AuthDropdown from './components/AuthDropdown.vue'
 
 
@@ -154,16 +153,16 @@ export default {
           headers: {
             'Content-Type': 'application/json'
           }
-        }).then(resp => {
+        }).then(async resp => {
 
           const groupId = resp.data.data;
-          console.log(groupId)
           const groupObj = { groupId: groupId, moduleTitle: this.newModule.moduleName }
           this.userGroups.push({ groupId: groupId, moduleTitle: this.newModule.moduleName })
           for (let i = 0; i < this.newModule.teamMembers.length; i++) {
+            console.log(this.newModule.teamMembers[i])
             const member = this.newModule.teamMembers[i];
             // Post request to add the group ID to each team member
-            axios.post(`/api/user/addToGroup/${member.name}`, groupObj,
+            await axios.post(`/api/user/addToGroup/${member.name}`, groupObj,
                 {
                   headers: {
                     'Content-Type': 'application/json'
@@ -172,19 +171,22 @@ export default {
 
             console.log(`Added group to member: ${member.name}`);
           }
-          axios.post(`/api/user/addToGroup/${this.$authStore.currentUser.displayName}`,groupObj, {
+          await axios.post(`/api/user/addToGroup/${this.$authStore.currentUser.displayName}`, groupObj, {
             headers: {
               'Content-Type': 'application/json'
             }
           });
-
+          this.$socket.emit('create-room-group',
+              {
+                name: this.newModule.moduleName,
+                description: this.newModule.moduleName + ' Chatroom',
+              },resp.data.uId)
         })
-        ;
 
-        //add the group id to all the users in the new module.
-
-        // Proceed to the second request using the retrieved group ID
-
+        this.$toast.fire({
+          icon:'success',
+          title:'Group Created!',
+        })
       }
       catch (err) {
         console.error("Error:", err);
@@ -326,8 +328,8 @@ export default {
         preConfirm: () => {
           const moduleTitle = document.getElementById('module-title').value;
           const teamMembers = Array.from(document.querySelectorAll('.team-member-input'))
-              .map(input => ({ name: input.value }))
-              .filter(member => member.name.trim() !== '');
+            .map(input => ({ name: input.value }))
+            .filter(member => member.name.trim() !== '');
 
           if (!moduleTitle) {
             this.$swal.showValidationMessage('Please enter a module title');
@@ -511,10 +513,8 @@ export default {
 </script>
 
 <template>
-  <ChatWindow v-if="showChat" :key="chatKey"
-              @reinitialize="reinitializeChat" />
-  <ToastContainer />
-  <div class="layout-wrapper"  :class="{ 'theme-light': !isDarkTheme }">
+  <ChatWindow v-if="showChat" :key="chatKey" @reinitialize="reinitializeChat" />
+  <div class="layout-wrapper" :class="{ 'theme-light': !isDarkTheme }">
     <!-- Sidebar -->
     <aside class="sidebar" :class="{ 'sidebar-open': isSidebarOpen }">
       <div class="close-button" v-if="isSidebarOpen" @click="toggleSidebar">&times;</div>
@@ -537,11 +537,19 @@ export default {
 
       <!-- Workspaces -->
       <div class="workspaces">
-        <h2 class="section-title">Groups <button @click="openSwalModal">Add Group</button></h2>
+        <h2 class="section-title"
+          style="display: flex; align-items: center; justify-content: space-between; padding: 5px 0;">
+          <span style="font-weight: bold; font-size: 1.5rem;">Groups</span>
+          <button
+            style="padding: 8px 16px; font-size: 1rem; margin: 0; border-radius: 8px;  border: none;"
+            @click="openSwalModal">
+            Add Group
+          </button>
+        </h2>
         <ul class="nav-list">
           <li v-for="group in userGroups">
             <RouterLink :to="'/group/' + group.groupId" class="nav-link"
-                        :class="{ 'active': $route.path === '/group/' + group.groupId }">
+              :class="{ 'active': $route.path === '/group/' + group.groupId }">
               <!-- <span class="nav-icon">{{ workspace.icon }}</span> -->
               {{ group.moduleTitle }}
             </RouterLink>
@@ -564,7 +572,7 @@ export default {
       <nav class="top-nav">
         <div class="top-nav-left">
           <button @click="toggleSidebar" class="menu-button">
-            <Menu class="icon"/>
+            <Menu class="icon" />
           </button>
           <!-- <div class="search-container">
             <input type="text" v-model="searchQuery" placeholder="Search" class="search-input">
@@ -594,7 +602,6 @@ export default {
 </template>
 
 <style>
-
 .input-wrapper {
   position: relative;
   width: 100%;

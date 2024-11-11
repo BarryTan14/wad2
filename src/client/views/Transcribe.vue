@@ -739,10 +739,12 @@ export default {
 
 .btn-group {
   display: flex;
+  flex-wrap: wrap;
 }
 
 .btn-group .btn {
   padding: 0.25rem 0.5rem;
+  border-radius: 0;
 }
 
 .form-select-sm {

@@ -3,11 +3,11 @@
     <div class="calendar-container">
       <header class="app-header">
         <h1 class="app-title">Calendar & Event Manager</h1>
-        <div v-if="email" class="user-info">
+        <!-- <div v-if="email" class="user-info">
           <span class="welcome-message">
             Welcome, <strong>{{ email }}</strong>
           </span>
-        </div>
+        </div> -->
       </header>
 
       <div v-if="email" class="main-content">

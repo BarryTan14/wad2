@@ -2,6 +2,7 @@ import express from 'express';
 import { Group } from "../models/Group.js";
 import { User } from "../models/User.js"
 import { authMiddleware } from "../middleware/auth.js";
+import {ChatRoom} from '../models/ChatRoom.js';
 
 const router = express.Router();
 
@@ -137,10 +138,15 @@ router.get('/:groupId', async (req, res) => {
         if (!modules || modules.length === 0) {
             return res.status(404).json({ message: 'No modules found for the specified group ID' });
         }
+
+        // try to find associated chatroom
+        const room = await ChatRoom.findOne({group:modules._id})
+
         // Return the found modules as a JSON response
         res.json({
             message: "Successfully retrieved documents",
-            data: modules
+            data: modules,
+            room:room,
         });
     } catch (error) {
         console.error("Error fetching modules by groupId:", error);
@@ -174,7 +180,8 @@ router.post("/add", async (req, res) => {
         const savedModule = await newModule.save();
         res.status(201).json({
             message: "Successfully added new module",
-            data: newGroupId
+            data: newGroupId,
+            uId: savedModule._id,
         });
     } catch (e) {
         console.error("Error adding new module:", e);

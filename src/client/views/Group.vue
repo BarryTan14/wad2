@@ -5,7 +5,27 @@
       <h1 v-if="group && group.length > 0">Module Name: {{ group[0].moduleName || 'Module name not available' }}</h1>
       <h1 v-else>Loading module data...</h1>
       <div class="header">
-        <h2 v-if="group && group.length > 0">Group Number: {{ group[0].groupId || 'Module name not available' }}</h2>
+        <div v-if="group && group.length > 0">
+          <h2>Group Number: {{ group[0].groupId || 'Module name not available' }}</h2>
+          <p>ChatRoom ID: {{room._id}}
+            <svg
+              style="cursor: pointer;"
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="copy-icon"
+
+              @click="copyToClipboard"
+            >
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></p>
+        </div>
         <h2 v-else>Loading module data...</h2>
       </div>
       <div id="app">
@@ -22,29 +42,34 @@
                 <th>Functions</th>
               </tr>
               <tr v-for="(task, indx) in tasks" :key="task._id">
-                <td>{{ indx + 1 }}</td>
-                <td>
+                <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">{{ indx + 1 }}</td>
+                <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">
                   <span v-if="!task.isEditing">{{ task.taskName }}</span>
                   <input v-else type="text" v-model="task.taskName" />
                 </td>
-                <td>
+                <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">
                   <span v-if="!task.isEditing">{{ task.membersInCharge.join(', ') }}</span>
                   <input v-else type="text" v-model="task.membersInCharge"
                     @input="task.membersInCharge = task.membersInCharge.split(',')"
                     placeholder="Separate names with commas" />
                 </td>
-                <td>
+                <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">
                   <span v-if="!task.isEditing">{{ task.deadline }}</span>
                   <input v-else type="date" v-model="task.deadline" />
                 </td>
-                <td>
+                <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">
                   <input type="checkbox" v-model="task.status" :disabled="!task.isEditing" />
                 </td>
-                <td>
-                  <button v-if="!task.isEditing" @click="enableEditing(task)"
-                    class="btn btn-sm btn-primary">Update</button>
-                  <button v-else @click="saveChanges(task)" class="btn btn-sm btn-success">Save</button>
-                  <button @click="deleteTask(indx)" class="btn btn-sm btn-danger">Delete</button>
+                <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">
+                  <button v-if="!task.isEditing" @click="enableEditing(task)" class="btn btn-sm btn-primary">
+                    Update
+                  </button>
+                  <button v-else @click="saveChanges(task)" class="btn btn-sm btn-success">
+                    Save
+                  </button>
+                  <button @click="deleteTask(indx)" class="btn btn-sm btn-danger">
+                    Delete
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -86,17 +111,17 @@
           <button type="button" @click="addTeamMember" class="add-member-button">
             Add Team Member
           </button>
-          
+
           <div class="form-section">
             <label class="form-label">
               Deadline
               <span class="required">*</span>
             </label>
             <div class="input-group">
-              <input 
+              <input
                 ref="flatpickrInput"
-                type="text" 
-                class="form-control flatpickr-input" 
+                type="text"
+                class="form-control flatpickr-input"
                 placeholder="Select deadline"
                 :value="newTask.deadline"
                 @input="updateDeadline"
@@ -151,6 +176,7 @@ export default {
       router: null,
       groupSocket: io(),
       flatpickrInstance: null,
+      room:null,
     };
   },
   created() {
@@ -166,7 +192,7 @@ export default {
   },
   beforeUnmount() {
     this.cleanupSocketListeners();
-    this.destroyFlatpickr();
+    // this.destroyFlatpickr();
   },
   watch: {
     '$route.params.groupId': {
@@ -188,8 +214,6 @@ export default {
     isLoggedIn: {
       handler(isLoggedIn) {
         if (isLoggedIn) {
-          this.fetchGroupData();
-          this.fetchTaskData();
         } else {
           this.tasks = []
           this.gorups = null
@@ -200,36 +224,46 @@ export default {
     }
   },
   methods: {
-    initFlatpickr() {
-      if (this.flatpickrInstance) {
-        this.destroyFlatpickr();
-      }
-      
-      this.flatpickrInstance = flatpickr(this.$refs.flatpickrInput, {
-        enableTime: false,
-        dateFormat: "Y-m-d",
-        minDate: "today",
-        onChange: (selectedDates) => {
-          if (selectedDates[0]) {
-            this.newTask.deadline = selectedDates[0].toISOString().split('T')[0];
-          }
+    isDeadlineApproaching(deadline) {
+      const deadlineDate = new Date(deadline);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const oneWeekFromNow = new Date();
+      oneWeekFromNow.setDate(today.getDate() + 7);
+      oneWeekFromNow.setHours(0, 0, 0, 0);
+      // Debugging output to check the difference in days
+      const daysUntilDeadline = Math.floor((deadlineDate - today) / (1000 * 60 * 60 * 24));
+      // Check if the deadline is within the next week
+      return daysUntilDeadline < 7;
+    },
+
+    async copyToClipboard() {
+      try {
+        await navigator.clipboard.writeText(this.room._id);
+        this.$swal.fire({
+          toast:true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'ID Copied!',
+          showConfirmButton: false,
+          timer: 1500
+        });
+      } catch (err) {
+        if(err.message === "navigator.clipboard is undefined")
+        {
+          this.$swal.fire({
+            toast:true,
+            position: 'top-end',
+            icon: 'error',
+            title: 'Unable to copy',
+            text: 'We do not have enough permissions for "click to copy", please copy manually.',
+            showConfirmButton: false,
+            timer: 3000
+          });
         }
-      });
-    },
-    destroyFlatpickr() {
-      if (this.flatpickrInstance) {
-        this.flatpickrInstance.destroy();
-        this.flatpickrInstance = null;
       }
     },
-    openDatePicker() {
-      if (this.flatpickrInstance) {
-        this.flatpickrInstance.open();
-      }
-    },
-    updateDeadline(event) {
-      this.newTask.deadline = event.target.value;
-    },
+
     async openAddTaskModal() {
       const customClass = {
         container: 'custom-swal-container',
@@ -309,7 +343,7 @@ export default {
         confirmButtonText: 'Add Task',
         cancelButtonText: 'Cancel',
         customClass,
-        
+
         didOpen: () => {
           // Initialize Flatpickr
           const deadlineInput = document.getElementById('deadline');
@@ -343,9 +377,7 @@ export default {
 
           // Display suggestions in dropdown
           const displaySuggestions = (suggestions, index) => {
-            console.log("Displaying suggestions for index:", index, suggestions); // Debugging log
             const suggestionsList = document.getElementById(`suggestions-${index}`);
-
             if (!suggestionsList) {
               console.warn(`Suggestions list with id "suggestions-${index}" not found.`);
               return;
@@ -372,10 +404,9 @@ export default {
             // Select the input field by data index
             const inputField = document.querySelector(`[data-index="${index}"]`);
             if (inputField) {
-              console.log(inputField)
               // Set the input field value to the selected suggestion
               inputField.value = suggestion.displayName;
-              
+
               // Trigger an input event to ensure Vue detects the change
               inputField.dispatchEvent(new Event('input', { bubbles: true }));
 
@@ -427,7 +458,7 @@ export default {
             const newRemoveButton = newMemberDiv.querySelector('.remove-member');
             newRemoveButton.addEventListener('click', () => removeMemberInput(newMemberDiv));
           });
-          
+
           // Remove team member input
           document.addEventListener('click', (e) => {
             if (e.target.closest('.remove-member')) {
@@ -524,6 +555,11 @@ export default {
             'Content-Type': 'application/json'
           }
         });
+
+        this.$toast.fire({
+          icon:'success',
+          title:'Task Created!',
+        })
       } catch (error) {
         console.error('Error adding workspace:', error);
       }
@@ -535,7 +571,7 @@ export default {
     closeModal() {
       this.showAddTaskModal = false;
       this.resetNewTask();
-      this.destroyFlatpickr();
+      // this.destroyFlatpickr();
       
     },
     resetNewTask() {
@@ -572,32 +608,48 @@ export default {
         const response = await axios.delete(`/api/task/delete/${taskId}`);
         if (response.status === 200) {
           this.tasks.splice(index, 1);
+
+          this.$toast.fire({
+            icon:'success',
+            title:'Task Deleted!',
+          })
         } else {
-          console.error("Failed to delete task:", response.data.message);
+
+          this.$toast.fire({
+            icon:'error',
+            title:'Failed to delete task',
+          })
         }
       } catch (error) {
-        console.error("Error deleting task:", error);
+
+        this.$toast.fire({
+          icon:'error',
+          title:'Failed to delete task',
+        })
       }
     },
     async fetchGroupData() {
       try {
         const response = await axios.get(`/api/group/${this.groupId}`);
         this.group = response.data.data;
+        this.room = response.data.room;
       } catch (error) {
         console.error('Failed to fetch group data:', error);
       }
     },
     async fetchTaskData() {
       try {
-        await axios.get(`/api/task/getBy/${this.groupId}`)
-          .then(resp => {
-            this.tasks = resp.data.data
-          })
-          .catch(err => {
-            console.log(err)
-          })
-      } catch (error) {
-        console.error('Failed to fetch group data:', error);
+        const resp = await axios.get(`/api/task/getBy/${this.groupId}`);
+        this.tasks = resp.data.data;
+      } catch (err) {
+        if (err.response && err.response.status === 404) {
+          console.warn("No tasks found for this group."); // Gracefully handle 404
+          this.tasks = []; // Set tasks to an empty array if no tasks are found
+        } else if (err.response) {
+          console.error(`Error ${err.response.status}: ${err.response.statusText}`);
+        } else {
+          console.error("An error occurred:", err.message); // Handle network or other errors
+        }
       }
     },
     setupSocketListeners() {
@@ -685,40 +737,6 @@ export default {
 </script>
 
 <style scoped>
-
-/* Flatpickr custom styles */
-.flatpickr-input {
-  background-color: white !important;
-  cursor: pointer !important;
-}
-
-.input-group {
-  display: flex;
-  align-items: stretch;
-  width: 100%;
-}
-
-.input-group-append {
-  display: flex;
-  margin-left: -1px;
-}
-
-.calendar-button {
-  border-radius: 0 4px 4px 0;
-  border: 1px solid #ced4da;
-  background-color: #f8f9fa;
-  padding: 0.375rem 0.75rem;
-  cursor: pointer;
-}
-
-.calendar-button:hover {
-  background-color: #e9ecef;
-}
-
-/* Make sure the Flatpickr calendar appears above other elements */
-.flatpickr-calendar {
-  z-index: 999999 !important; /* Ensure calendar appears above SweetAlert modal */
-}
 /* Center the layout */
 #app {
   display: flex;
@@ -740,16 +758,14 @@ export default {
   padding: 0;
 }
 
+
 /* Center and expand the table */
 .table {
   width: 100%;
   border-collapse: collapse;
   background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
   overflow: hidden;
   margin: 0;
-  /* Remove any margin */
 }
 
 /* Table cell styles for text wrapping and spacing */
@@ -757,7 +773,6 @@ export default {
 .table td {
   padding: 0.5rem;
   text-align: left;
-  border-bottom: 1px solid #ddd;
   vertical-align: middle;
   word-wrap: break-word;
   white-space: normal;
@@ -776,7 +791,8 @@ export default {
 
 /* Button styling */
 .table .btn {
-  min-height: 44px;
+  width: 80px;
+  height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -856,11 +872,11 @@ export default {
   }
 
   /* Card style for table container in mobile */
-  .table-container {
+  /* .table-container {
     border-radius: 0.75rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     padding: 1rem;
-  }
+  } */
 
   .card-subtitle,
   .card-text {
@@ -899,5 +915,9 @@ export default {
   100% {
     transform: scaleY(1);
   }
+}
+.highlight-row {
+  background-color: lightcoral; /* Light yellow background */
+  transition: background-color 0.3s ease;
 }
 </style>

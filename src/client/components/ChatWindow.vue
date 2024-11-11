@@ -371,6 +371,10 @@ export default {
       });
     }
 
+    this.$socket.on('server-refresh-rooms',()=>{
+      this.$socket.emit('get-all-rooms', this.user._id);
+    })
+
     this.$socket.on('get-all-rooms', rooms => {
       this.userRooms = rooms;
     })
