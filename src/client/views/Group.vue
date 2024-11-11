@@ -3,10 +3,10 @@
     <!-- Left side: Group Assignments -->
     <div class="group-section">
       <h1 v-if="group && group.length > 0">Module Name: {{ group[0].moduleName || 'Module name not available' }}</h1>
-      <h1 v-else>Loading module data...</h1> <!-- Fallback if data is not yet available -->
+      <h1 v-else>Loading module data...</h1>
       <div class="header">
         <h2 v-if="group && group.length > 0">Group Number: {{ group[0].groupId || 'Module name not available' }}</h2>
-        <h2 v-else>Loading module data...</h2> <!-- Fallback if data is not yet available -->
+        <h2 v-else>Loading module data...</h2>
       </div>
       <div id="app">
         <div class="task-container">
@@ -56,13 +56,11 @@
           </table>
           <h2 v-else>No tasks yet</h2>
           <button @click="openAddTaskModal" class="add-task-button">Add New Task</button>
-
         </div>
       </div>
     </div>
 
-    <!-- Modal for adding a new task -->
-    <div v-if="showAddTaskModal" class="modal-overlay">
+<div v-if="showAddTaskModal" class="modal-overlay">
       <div class="modal-content">
         <h2>Add New Task</h2>
         <form>
@@ -78,7 +76,6 @@
                 <input type="text" v-model="member.name" @input="fetchMemberSuggestions(member.name, index)"
                   @focus="showSuggestions[index] = true" @blur="closeSuggestions(index)"
                   placeholder="Type to search team members" required />
-                <!-- Suggestions Dropdown -->
                 <ul v-if="showSuggestions[index]" class="suggestions-list">
                   <li v-for="suggestion in suggestions[index]" :key="suggestion.displayName"
                     @click="selectSuggestion(index, suggestion)">
@@ -94,21 +91,31 @@
           <button type="button" @click="addTeamMember" class="add-member-button">
             Add Team Member
           </button>
-          <!-- <label>
-            Deadline:
-            <input type="date" v-model="newTask.deadline" required />
-          </label> -->
-          <div class="input-group">
-            <input type="text" id="eventStart" class="form-control flatpickr-input" v-model="newTask.deadline"
-              data-input required readonly />
-            <div class="input-group-append">
-              <button class="btn btn-primary" type="button" @click="openStartPicker">
-                <i class="fas fa-calendar"></i>
-              </button>
+          
+          <div class="form-section">
+            <label class="form-label">
+              Deadline
+              <span class="required">*</span>
+            </label>
+            <div class="input-group">
+              <input 
+                ref="flatpickrInput"
+                type="text" 
+                class="form-control flatpickr-input" 
+                placeholder="Select deadline"
+                :value="newTask.deadline"
+                @input="updateDeadline"
+              />
+              <div class="input-group-append">
+                <button class="btn btn-outline-secondary calendar-button" type="button" @click="openDatePicker">
+                  <i class="fas fa-calendar"></i>
+                </button>
+              </div>
             </div>
           </div>
+
           <div class="modal-buttons">
-            <button type="submit" @click="addTask" class="btn btn-primary">Add Task</button>
+            <button type="submit" @click.prevent="addTask" class="btn btn-primary">Add Task</button>
             <button type="button" @click="closeModal" class="btn btn-secondary">Cancel</button>
           </div>
         </form>
@@ -121,6 +128,8 @@
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.css';
 
 export default {
   name: 'GroupView',
@@ -146,6 +155,7 @@ export default {
       isLoggedIn: true,
       router: null,
       groupSocket: io(),
+      flatpickrInstance: null,
     };
   },
   created() {
@@ -161,6 +171,7 @@ export default {
   },
   beforeUnmount() {
     this.cleanupSocketListeners();
+    this.destroyFlatpickr();
   },
   watch: {
     '$route.params.groupId': {
@@ -169,6 +180,15 @@ export default {
         this.fetchGroupData();
       },
       immediate: true
+    },
+    showAddTaskModal(newValue) {
+      if (newValue) {
+        this.$nextTick(() => {
+          this.initFlatpickr();
+        });
+      } else {
+        this.destroyFlatpickr();
+      }
     },
     isLoggedIn: {
       handler(isLoggedIn) {
@@ -185,20 +205,7 @@ export default {
     }
   },
   methods: {
-    isDeadlineApproaching(deadline) {
-      const deadlineDate = new Date(deadline);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const oneWeekFromNow = new Date();
-      oneWeekFromNow.setDate(today.getDate() + 7);
-      oneWeekFromNow.setHours(0, 0, 0, 0);
 
-      // Debugging output to check the difference in days
-      const daysUntilDeadline = Math.floor((deadlineDate - today) / (1000 * 60 * 60 * 24));
-
-      // Check if the deadline is within the next week
-      return daysUntilDeadline < 7;
-    },
     async openAddTaskModal() {
       const customClass = {
         container: 'custom-swal-container',
@@ -212,6 +219,7 @@ export default {
         confirmButton: 'custom-swal-confirm',
         cancelButton: 'custom-swal-cancel',
       };
+
 
       const result = await this.$swal.fire({
         title: 'Add New Task',
@@ -239,10 +247,8 @@ export default {
                     type="text"
                     class="swal2-input custom-input team-member-input"
                     placeholder="Type to search team members"
-                        style="width:300px; margin-right: 0"
+                    style="width:300px; margin-right: 0"
                     value="${member.name || ''}"
-
-
                   >
                   <button type="button" class="action-button remove-button remove-member btn">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -266,19 +272,34 @@ export default {
           </label>
           <input
             id="deadline"
-            type="date"
-            class="swal2-input custom-input d-flex text-center"
+            type="text"
+            class="swal2-input custom-input d-flex text-center flatpickr-input"
+            placeholder="Select deadline"
             value="${this.newTask.deadline || ''}"
+            readonly
           >
         </div>
       </form>
     `,
-        showCancelButton: true,
+    showCancelButton: true,
         confirmButtonText: 'Add Task',
         cancelButtonText: 'Cancel',
         customClass,
 
         didOpen: () => {
+          // Initialize Flatpickr
+          const deadlineInput = document.getElementById('deadline');
+          const fp = flatpickr(deadlineInput, {
+            enableTime: false,
+            dateFormat: "Y-m-d",
+            minDate: "today",
+            onChange: (selectedDates) => {
+              if (selectedDates[0]) {
+                deadlineInput.value = selectedDates[0].toISOString().split('T')[0];
+              }
+            }
+          });
+
           const removeMemberInput = (memberDiv) => {
             if (memberDiv) {
               memberDiv.remove();
@@ -487,6 +508,8 @@ export default {
     closeModal() {
       this.showAddTaskModal = false;
       this.resetNewTask();
+      this.destroyFlatpickr();
+      
     },
     resetNewTask() {
       this.newTask = {
@@ -637,11 +660,6 @@ export default {
 </script>
 
 <style scoped>
-.highlight-row {
-  background-color: lightcoral;
-  color: black;
-}
-
 /* Center the layout */
 #app {
   display: flex;
