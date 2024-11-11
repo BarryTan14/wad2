@@ -48,7 +48,7 @@
                 </div>
 
                 <div class="d-flex gap-3 justify-content-between align-items-center">
-                  <button type="submit" class="btn btn-lg" style="background-color: var(--bs-purple); color: white;">
+                  <button type="submit" class="btn btn-lg" style="color:white; background-color: var(--bs-purple);">
                     <i class="fas fa-plus me-2"></i>
                     {{ selectedEvent ? 'Update Event' : 'Create Event' }}
                   </button>

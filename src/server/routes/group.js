@@ -1,7 +1,7 @@
 import express from 'express';
-import { Group } from "../models/Group.js";
-import { User } from "../models/User.js"
-import { authMiddleware } from "../middleware/auth.js";
+import {Group} from "../models/Group.js";
+import {User} from "../models/User.js"
+import {authMiddleware} from "../middleware/auth.js";
 import {ChatRoom} from '../models/ChatRoom.js';
 
 const router = express.Router();
@@ -194,19 +194,46 @@ router.delete('/leavegroup/:groupId', authMiddleware, async (req, res) => {
     const user = await User.findById(req.user._id).select("-password")
     const group = await Group.findOne({groupId:groupId})
 
-    var result = user.joinedGroups.find(obj => {
-        return obj.groupId === groupId;
+    var inGroup = await user.joinedGroups.find(el=>{
+        return el.groupId === groupId
     })
 
-    for(let group of user.joinedGroups) {
-        if(group.groupId === groupId){
-
-            console.log("Part of group")
-        }
+    if(!inGroup){
+        return res.status(401).json({
+            message: "Not part of the group"
+        })
     }
 
-    res.json({
-        message: "Successfully Left",
+    user.joinedGroups = await user.joinedGroups.filter(function (el) {
+        return el.groupId !== groupId
+    })
+    try {
+        await user.save();
+    } catch (e) {
+        return res.status(500).json({message:"Failed to leave group"});
+    }
+
+    // check if every user is in the group or not
+    let users = await User.find().select('-password');
+
+    try {
+        for(let userIn of users) {
+            let found = userIn.joinedGroups.find(el=>{
+                return el.groupId === userIn._id
+            });
+            if(!found) {
+                await Group.findByIdAndDelete(group._id);
+                break
+            }
+        }
+    } catch (e) {
+        return res.status(500).json({
+            message: "Failed to delete group"
+        })
+    }
+
+    res.status(200).json({
+        message: "Successfully left the group",
     })
 })
 
