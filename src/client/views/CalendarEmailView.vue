@@ -19,37 +19,44 @@
               </h2>
 
               <form @submit.prevent="handleEventSubmit">
-                <div class="mb-4">
-                  <label for="eventSummary" class="form-label">Event Name</label>
-                  <input type="text" style="background-color: white; color: black;" id="eventSummary"
-                    v-model="eventForm.summary" class="form-control form-control-lg" placeholder="Enter event title"
-                    required />
-                </div>
-
-                <div class="mb-4">
-                  <label for="eventStart" class="form-label"  >Start Date & Time</label>
-                 
-                    <input type="text" id="eventStart" class="form-control" v-model="eventForm.start"
-                      placeholder="YYYY-MM-DD HH:MM" style="color: black;"  required readonly />
-                    
-                </div>
-
-                <div class="mb-4">
-                  <label for="eventEnd" class="form-label">End Date & Time</label>
-                  <div class="input-group">
-                    <input type="text" id="eventEnd" class="form-control" v-model="eventForm.end"
-                      placeholder="YYYY-MM-DD HH:MM" style="color: black;" required readonly />
-                    <button class="btn btn-outline-primary" type="button" @click="openEndPicker" style="background-color:#6f42c1">
-                      <i class="fas fa-calendar"></i>
-                    </button>
+                <div class="space-y-4">
+                  <!-- Event Name -->
+                  <div class="mb-4">
+                    <label for="eventSummary" class="form-label">Event Name</label>
+                    <input type="text" id="eventSummary" v-model="eventForm.summary"
+                      class="form-control form-control-lg w-full px-4 py-2 text-black bg-white border border-gray-300 rounded"
+                      placeholder="Enter event title" required />
                   </div>
-                </div>
 
-                <div class="mb-4">
-                  <label for="eventDescription" class="form-label">Description</label>
-                  <textarea style="background-color: white; color: black;" id="eventDescription"
-                    v-model="eventForm.description" class="form-control" rows="4"
-                    placeholder="Enter event description"></textarea>
+                  <!-- Start Date & Time -->
+                  <div class="mb-4">
+                    <label for="eventStart" class="form-label">Start Date & Time</label>
+                    <div class="relative">
+                      <input type="text" id="eventStart" v-model="eventForm.start"
+                        class="form-control form-control-lg w-full px-4 py-2 text-black bg-white border border-gray-300 rounded"
+                        placeholder="YYYY-MM-DD HH:MM" required readonly />
+                      
+                    </div>
+                  </div>
+
+                  <!-- End Date & Time -->
+                  <div class="mb-4">
+                    <label for="eventEnd" class="form-label">End Date & Time</label>
+                    <div class="relative">
+                      <input type="text" id="eventEnd" v-model="eventForm.end"
+                        class="form-control form-control-lg w-full px-4 py-2 text-black bg-white border border-gray-300 rounded"
+                        placeholder="YYYY-MM-DD HH:MM" required readonly />
+                      
+                    </div>
+                  </div>
+
+                  <!-- Description -->
+                  <div class="mb-4">
+                    <label for="eventDescription" class="form-label">Description</label>
+                    <textarea id="eventDescription" v-model="eventForm.description"
+                      class="form-control w-full px-4 py-2 text-black bg-white border border-gray-300 rounded" rows="4"
+                      placeholder="Enter event description"></textarea>
+                  </div>
                 </div>
 
                 <div class="d-flex gap-3 justify-content-between align-items-center">
@@ -226,9 +233,9 @@
 import axios from 'axios'
 import { Modal } from 'bootstrap'
 import flatpickr from 'flatpickr'
-// import 'flatpickr/dist/flatpickr.min.css'
+import 'flatpickr/dist/flatpickr.min.css'
 import FlipCard from '../components/FlipCard.vue'
-// import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap/dist/css/bootstrap.min.css'
 import '@fortawesome/fontawesome-free/css/all.min.css'
 
 export default {
