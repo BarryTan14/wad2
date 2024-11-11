@@ -271,11 +271,6 @@ export default {
     }
   },
   async mounted() {
-    document.addEventListener('DOMNodeInserted', (event) => {
-    if (event.target.classList && event.target.classList.contains('modal-backdrop')) {
-      event.target.remove();
-    }
-  });
     this.getGroup();
     if (this.email) {
       this.listEvents()
