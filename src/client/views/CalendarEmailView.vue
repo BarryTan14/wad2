@@ -1,13 +1,10 @@
 <template>
-  <div class="calendar-app bg-light min-vh-100 py-4" :class="{ 'dark-mode': isDarkMode }">
+  <div class="calendar-app bg-light min-vh-100 py-4">
     <div class="container">
       <!-- Header Section -->
       <header class="row mb-5">
         <div class="col-12 text-center">
-          <h1 class="display-4 text-primary fw-bold">
-            <span style="color: var(--color-accent)">Calendar & Event Manager</span>
-          </h1>
-          <button @click="toggleTheme">Toggle Theme</button>
+          <h1 class="display-4 text-primary fw-bold"><span style="color:#6f42c1">Calendar & Event Manager</span></h1>
         </div>
       </header>
 
@@ -15,52 +12,44 @@
       <div v-if="email" class="row g-4">
         <!-- Create/Edit Event Form -->
         <div class="col-12 col-lg-5">
-          <section class="card border-0 shadow-sm h-100">
+          <section class="card border-0 shadow-sm h-100" style="background-color: white;">
             <div class="card-body p-4">
               <h2 class="card-title h4 mb-4 text-primary">
-                {{ selectedEvent ? 'Edit Event' : 'Create New Event' }}
+                <span style="color:#6f42c1">{{ selectedEvent ? 'Edit Event' : 'Create New Event' }} </span>
               </h2>
 
-              <!-- Form for event data input -->
               <form @submit.prevent="handleEventSubmit">
-                <div class="space-y-4">
-                  <!-- Event Name -->
-                  <div class="mb-4">
-                    <label for="eventSummary" class="form-label">Event Name</label>
-                    <input type="text" id="eventSummary" v-model="eventForm.summary"
-                      class="form-control form-control-lg w-full px-4 py-2 text-black bg-white border border-gray-300 rounded"
-                      placeholder="Enter event title" required />
-                  </div>
+                <div class="mb-4">
+                  <label for="eventSummary" class="form-label">Event Name</label>
+                  <input type="text" style="background-color: white; color: black;" id="eventSummary"
+                    v-model="eventForm.summary" class="form-control form-control-lg" placeholder="Enter event title"
+                    required />
+                </div>
 
-                  <!-- Start Date & Time -->
-                  <div class="mb-4">
-                    <label for="eventStart" class="form-label">Start Date & Time</label>
-                    <div class="relative">
-                      <input type="text" id="eventStart" v-model="eventForm.start"
-                        class="form-control form-control-lg w-full px-4 py-2 text-black bg-white border border-gray-300 rounded"
-                        placeholder="YYYY-MM-DD HH:MM" required readonly />
-                      
-                    </div>
-                  </div>
+                <div class="mb-4">
+                  <label for="eventStart" class="form-label"  >Start Date & Time</label>
+                 
+                    <input type="text" id="eventStart" class="form-control" v-model="eventForm.start"
+                      placeholder="YYYY-MM-DD HH:MM" style="color: black;"  required readonly />
+                    
+                </div>
 
-                  <!-- End Date & Time -->
-                  <div class="mb-4">
-                    <label for="eventEnd" class="form-label">End Date & Time</label>
-                    <div class="relative">
-                      <input type="text" id="eventEnd" v-model="eventForm.end"
-                        class="form-control form-control-lg w-full px-4 py-2 text-black bg-white border border-gray-300 rounded"
-                        placeholder="YYYY-MM-DD HH:MM" required readonly />
-                      
-                    </div>
+                <div class="mb-4">
+                  <label for="eventEnd" class="form-label">End Date & Time</label>
+                  <div class="input-group">
+                    <input type="text" id="eventEnd" class="form-control" v-model="eventForm.end"
+                      placeholder="YYYY-MM-DD HH:MM" style="color: black;" required readonly />
+                    <button class="btn btn-outline-primary" type="button" @click="openEndPicker" style="background-color:#6f42c1">
+                      <i class="fas fa-calendar"></i>
+                    </button>
                   </div>
+                </div>
 
-                  <!-- Description -->
-                  <div class="mb-4">
-                    <label for="eventDescription" class="form-label">Description</label>
-                    <textarea id="eventDescription" v-model="eventForm.description"
-                      class="form-control w-full px-4 py-2 text-black bg-white border border-gray-300 rounded" rows="4"
-                      placeholder="Enter event description"></textarea>
-                  </div>
+                <div class="mb-4">
+                  <label for="eventDescription" class="form-label">Description</label>
+                  <textarea style="background-color: white; color: black;" id="eventDescription"
+                    v-model="eventForm.description" class="form-control" rows="4"
+                    placeholder="Enter event description"></textarea>
                 </div>
 
                 <div class="d-flex gap-3 justify-content-between align-items-center">
@@ -237,9 +226,9 @@
 import axios from 'axios'
 import { Modal } from 'bootstrap'
 import flatpickr from 'flatpickr'
-import 'flatpickr/dist/flatpickr.min.css'
+// import 'flatpickr/dist/flatpickr.min.css'
 import FlipCard from '../components/FlipCard.vue'
-import 'bootstrap/dist/css/bootstrap.min.css'
+// import 'bootstrap/dist/css/bootstrap.min.css'
 import '@fortawesome/fontawesome-free/css/all.min.css'
 
 export default {
@@ -270,7 +259,6 @@ export default {
       isNewEvent: true,
       invitationsSent: false,
       selectedGroup: null,
-      isDarkMode: false,
       groups: [{ id: '', name: '', membersInCharge: [] }],
     }
   },
@@ -289,10 +277,6 @@ export default {
     this.initDateTimePickers()
   },
   methods: {
-    toggleTheme() {
-      this.isDarkMode = !this.isDarkMode;
-      console.log(this.isDarkMode)
-    },
     async getGroup() {
       this.isLoading = true
       try {
@@ -705,26 +689,11 @@ You are invited by ${this.email}
 </script>
 
 <style scoped>
-
-:root {
-  --background-color: #fff;
-  --text-color: #000;
-  --button-bg-color: #007bff;
-}
-
-.dark-mode {
-  --background-color: #333;
-  --text-color: #ccc;
-  --button-bg-color: #666;
-}
-
+/* Existing styles */
 .calendar-app {
-  background-color: var(--background-color);
-  color: var(--text-color);
-}
-
-.button {
-  background-color: var(--button-bg-color);
+  background-color: #ffffff;
+  min-height: 100vh;
+  padding: 2rem 1rem;
 }
 
 .app-title {
@@ -1128,8 +1097,7 @@ You are invited by ${this.email}
 
 .card {
   border: none;
-  background-color: var(--background-color);
-  color: var(--text-color);
+  background: #ffffff;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.3s ease;
 }
