@@ -16,10 +16,10 @@
               @input="debouncedValidate('email')"
           >
           <div class="requirements-list" v-if="!formData.email && !errors.email">
-            <small class="text-muted">Requirements:</small>
+<!--            <small class="text-muted">Requirements:</small>
             <ul class="text-muted">
               <li>Must be a valid email address (e.g., user@example.com)</li>
-            </ul>
+            </ul>-->
           </div>
           <div class="invalid-feedback" v-if="errors.email">
             {{ errors.email }}
@@ -38,11 +38,11 @@
               @input="debouncedValidate('username')"
           >
           <div class="requirements-list" v-if="!formData.username && !errors.username">
-            <small class="text-muted">Requirements:</small>
+<!--            <small class="text-muted">Requirements:</small>
             <ul class="text-muted">
               <li>At least 3 characters long</li>
               <li>Can only contain letters, numbers, and underscores</li>
-            </ul>
+            </ul>-->
           </div>
           <div class="invalid-feedback" v-if="errors.username">
             {{ errors.username }}
@@ -74,13 +74,13 @@
             </small>
           </div>
           <div class="requirements-list" v-if="!formData.password && !errors.password">
-            <small class="text-muted">Requirements:</small>
+<!--            <small class="text-muted">Requirements:</small>
             <ul class="text-muted">
               <li>At least 6 characters long</li>
               <li>Must contain at least one uppercase letter</li>
               <li>Must contain at least one lowercase letter</li>
               <li>Must contain at least one number</li>
-            </ul>
+            </ul>-->
           </div>
           <div class="invalid-feedback" v-if="errors.password">
             {{ errors.password }}

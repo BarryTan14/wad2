@@ -149,7 +149,7 @@
                 <th scope="col" width="20%">Module</th>
                 <th scope="col" width="40%">Transcription</th>
                 <th scope="col" width="20%">Timestamp</th>
-                <th scope="col" width="15%">Actions</th>
+                <th scope="col" width="15%" class="text-center">Actions</th>
               </tr>
               </thead>
               <tbody>
@@ -195,7 +195,7 @@
                   <div class="btn-group">
                     <button
                         @click="toggleEdit(item._id)"
-                        class="btn btn-sm"
+                        class="btn btn-sm btn-actions"
                         :class="isEditing(item._id) ? 'btn-warning' : 'btn-primary'"
                         :title="isEditing(item._id) ? 'Cancel editing' : 'Edit transcription'"
                     >
@@ -204,7 +204,7 @@
                     <button
                         v-if="isEditing(item._id)"
                         @click="saveTranscription(item._id)"
-                        class="btn btn-success btn-sm"
+                        class="btn btn-success btn-sm btn-actions"
                         title="Save changes"
                     >
                       <span class="bi bi-check-lg">✅</span>
@@ -212,7 +212,7 @@
                     <button
                         v-if="!isEditing(item._id)"
                         @click="deleteTranscription(item._id)"
-                        class="btn btn-danger btn-sm"
+                        class="btn btn-danger btn-sm btn-actions"
                         title="Delete transcription"
                     >
                       <span class="bi bi-trash">🗑️</span>
@@ -243,7 +243,7 @@
                     <template v-if="isEditing(item._id)">
                       <select
                           v-model="editForm[item._id].moduleId"
-                          class="form-select form-select-sm d-inline-block w-auto"
+                          class="form-select form-select d-inline-block w-auto"
                       >
                         <option
                             v-for="module in groupOptions"
@@ -261,7 +261,7 @@
                   <div class="btn-group">
                     <button
                         @click="toggleEdit(item._id)"
-                        class="btn"
+                        class="btn btn-actions"
                         :class="isEditing(item._id) ? 'btn-warning' : 'btn-primary'"
                         :title="isEditing(item._id) ? 'Cancel editing' : 'Edit transcription'"
                     >
@@ -270,7 +270,7 @@
                     <button
                         v-if="isEditing(item._id)"
                         @click="saveTranscription(item._id)"
-                        class="btn btn-success"
+                        class="btn btn-success btn-actions"
                         title="Save changes"
                     >
                       <span class="bi bi-check-lg">✅</span>
@@ -278,7 +278,7 @@
                     <button
                         v-if="!isEditing(item._id)"
                         @click="deleteTranscription(item._id)"
-                        class="btn btn-danger"
+                        class="btn btn-danger btn-actions"
                         title="Delete transcription"
                     >
                       <span class="bi bi-trash">🗑️</span>
@@ -659,6 +659,14 @@ export default {
 </script>
 
 <style scoped>
+.btn-actions {
+  background: none;
+  border:none;
+}
+.btn-actions:hover {
+
+}
+
 .transcriptions-container {
   margin-top: 2rem;
 }
