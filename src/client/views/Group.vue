@@ -171,7 +171,7 @@ export default {
   },
   beforeUnmount() {
     this.cleanupSocketListeners();
-    this.destroyFlatpickr();
+    // this.destroyFlatpickr();
   },
   watch: {
     '$route.params.groupId': {
@@ -205,7 +205,18 @@ export default {
     }
   },
   methods: {
-
+    isDeadlineApproaching(deadline) {
+      const deadlineDate = new Date(deadline);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const oneWeekFromNow = new Date();
+      oneWeekFromNow.setDate(today.getDate() + 7);
+      oneWeekFromNow.setHours(0, 0, 0, 0);
+      // Debugging output to check the difference in days
+      const daysUntilDeadline = Math.floor((deadlineDate - today) / (1000 * 60 * 60 * 24));
+      // Check if the deadline is within the next week
+      return daysUntilDeadline < 7;
+    },
     async openAddTaskModal() {
       const customClass = {
         container: 'custom-swal-container',
@@ -508,7 +519,7 @@ export default {
     closeModal() {
       this.showAddTaskModal = false;
       this.resetNewTask();
-      this.destroyFlatpickr();
+      // this.destroyFlatpickr();
       
     },
     resetNewTask() {
@@ -838,5 +849,9 @@ export default {
   100% {
     transform: scaleY(1);
   }
+}
+.highlight-row {
+  background-color: lightcoral; /* Light yellow background */
+  transition: background-color 0.3s ease;
 }
 </style>

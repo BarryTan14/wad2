@@ -106,6 +106,7 @@ export default {
       newPriority: "",
       newTodoText: "",
       userTask: [],
+      events: [],
     };
   },
   async mounted() {
@@ -116,7 +117,30 @@ export default {
         this.userTask = resp.data.data;
       });
   },
+
   methods: {
+    // async listEvents() {
+    //   try {
+    //     await axios.get(`/api/calendar-email/events?email=${this.email}`).then(res => {
+    //       this.events = res.data.map(event => ({
+    //         id: event.id,
+    //         summary: event.summary,
+    //         description: event.description || 'No description',
+    //         start: event.start,
+    //         end: event.end
+    //       })
+    //       )
+    //       console.log(this.events)
+    //     }).catch(error => {
+    //     })
+    //   } catch (error) {
+    //     this.$swal.fire({
+    //       icon: 'error',
+    //       title: 'Error Fetching Events',
+    //       text: error.message,
+    //     });
+    //   }
+    // },
     getFormattedDate() {
       const today = new Date();
       return today.toLocaleDateString("en-GB", {
@@ -217,34 +241,41 @@ export default {
   max-width: 100%;
   margin: auto;
 }
+
 .planner-title,
 h2 {
   text-align: center;
 }
+
 .planner-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
 }
+
 .planner-section {
   padding: 15px;
   border-radius: 10px;
   border: 4px solid var(--bs-purple);
   transition: transform 0.3s, box-shadow 0.3s;
 }
+
 .planner-section:hover {
   transform: scale(1.02);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
+
 .date-display {
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
 .calendar-icon {
   font-size: 1.2rem;
   margin-right: 8px;
 }
+
 .schedule-item,
 .priority-item,
 .todo-item {
@@ -252,22 +283,27 @@ h2 {
   justify-content: space-between;
   padding: 5px 0;
 }
+
 .new-task,
 .edit-task {
   display: flex;
   gap: 10px;
   margin-top: 10px;
 }
+
 .time {
   font-weight: bold;
 }
+
 .button-group {
   display: flex;
   gap: 5px;
 }
+
 .todo-item input[type="checkbox"] {
   margin-right: 10px;
 }
+
 .btn {
   display: flex;
   justify-content: space-between;
@@ -280,9 +316,11 @@ h2 {
   border-radius: 5px;
   transition: background-color 0.3s;
 }
+
 .btn:hover {
   background-color: #5548cc;
 }
+
 @media (max-width: 768px) {
   .planner-grid {
     grid-template-columns: 1fr;
