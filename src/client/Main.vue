@@ -540,10 +540,10 @@ export default {
         <h2 class="section-title"
           style="display: flex; align-items: center; justify-content: space-between; padding: 5px 0;">
           <span style="font-weight: bold; font-size: 1.5rem;">Groups</span>
-          <button
-            style="padding: 8px 16px; font-size: 1rem; margin: 0; border-radius: 8px;  border: none;"
+          <button class="add-btn"
+            style="color: var(--bs-purple);background-color:transparent; padding: 8px 16px; font-size: 1rem; margin: 0; border-radius: 8px;  border: solid 1px var(--bs-purple);"
             @click="openSwalModal">
-            Add Group
+            Add <i class="fa fa-plus"></i>
           </button>
         </h2>
         <ul class="nav-list">
@@ -680,5 +680,9 @@ export default {
 .slide-fade-leave-to {
   transform: translateX(-20px);
   opacity: 0;
+}
+.add-btn:hover{
+  background-color: var(--bs-purple) !important;
+  color: white !important;
 }
 </style>

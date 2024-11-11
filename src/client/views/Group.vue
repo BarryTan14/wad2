@@ -5,7 +5,7 @@
       <h1 v-if="group && group.length > 0" style="text-align:center;text-decoration: underline">{{ group[0].moduleName +  "(Group "+ group[0].groupId + ")"
         || 'Module name not available' }}</h1>
       <h1 v-else>Loading module data...</h1>
-      <div class="header">
+      <!-- <div class="header">
         
         <p style="text-align: center;">ChatRoom ID: {{room._id}}
             <svg
@@ -25,7 +25,7 @@
             >
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></p>
-        </div>
+        </div> -->
       </div>
       <div id="app">
         <div class="task-container">
