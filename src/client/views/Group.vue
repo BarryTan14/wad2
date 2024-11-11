@@ -3,7 +3,13 @@
     <!-- Left side: Group Assignments -->
     <div class="group-section">
       <h1 v-if="group && group.length > 0" style="text-align:center;text-decoration: underline">{{ group[0].moduleName +  "(Group "+ group[0].groupId + ")"
-        || 'Module name not available' }}</h1>
+        || 'Module name not available' }}
+        <button
+            class="btn btn-danger leave-grp-btn"
+            @click.stop="showLeaveGroupModal"
+        >
+          Leave
+        </button></h1>
       <h1 v-else>Loading module data...</h1>
       <div class="header">
         </div>
@@ -140,6 +146,32 @@ export default {
     }
   },
   methods: {
+    async showLeaveGroupModal() {
+      const result = await this.$swal.fire({
+        title: 'Leave Group',
+        text: `Are you sure you want to leave "${this.group[0].moduleName}"?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        confirmButtonText: 'Leave'
+      });
+
+      if (result.isConfirmed) {
+        axios.delete(`/api/group/leavegroup/${this.group[0].groupId}`).then((response) => {
+          this.$toast.fire({
+            icon: 'info',
+            title: 'You left the group',
+          });
+          this.router.push('/dashboard');
+        }).catch(error => {
+          console.log(error)
+          this.$toast.fire({
+            icon: 'error',
+            title: 'Error leaving group',
+          });
+        })
+      }
+    },
     isDeadlineApproaching(deadline) {
       const deadlineDate = new Date(deadline);
       const today = new Date();
