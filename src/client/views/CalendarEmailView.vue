@@ -204,7 +204,7 @@
               <h6 class="mb-3">Group Members:</h6>
               <div class="list-group">
                 <div v-for="member in selectedGroup.membersInCharge" :key="member" class="list-group-item">
-                  {{ member }}
+                  {{ member.name }}
                 </div>
               </div>
             </div>
