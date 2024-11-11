@@ -31,7 +31,7 @@ export default {
         teamMembers: [{ name: '' }],
         // Initial team member input
       },
-      isDarkTheme: false,
+      isDarkTheme: true,
       isSidebarOpen: false,
       searchQuery: '',
       navigationRoutes: [

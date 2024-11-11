@@ -2,6 +2,7 @@
 import Main from "./Main.vue";
 import LandingPage from "./views/LandingPage.vue";
 
+
 export default {
   name: 'App',
 
@@ -12,43 +13,41 @@ export default {
 
   data() {
     return {
-      isDarkTheme: false, // Default to light theme
+      isDarkTheme: true,
       isSidebarOpen: false,
       searchQuery: '',
-      isLoggedIn: false,
+      isLoggedIn:false,
     }
   },
 
   methods: {
     toggleTheme() {
       this.isDarkTheme = !this.isDarkTheme;
-      this.applyTheme();
-    },
-    applyTheme() {
       document.documentElement.setAttribute('data-bs-theme', this.isDarkTheme ? 'dark' : 'light');
     }
   },
 
   // Save theme preference
   watch: {
-    isDarkTheme(newValue) {
-      localStorage.setItem('theme', newValue ? 'dark' : 'light');
-      this.applyTheme();
-    },
-    immediate: true // This might cause a reactivity issue if placed inside the watch's handler object. It should be on a property level if needed.
+    isDarkTheme: {
+      handler(newValue) {
+        localStorage.setItem('theme', newValue ? 'dark' : 'light')
+      },
+      immediate: true
+    }
   },
 
   // Load saved theme preference
   created() {
     this.isLoggedIn = this.$authStore.isLoggedIn;
-    const savedTheme = localStorage.getItem('theme');
+    const savedTheme = localStorage.getItem('theme')
     if (savedTheme) {
-      this.isDarkTheme = savedTheme === 'dark';
+      this.isDarkTheme = savedTheme === 'dark'
+      document.body.setAttribute('data-bs-theme', savedTheme)
     }
-    this.applyTheme(); // Apply theme based on saved preference or default
-    console.log(`Current theme: ${savedTheme || 'default light'}`);
   }
 };
+
 </script>
 
 <template>
