@@ -13,7 +13,7 @@ export default {
 
   data() {
     return {
-      isDarkTheme: true,
+      isDarkTheme: false,
       isSidebarOpen: false,
       searchQuery: '',
       isLoggedIn:false,
@@ -24,7 +24,12 @@ export default {
     toggleTheme() {
       this.isDarkTheme = !this.isDarkTheme;
       document.documentElement.setAttribute('data-bs-theme', this.isDarkTheme ? 'dark' : 'light');
-    }
+    },
+
+    applyTheme() {
+        document.documentElement.setAttribute('data-bs-theme', this.isDarkTheme ? 'dark' : 'light');
+    },
+
   },
 
   // Save theme preference
@@ -39,13 +44,17 @@ export default {
 
   // Load saved theme preference
   created() {
-    this.isLoggedIn = this.$authStore.isLoggedIn;
-    const savedTheme = localStorage.getItem('theme')
-    if (savedTheme) {
-      this.isDarkTheme = savedTheme === 'dark'
-      document.body.setAttribute('data-bs-theme', savedTheme)
-    }
+  this.isLoggedIn = this.$authStore.isLoggedIn;
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme) {
+    this.isDarkTheme = savedTheme === 'dark';
+  } else {
+    // If no theme is saved, set default to light
+    this.isDarkTheme = false;
   }
+  this.applyTheme(); // Apply theme based on saved preference or default
+  console.log(`Theme on load: ${this.isDarkTheme ? 'dark' : 'light'}`);
+}
 };
 
 </script>
