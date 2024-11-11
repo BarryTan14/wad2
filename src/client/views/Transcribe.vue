@@ -193,30 +193,35 @@
                 <td>{{ formatDate(item.createdAt) }}</td>
                 <td>
                   <div class="btn-group">
-                    <button
+                    <!-- <button
                         @click="toggleEdit(item._id)"
                         class="btn btn-sm"
                         :class="isEditing(item._id) ? 'btn-warning' : 'btn-primary'"
                         :title="isEditing(item._id) ? 'Cancel editing' : 'Edit transcription'"
                     >
                       <span class="bi" :class="isEditing(item._id) ? 'bi-x-lg' : 'bi-pencil'">✏️</span>
-                    </button>
-                    <button
+                    </button> -->
+                      <span class="icon-btn"  @click="toggleEdit(item._id)">✏️</span>
+                    <!-- <button
                         v-if="isEditing(item._id)"
                         @click="saveTranscription(item._id)"
                         class="btn btn-success btn-sm"
                         title="Save changes"
                     >
                       <span class="bi bi-check-lg">✅</span>
-                    </button>
-                    <button
+                    </button> -->
+                   <span v-if="isEditing(item._id)" class="icon-btn"  @click="saveTranscription(item._id)">
+                    ✅
+                  </span>
+                  <span class="icon-btn" @click="deleteTranscription(item._id)">🗑️</span>
+                    <!-- <button
                         v-if="!isEditing(item._id)"
                         @click="deleteTranscription(item._id)"
                         class="btn btn-danger btn-sm"
                         title="Delete transcription"
                     >
                       <span class="bi bi-trash">🗑️</span>
-                    </button>
+                    </button>  -->
                   </div>
                 </td>
               </tr>
@@ -817,5 +822,14 @@ textarea.form-control-sm {
   textarea {
     transition: all 0.2s ease-in-out;
   }
+}
+.icon-btn:hover {
+  cursor: pointer;
+  display: inline-block;
+  /* Ensures the transform will apply properly */
+  transform: scale(1.5);
+  /* Scale 1.5 times its original size */
+  transform-origin: center;
+  /* Scale from the center */
 }
 </style>

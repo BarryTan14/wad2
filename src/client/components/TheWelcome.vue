@@ -14,13 +14,19 @@
         <div class="section-header">
           <h2>Today's Schedule</h2>
         </div>
-        <div v-for="(task, index) in events" :key="task.id" class="schedule-item">
-          <span class="time">{{ formatDate(task.start.dateTime) +" - " + formatDate(task.end.dateTime)  }}</span>
-          
-          <span class="description">{{ task.summary }}</span>
+        <div v-if="events.length>0">
+          <div v-for="(task, index) in events" :key="task.id" class="schedule-item" style="text-align: center;padding-left: 5px">
+            <span >{{ formatDate(task.start.dateTime) + " - " +
+              formatDate(task.end.dateTime) }}</span>
+            <span >{{ task.summary }}</span>
+          </div>
         </div>
+        <div v-else style="text-align: center;">
+          <h3>No events for today!</h3>
+        </div>
+        </div>
+        
 
-      </div>
 
       <!-- Project Work Progress Section -->
       <div class="project-progress-section planner-section">
@@ -69,7 +75,7 @@ export default {
     };
   },
   async mounted() {
-    this.listEvents()
+    await this.listEvents()
     this.updateDate();
     await axios
       .get("/api/task/getByUser/" + this.$authStore.currentUser.displayName)
@@ -79,30 +85,57 @@ export default {
   },
 
   methods: {
+    isToday(dateTime) {
+      const taskDate = new Date(dateTime);
+      const today = new Date();
+
+      return (
+        taskDate.getDate() === today.getDate() &&
+        taskDate.getMonth() === today.getMonth() &&
+        taskDate.getFullYear() === today.getFullYear()
+      )
+    },
     formatDate(toFormat) {
       const date = new Date(toFormat);
 
       // Format to get the time in a readable format (e.g., "12:00 PM")
       const options = { hour: 'numeric', minute: 'numeric', hour12: true };
       const timeString = date.toLocaleTimeString('en-US', options);
-
-      console.log(timeString);
       return timeString
     },
     async listEvents() {
+      console.log(this.$authStore.currentUser.email)
       try {
-        await axios.get(`/api/calendar-email/events?email=${this.$authStore.currentUser.email}`).then(res => {
-          this.events = res.data.map(event => ({
-            id: event.id,
-            summary: event.summary,
-            description: event.description || 'No description',
-            start: event.start,
-            end: event.end
+        await axios.get(`/api/calendar-email/events?email=${this.$authStore.currentUser.email}`)
+
+          .then(res => {
+            // Get today's date in YYYY-MM-DD format
+            const today = new Date().toISOString().split('T')[0];
+
+            // Check if res.data is an array and filter for today's events
+            if (Array.isArray(res.data)) {
+              this.events = res.data
+                .filter(event => {
+                  // Check if start date exists and is today
+                  const eventDate = event.start.dateTime.split('T')[0];
+                  return eventDate === today;
+                })
+                .map(event => ({
+                  id: event.id,
+                  summary: event.summary,
+                  description: event.description || 'No description',
+                  start: event.start,
+                  end: event.end
+                }));
+            } else {
+              console.error("Unexpected data format:", res.data);
+              this.events = []; // Reset to empty array if data format is unexpected
+            }
+
+            // Log today's events to verify
+            console.log("Today's Events:", this.events);
+          }).catch(error => {
           })
-          )
-          console.log(this.events)
-        }).catch(error => {
-        })
       } catch (error) {
         this.$swal.fire({
           icon: 'error',
