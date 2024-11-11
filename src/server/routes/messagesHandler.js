@@ -2,6 +2,7 @@ import {User} from "../models/User.js";
 import jwt from "jsonwebtoken";
 import {ChatRoom} from "../models/ChatRoom.js";
 import {ChatMessage} from "../models/ChatMessage.js";
+import {Group} from "../models/Group.js";
 import mongoose from "mongoose";
 
 const MAX_MESSAGE_LENGTH = 500;
@@ -35,6 +36,23 @@ export default async function messagesHandler(io) {
                     const { name, description } = roomData;
                     const room = await createRoom(socket, name, description, user._id);
                     await joinRoom(socket, room._id, user._id);
+                } catch (error) {
+                    handleError(socket, error);
+                }
+            });
+
+            socket.on('create-room-group', async (roomData, groupId) => {
+                console.log(roomData);
+                try {
+                    if (!user) throw new Error('Authentication required');
+                    const { name, description } = roomData;
+                    const groupUsers = await Group.findById(groupId);
+                    const room = await createRoomGroup(socket, name, description, user._id, groupUsers._id);
+                    for (const member of groupUsers.teamMembers) {
+                        const thisUser = await User.find({displayName: member.name}).select('-password');
+                        console.log(thisUser);
+                        await joinRoomGroup(room._id, thisUser);
+                    }
                 } catch (error) {
                     handleError(socket, error);
                 }
@@ -165,26 +183,71 @@ export default async function messagesHandler(io) {
         return defaultRoom;
     }
 
+    async function findAvailableName(baseName, counter = 1) {
+        const testName = counter === 1 ? baseName : `${baseName}${counter}`;
+        const existingRoom = await ChatRoom.findOne({ name: testName });
+
+        if (!existingRoom) {
+            return testName;
+        }
+
+        return findAvailableName(baseName, counter + 1);
+    }
+
     async function createRoom(socket, name, description, userId) {
-        const room = new ChatRoom({
-            name,
-            description,
-            creator: userId,
-            users: [userId],
-            isDefault: false
-        });
+        let finalName =  await findAvailableName(name);
 
-        await room.save();
+        try {
+            const room = new ChatRoom({
+                name: finalName,
+                description: description,
+                creator: userId,
+                users: [userId],
+                isDefault: false
+            });
 
-        // Notify all users about new room
-        /*io.emit('room-created', {
-            _id: room._id,
-            name: room.name,
-            description: room.description,
-            creator: userId
-        });*/
+            await room.save();
 
-        return room;
+            // Notify all users about new room
+            /*io.emit('room-created', {
+                _id: room._id,
+                name: room.name,
+                description: room.description,
+                creator: userId
+            });*/
+
+            return room;
+        } catch (e) {
+            throw e;
+        }
+    }
+    async function createRoomGroup(socket, name, description, userId, groupId) {
+        let finalName =  await findAvailableName(name);
+
+        try {
+            const room = new ChatRoom({
+                name: finalName,
+                description: description,
+                type: 'group',
+                creator: userId,
+                users: [userId],
+                isDefault: false
+            });
+
+            await room.save();
+
+            // Notify all users about new room
+            /*io.emit('room-created', {
+                _id: room._id,
+                name: room.name,
+                description: room.description,
+                creator: userId
+            });*/
+
+            return room;
+        } catch (e) {
+            throw e;
+        }
     }
 
     async function joinRoom(socket, roomId, userId) {
@@ -227,6 +290,48 @@ export default async function messagesHandler(io) {
         socket.emit('set-roomid-cookie', roomId);
     }
 
+    async function joinRoomGroup(roomId, userId) {
+        const room = await ChatRoom.findById(roomId);
+        const user = await User.findById(userId).select('-password');
+        if (!room) {
+            throw new Error('Room not found');
+        }
+        // Add user to room if not already in it
+        if (!room.users.includes(user._id)) {
+            room.users.push(user._id);
+            await room.save();
+        }
+        if(!user.joinedChatrooms.includes(room._id)) {
+            user.joinedChatrooms.push(room._id);
+            await user.save();
+        }
+
+
+        io.emit('server-refresh-rooms');
+
+        // Join socket room
+        /*socket.join(roomId.toString());
+
+        // Send room-info to socket
+        socket.emit('room-info', {
+            _id: room._id,
+            name: room.name,
+            description: room.description,
+        });*/
+
+        // Send room history
+        // const history = await loadRoomHistory(room._id);
+        // socket.emit('previous-messages', { roomId, messages: history });
+
+        // Notify room about new user
+        /*io.to(roomId.toString()).emit('user-joined', {
+            roomId,
+            user: user.displayName
+        });*/
+
+        // socket.emit('set-roomid-cookie', roomId);
+    }
+
     async function leaveRoom(socket, roomId, userId) {
         // Find room and user
         const room = await ChatRoom.findById(roomId);
@@ -259,8 +364,8 @@ export default async function messagesHandler(io) {
             user: user.displayName
         });
 
-        // If room is empty and not default, cleanup
-        if (room.users.length === 0 && room.type !== 'default') {
+        // If room is empty and not default or group, cleanup
+        if (room.users.length === 0 && room.type !== 'default' && room.type !== 'group') {
             await cleanupRoom(roomId);
         }
 

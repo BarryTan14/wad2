@@ -22,6 +22,10 @@ const ChatRoomSchema = new mongoose.Schema({
         default: 'user',
         enum: ['default', 'user', 'group'],
     },
+    group : {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Group',
+    },
     users : [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'

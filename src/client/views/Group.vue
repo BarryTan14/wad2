@@ -5,7 +5,27 @@
       <h1 v-if="group && group.length > 0">Module Name: {{ group[0].moduleName || 'Module name not available' }}</h1>
       <h1 v-else>Loading module data...</h1>
       <div class="header">
-        <h2 v-if="group && group.length > 0">Group Number: {{ group[0].groupId || 'Module name not available' }}</h2>
+        <div v-if="group && group.length > 0">
+          <h2>Group Number: {{ group[0].groupId || 'Module name not available' }}</h2>
+          <p>ChatRoom ID: {{room._id}}
+            <svg
+              style="cursor: pointer;"
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="copy-icon"
+
+              @click="copyToClipboard"
+            >
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></p>
+        </div>
         <h2 v-else>Loading module data...</h2>
       </div>
       <div id="app">
@@ -91,17 +111,17 @@
           <button type="button" @click="addTeamMember" class="add-member-button">
             Add Team Member
           </button>
-          
+
           <div class="form-section">
             <label class="form-label">
               Deadline
               <span class="required">*</span>
             </label>
             <div class="input-group">
-              <input 
+              <input
                 ref="flatpickrInput"
-                type="text" 
-                class="form-control flatpickr-input" 
+                type="text"
+                class="form-control flatpickr-input"
                 placeholder="Select deadline"
                 :value="newTask.deadline"
                 @input="updateDeadline"
@@ -156,6 +176,7 @@ export default {
       router: null,
       groupSocket: io(),
       flatpickrInstance: null,
+      room:null,
     };
   },
   created() {
@@ -193,8 +214,6 @@ export default {
     isLoggedIn: {
       handler(isLoggedIn) {
         if (isLoggedIn) {
-          this.fetchGroupData();
-          this.fetchTaskData();
         } else {
           this.tasks = []
           this.gorups = null
@@ -217,6 +236,34 @@ export default {
       // Check if the deadline is within the next week
       return daysUntilDeadline < 7;
     },
+
+    async copyToClipboard() {
+      try {
+        await navigator.clipboard.writeText(this.room._id);
+        this.$swal.fire({
+          toast:true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'ID Copied!',
+          showConfirmButton: false,
+          timer: 1500
+        });
+      } catch (err) {
+        if(err.message === "navigator.clipboard is undefined")
+        {
+          this.$swal.fire({
+            toast:true,
+            position: 'top-end',
+            icon: 'error',
+            title: 'Unable to copy',
+            text: 'We do not have enough permissions for "click to copy", please copy manually.',
+            showConfirmButton: false,
+            timer: 3000
+          });
+        }
+      }
+    },
+
     async openAddTaskModal() {
       const customClass = {
         container: 'custom-swal-container',
@@ -508,6 +555,11 @@ export default {
             'Content-Type': 'application/json'
           }
         });
+
+        this.$toast.fire({
+          icon:'success',
+          title:'Task Created!',
+        })
       } catch (error) {
         console.error('Error adding workspace:', error);
       }
@@ -556,17 +608,31 @@ export default {
         const response = await axios.delete(`/api/task/delete/${taskId}`);
         if (response.status === 200) {
           this.tasks.splice(index, 1);
+
+          this.$toast.fire({
+            icon:'success',
+            title:'Task Deleted!',
+          })
         } else {
-          console.error("Failed to delete task:", response.data.message);
+
+          this.$toast.fire({
+            icon:'error',
+            title:'Failed to delete task',
+          })
         }
       } catch (error) {
-        console.error("Error deleting task:", error);
+
+        this.$toast.fire({
+          icon:'error',
+          title:'Failed to delete task',
+        })
       }
     },
     async fetchGroupData() {
       try {
         const response = await axios.get(`/api/group/${this.groupId}`);
         this.group = response.data.data;
+        this.room = response.data.room;
       } catch (error) {
         console.error('Failed to fetch group data:', error);
       }

@@ -3,7 +3,6 @@ import { RouterLink, RouterView } from 'vue-router'
 import { Moon, Sun, Menu } from 'lucide-vue-next'
 import './assets/styles.css'
 import ChatWindow from './components/ChatWindow.vue'
-import ToastContainer from "./components/ToastContainer.vue"
 import AuthDropdown from './components/AuthDropdown.vue'
 
 
@@ -154,7 +153,7 @@ export default {
           headers: {
             'Content-Type': 'application/json'
           }
-        }).then(resp => {
+        }).then(async resp => {
 
           const groupId = resp.data.data;
           const groupObj = { groupId: groupId, moduleTitle: this.newModule.moduleName }
@@ -163,23 +162,31 @@ export default {
             console.log(this.newModule.teamMembers[i])
             const member = this.newModule.teamMembers[i];
             // Post request to add the group ID to each team member
-            axios.post(`/api/user/addToGroup/${member.name}`, groupObj,
-              {
-                headers: {
-                  'Content-Type': 'application/json'
-                }
-              });
+            await axios.post(`/api/user/addToGroup/${member.name}`, groupObj,
+                {
+                  headers: {
+                    'Content-Type': 'application/json'
+                  }
+                });
 
             console.log(`Added group to member: ${member.name}`);
           }
-          axios.post(`/api/user/addToGroup/${this.$authStore.currentUser.displayName}`, groupObj, {
+          await axios.post(`/api/user/addToGroup/${this.$authStore.currentUser.displayName}`, groupObj, {
             headers: {
               'Content-Type': 'application/json'
             }
           });
-
+          this.$socket.emit('create-room-group',
+              {
+                name: this.newModule.moduleName,
+                description: this.newModule.moduleName + ' Chatroom',
+              },resp.data.uId)
         })
-          ;
+
+        this.$toast.fire({
+          icon:'success',
+          title:'Group Created!',
+        })
       }
       catch (err) {
         console.error("Error:", err);
@@ -507,7 +514,6 @@ export default {
 
 <template>
   <ChatWindow v-if="showChat" :key="chatKey" @reinitialize="reinitializeChat" />
-  <ToastContainer />
   <div class="layout-wrapper" :class="{ 'theme-light': !isDarkTheme }">
     <!-- Sidebar -->
     <aside class="sidebar" :class="{ 'sidebar-open': isSidebarOpen }">
