@@ -35,9 +35,9 @@ export default {
       isSidebarOpen: false,
       searchQuery: '',
       navigationRoutes: [
-        { path: '/dashboard', name: 'Dashboard', icon: '📊' },
-        { path: '/transcribe', name: 'Class Participation', icon: '👥' },
-        { path: '/calendaremailview', name: 'Event Planner', icon: '🗓️' },
+      { path: '/dashboard', name: 'Dashboard', icon: 'pi pi-chart-bar' },
+      { path: '/transcribe', name: 'Class Participation', icon: 'pi pi-users' },
+      { path: '/calendaremailview', name: 'Event Planner', icon: 'pi pi-calendar' }
         // { path: '/progress', name: 'Progress', icon: '📈' },
         // { path: '/team', name: 'Team Members', icon: '👥' },
         // { path: '/messages', name: 'Messages', icon: '💬' }
@@ -527,8 +527,8 @@ export default {
       <nav class="main-nav">
         <ul class="nav-list">
           <li v-for="route in navigationRoutes" :key="route.path">
-            <RouterLink :to="route.path" class="nav-link" :class="{ 'active': $route.path === route.path }">
-              <span class="nav-icon">{{ route.icon }}</span>
+            <RouterLink :to="route.path" class="nav-link">
+              <i :class="route.icon"></i>
               {{ route.name }}
             </RouterLink>
           </li>
