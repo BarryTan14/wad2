@@ -2,13 +2,12 @@
   <div class="group-container">
     <!-- Left side: Group Assignments -->
     <div class="group-section">
-      <h1 v-if="group && group.length > 0" style="text-align:center;text-decoration: underline">{{ group[0].moduleName
+      <h1 v-if="group && group.length > 0" style="text-align:center;text-decoration: underline">{{ group[0].moduleName +  "(Group "+ group[0].groupId + ")"
         || 'Module name not available' }}</h1>
       <h1 v-else>Loading module data...</h1>
       <div class="header">
-        <div v-if="group && group.length > 0">
-          <h2 style="text-align:center">Group {{ group[0].groupId || 'Module name not available' }}</h2>
-          <!--          <p>ChatRoom ID: {{room._id}}
+        
+        <p style="text-align: center;">ChatRoom ID: {{room._id}}
             <svg
               style="cursor: pointer;"
               xmlns="http://www.w3.org/2000/svg"
@@ -25,14 +24,13 @@
               @click="copyToClipboard"
             >
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></p>-->
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></p>
         </div>
-        <h2 v-else>Loading module data...</h2>
       </div>
       <div id="app">
         <div class="task-container">
           <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-            <h2 style="margin: 0;">Task Lists</h2>
+            <h4 style="margin: 0;">Task Lists</h4>
             <button style="margin-bottom: 10px;" @click="openAddTaskModal" class="add-task-button">➕ Add Task</button>
           </div>
 
@@ -87,7 +85,6 @@
         </div>
       </div>
     </div>
-  </div>
 </template>
 
 <script>
