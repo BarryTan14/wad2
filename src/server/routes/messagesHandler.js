@@ -54,6 +54,7 @@ export default async function messagesHandler(io) {
                         console.log(thisUser);
                         await joinRoomGroup(room._id, thisUser);
                     }
+                    io.emit('server-refresh-rooms');
                 } catch (error) {
                     handleError(socket, error);
                 }
@@ -308,9 +309,6 @@ export default async function messagesHandler(io) {
             user.joinedChatrooms.push(room._id);
             await user.save();
         }
-
-
-        io.emit('server-refresh-rooms');
 
         // Join socket room
         /*socket.join(roomId.toString());

@@ -19,20 +19,22 @@
               </h2>
 
               <form @submit.prevent="handleEventSubmit">
-                <div class="mb-4">
-                  <label for="eventSummary" class="form-label">Event Name</label>
-                  <input type="text" style="background-color: white; color: black;" id="eventSummary"
-                    v-model="eventForm.summary" class="form-control form-control-lg" placeholder="Enter event title"
-                    required />
-                </div>
+                <div class="space-y-4">
+                  <!-- Event Name -->
+                  <div class="mb-4">
+                    <label for="eventSummary" class="form-label">Event Name</label>
+                    <input type="text" id="eventSummary" v-model="eventForm.summary"
+                           class="form-control form-control-lg w-full px-4 py-2 text-black bg-white border border-gray-300 rounded"
+                           placeholder="Enter event title" required />
+                  </div>
 
                   <!-- Start Date & Time -->
                   <div class="mb-4">
                     <label for="eventStart" class="form-label">Start Date & Time</label>
                     <div class="relative">
                       <input type="text" id="eventStart" v-model="eventForm.start"
-                        class="form-control form-control-lg w-full px-4 py-2 text-black bg-white border border-gray-300 rounded"
-                        placeholder="YYYY-MM-DD HH:MM" required readonly />
+                             class="form-control form-control-lg w-full px-4 py-2 text-black bg-white border border-gray-300 rounded"
+                             placeholder="YYYY-MM-DD HH:MM" required readonly />
 
                     </div>
                   </div>
@@ -42,17 +44,19 @@
                     <label for="eventEnd" class="form-label">End Date & Time</label>
                     <div class="relative">
                       <input type="text" id="eventEnd" v-model="eventForm.end"
-                        class="form-control form-control-lg w-full px-4 py-2 text-black bg-white border border-gray-300 rounded"
-                        placeholder="YYYY-MM-DD HH:MM" required readonly />
+                             class="form-control form-control-lg w-full px-4 py-2 text-black bg-white border border-gray-300 rounded"
+                             placeholder="YYYY-MM-DD HH:MM" required readonly />
 
                     </div>
                   </div>
 
-                <div class="mb-4">
-                  <label for="eventDescription" class="form-label">Description</label>
-                  <textarea style="background-color: white; color: black;" id="eventDescription"
-                    v-model="eventForm.description" class="form-control" rows="4"
-                    placeholder="Enter event description"></textarea>
+                  <!-- Description -->
+                  <div class="mb-4">
+                    <label for="eventDescription" class="form-label">Description</label>
+                    <textarea id="eventDescription" v-model="eventForm.description"
+                              class="form-control w-full px-4 py-2 text-black bg-white border border-gray-300 rounded" rows="4"
+                              placeholder="Enter event description"></textarea>
+                  </div>
                 </div>
 
                 <div class="d-flex gap-3 justify-content-between align-items-center">
@@ -95,14 +99,14 @@
               <!-- Events Grid -->
               <div v-else-if="events.length" class="events-grid">
                 <div v-for="event in events" :key="event.id"
-                  :class="['event-item', { 'full-width': event.description?.length > 150 }]">
+                     :class="['event-item', { 'full-width': event.description?.length > 150 }]">
                   <FlipCard :frontTitle="event.summary" :frontDescription="event.description || 'No description'"
-                    :backTitle="'Event Details'" :eventId="event.id"
-                    :startDate="formatDateTime(event.start.dateTime || event.start.date)"
-                    :endDate="formatDateTime(event.end.dateTime || event.end.date)">
+                            :backTitle="'Event Details'" :eventId="event.id"
+                            :startDate="formatDateTime(event.start.dateTime || event.start.date)"
+                            :endDate="formatDateTime(event.end.dateTime || event.end.date)">
                     <template #backActions>
                       <button @click.stop="selectEvent(event)" class="btn"
-                        style="background-color: var(--bs-purple);  margin-bottom: 20px;">
+                              style="background-color: var(--bs-purple);  margin-bottom: 20px;">
                         <i class="fas fa-edit me-2" style="color: white;"></i><span style="color: white;">Edit</span>
                       </button>
                     </template>
@@ -143,7 +147,7 @@
     <!-- Event Action Modal -->
     <div class="modal fade" id="eventActionModal" tabindex="10">
       <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content" style="background-color:white">
           <div class="modal-header border-bottom-0">
             <h5 class="modal-title">{{ modalTitle }}</h5>
             <button type="button" class="btn-close" @click="closeEventActionModal"></button>
@@ -169,7 +173,7 @@
               Close
             </button>
             <button v-if="modalAction === 'Success' && isNewEvent && !invitationsSent" type="button"
-              class="btn btn-primary" @click="showEmailModal">
+                    class="btn btn-primary" @click="showEmailModal">
               Send Invitations
             </button>
           </div>
@@ -180,7 +184,7 @@
     <!-- Email Invitation Modal -->
     <div class="modal fade" id="emailModal" tabindex="10">
       <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content" style="background-color: white">
           <div class="modal-header border-bottom-0">
             <h5 class="modal-title">Send Email Invitations</h5>
             <button type="button" class="btn-close" @click="closeEmailModal" :disabled="isLoading"></button>
@@ -200,7 +204,7 @@
               <h6 class="mb-3">Group Members:</h6>
               <div class="list-group">
                 <div v-for="member in selectedGroup.membersInCharge" :key="member" class="list-group-item">
-                  {{ member.name }}
+                  {{ member }}
                 </div>
               </div>
             </div>
@@ -214,7 +218,7 @@
               Cancel
             </button>
             <button type="button" class="btn btn-primary" @click="sendInvitations"
-              :disabled="!selectedGroup || isLoading">
+                    :disabled="!selectedGroup || isLoading">
               <span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
               {{ isLoading ? 'Sending...' : 'Send Invitations' }}
             </button>
@@ -345,18 +349,18 @@ export default {
     async listEvents() {
       try {
         await axios.get(`/api/calendar-email/events?email=${this.email}`)
-          .then(res => {
-            this.events = res.data.map(event => ({
-              id: event.id,
-              summary: event.summary,
-              description: event.description || 'No description',
-              start: event.start,
-              end: event.end
+            .then(res => {
+              this.events = res.data.map(event => ({
+                    id: event.id,
+                    summary: event.summary,
+                    description: event.description || 'No description',
+                    start: event.start,
+                    end: event.end
+                  })
+              )
+              // console.log(this.events)
+            }).catch(error => {
             })
-            )
-            // console.log(this.events)
-          }).catch(error => {
-          })
       } catch (error) {
         this.$swal.fire({
           icon: 'error',
@@ -403,10 +407,10 @@ export default {
         } else {
           this.isNewEvent = true
           res = await axios.post(`/api/calendar-email/events?email=${this.email}`, eventData)
-            .then(resp => {
-              this.createdEvent = resp.data
-              this.showEventActionModal('Success', resp.data)
-            })
+              .then(resp => {
+                this.createdEvent = resp.data
+                this.showEventActionModal('Success', resp.data)
+              })
         }
 
 
@@ -461,17 +465,17 @@ export default {
       try {
         // Get emails for all group members in parallel
         const emailPromises = this.selectedGroup.membersInCharge.map(member =>
-          axios.get(`/api/group/names/${member.name}`)
+            axios.get(`/api/group/names/${member.name}`)
         );
 
         const responses = await Promise.allSettled(emailPromises)
 
         // Filter successful responses and extract emails
         const validEmails = responses
-          .filter(response => response.status === 'fulfilled' &&
-            response.value.data?.success &&
-            response.value.data?.data?.[0]?.email)
-          .map(response => response.value.data.data[0].email)
+            .filter(response => response.status === 'fulfilled' &&
+                response.value.data?.success &&
+                response.value.data?.data?.[0]?.email)
+            .map(response => response.value.data.data[0].email)
 
         if (validEmails.length === 0) {
           throw new Error('No valid email addresses found for group members')
@@ -543,7 +547,7 @@ You are invited by ${this.email}
       this.eventActionModal.show()
       this.modalAction = action
       this.modalEvent = event
-      
+
     },
 
     closeEventActionModal() {
@@ -562,7 +566,7 @@ You are invited by ${this.email}
 
       // Create the status badge HTML
       const statusBadgeHtml = action ?
-        `<div class="status-badge ${action.toLowerCase()}">${action}</div>` : '';
+          `<div class="status-badge ${action.toLowerCase()}">${action}</div>` : '';
 
       this.$swal.fire({
         title: action || 'Event Details', // Or whatever your modalTitle would be
@@ -599,7 +603,7 @@ You are invited by ${this.email}
     async showEmailInvitationModalSwal() {
       // Create the group selection HTML
       const groupOptionsHtml = this.groups.map(group =>
-        `<option value="${group.id}">${group.name} (${group.membersInCharge.length} members)</option>`
+          `<option value="${group.id}">${group.name} (${group.membersInCharge.length} members)</option>`
       ).join('');
 
       const result = await this.$swal.fire({
@@ -631,8 +635,8 @@ You are invited by ${this.email}
 
             if (selectedGroup) {
               memberListContainer.innerHTML = selectedGroup.membersInCharge
-                .map(member => `<div class="member-item">${member}</div>`)
-                .join('');
+                  .map(member => `<div class="member-item">${member}</div>`)
+                  .join('');
               membersListDiv.style.display = 'block';
             } else {
               membersListDiv.style.display = 'none';
