@@ -121,6 +121,7 @@ export default async function messagesHandler(io) {
                     if (!mongoose.Types.ObjectId.isValid(roomId)) {
                         throw new Error('Invalid room ID');
                     }
+                    console.log("")
                     await handleNewMessage(socket, io, message, roomId, user);
                 } catch (error) {
                     handleError(socket, error);

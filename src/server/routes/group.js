@@ -189,4 +189,25 @@ router.post("/add", async (req, res) => {
     }
 });
 
+router.delete('/leavegroup/:groupId', authMiddleware, async (req, res) => {
+    const { groupId } = req.params;
+    const user = await User.findById(req.user._id).select("-password")
+    const group = await Group.findOne({groupId:groupId})
+
+    var result = user.joinedGroups.find(obj => {
+        return obj.groupId === groupId;
+    })
+
+    for(let group of user.joinedGroups) {
+        if(group.groupId === groupId){
+
+            console.log("Part of group")
+        }
+    }
+
+    res.json({
+        message: "Successfully Left",
+    })
+})
+
 export default router;
