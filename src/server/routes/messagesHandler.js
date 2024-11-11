@@ -48,6 +48,7 @@ export default async function messagesHandler(io) {
                     const { name, description } = roomData;
                     const groupUsers = await Group.findById(groupId);
                     const room = await createRoomGroup(socket, name, description, user._id, groupUsers._id);
+                    await joinRoomGroup(room._id, user._id);
                     for (const member of groupUsers.teamMembers) {
                         const thisUser = await User.find({displayName: member.name}).select('-password');
                         console.log(thisUser);
@@ -229,6 +230,7 @@ export default async function messagesHandler(io) {
                 name: finalName,
                 description: description,
                 type: 'group',
+                group: groupId,
                 creator: userId,
                 users: [userId],
                 isDefault: false

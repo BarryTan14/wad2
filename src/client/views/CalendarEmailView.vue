@@ -295,18 +295,22 @@ export default {
     },
     async listEvents() {
       try {
-        await axios.get(`/api/calendar-email/events?email=${this.email}`).then(res => {
+        await axios.get(`/api/calendar-email/events?email=${this.email}`)
+        .then(res => {
           this.events = res.data.map(event => ({
             id: event.id,
             summary: event.summary,
             description: event.description || 'No description',
             start: event.start,
             end: event.end
-          }))}).catch(error => {
+          })
+          )
+          // console.log(this.events)
+        }).catch(error => {
         })
       } catch (error) {
         this.$swal.fire({
-          icon:'error',
+          icon: 'error',
           title: 'Error Fetching Events',
           text: error.message,
         });
@@ -355,7 +359,7 @@ export default {
         this.scrollToTop()
       } catch (error) {
         this.$swal.fire({
-          icon:'error',
+          icon: 'error',
           title: 'Error submitting event',
           text: error.message,
         });
@@ -376,7 +380,7 @@ export default {
         this.scrollToTop()
       } catch (error) {
         this.$swal.fire({
-          icon:'error',
+          icon: 'error',
           title: 'Error deleting event',
           text: error.message,
         });
@@ -472,8 +476,8 @@ You are invited by ${this.email}
         this.toast?.error(this.emailError)
         this.$toast.fire({
           icon: 'error',
-          title:this.emailError,
-          timer:5000,
+          title: this.emailError,
+          timer: 5000,
         })
       } finally {
         this.isLoading = false
@@ -505,18 +509,18 @@ You are invited by ${this.email}
     },
 
     async showEventActionModalSwal(event, action, isNewEvent = false, invitationsSent = false) {
-  // Helper function to format date/time (implement your actual formatting logic)
-  const formatDateTime = (dateTime) => {
-    return new Date(dateTime).toLocaleString(); // Replace with your actual formatting
-  };
+      // Helper function to format date/time (implement your actual formatting logic)
+      const formatDateTime = (dateTime) => {
+        return new Date(dateTime).toLocaleString(); // Replace with your actual formatting
+      };
 
-  // Create the status badge HTML
-  const statusBadgeHtml = action ?
-      `<div class="status-badge ${action.toLowerCase()}">${action}</div>` : '';
+      // Create the status badge HTML
+      const statusBadgeHtml = action ?
+        `<div class="status-badge ${action.toLowerCase()}">${action}</div>` : '';
 
-  this.$swal.fire({
-    title: action || 'Event Details', // Or whatever your modalTitle would be
-    html: `
+      this.$swal.fire({
+        title: action || 'Event Details', // Or whatever your modalTitle would be
+        html: `
       ${statusBadgeHtml}
       <div class="event-details">
         <p><strong>Event:</strong> ${event.summary}</p>
@@ -524,32 +528,32 @@ You are invited by ${this.email}
         <p><strong>End:</strong> ${formatDateTime(event.end?.dateTime || event.end?.date)}</p>
       </div>
     `,
-    showCloseButton: true,
-    showConfirmButton: action === 'Success' && isNewEvent && !invitationsSent,
-    showCancelButton: true,
-    confirmButtonText: 'Send Invitations',
-    cancelButtonText: 'Close',
-    cancelButtonColor: '#6c757d', // Bootstrap secondary color
-    customClass: {
-      container: 'event-action-modal',
-      popup: 'custom-modal',
-      header: 'modal-header',
-      content: 'modal-content',
-      closeButton: 'btn-close',
-      actions: 'modal-footer'
-    }
-  }).then((result) => {
-    if (result.isConfirmed) {
-      // Handle "Send Invitations" button click
-      this.showEmailInvitationModalSwal(); // Your email modal function
-    }
-  });
-},
+        showCloseButton: true,
+        showConfirmButton: action === 'Success' && isNewEvent && !invitationsSent,
+        showCancelButton: true,
+        confirmButtonText: 'Send Invitations',
+        cancelButtonText: 'Close',
+        cancelButtonColor: '#6c757d', // Bootstrap secondary color
+        customClass: {
+          container: 'event-action-modal',
+          popup: 'custom-modal',
+          header: 'modal-header',
+          content: 'modal-content',
+          closeButton: 'btn-close',
+          actions: 'modal-footer'
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Handle "Send Invitations" button click
+          this.showEmailInvitationModalSwal(); // Your email modal function
+        }
+      });
+    },
 
     async showEmailInvitationModalSwal() {
       // Create the group selection HTML
       const groupOptionsHtml = this.groups.map(group =>
-          `<option value="${group.id}">${group.name} (${group.membersInCharge.length} members)</option>`
+        `<option value="${group.id}">${group.name} (${group.membersInCharge.length} members)</option>`
       ).join('');
 
       const result = await this.$swal.fire({
@@ -581,8 +585,8 @@ You are invited by ${this.email}
 
             if (selectedGroup) {
               memberListContainer.innerHTML = selectedGroup.membersInCharge
-                  .map(member => `<div class="member-item">${member}</div>`)
-                  .join('');
+                .map(member => `<div class="member-item">${member}</div>`)
+                .join('');
               membersListDiv.style.display = 'block';
             } else {
               membersListDiv.style.display = 'none';
