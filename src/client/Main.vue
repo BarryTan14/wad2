@@ -629,7 +629,7 @@ export default {
   </div>
 </template>
 
-<style>
+<style scoped>
 .input-wrapper {
   position: relative;
   width: 100%;
