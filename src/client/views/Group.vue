@@ -3,77 +3,80 @@
     <!-- Left side: Group Assignments -->
     <div class="group-section">
       <h1 v-if="group && group.length > 0" style="text-align:center;text-decoration: underline">{{ group[0].moduleName +  "(Group "+ group[0].groupId + ")"
-        || 'Module name not available' }}
-        </h1>
+      || 'Module name not available' }}
+      </h1>
       <h1 v-else>Loading module data...</h1>
       <div class="header">
-        </div>
-      
       </div>
-      <div id="app">
-        <div class="task-container">
-          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-            <h4 style="margin: 0;">Task Lists</h4>
-            <button style="margin-bottom: 10px;" @click="openAddTaskModal" class="add-task-button">
-              <i class="pi pi-plus"></i> Add Task
+
+    </div>
+    <div id="app">
+      <div class="task-container">
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+          <h4 style="margin: 0;">Task Lists</h4>
+          <div >
+            <button style="margin-bottom: 10px;margin-right: 5px;" @click="openAddTaskModal" class="add-task-button">➕ Add Task</button>
+            <button
+                class="add-task-button" style="background-color: red;"
+                @click.stop="showLeaveGroupModal"
+            >
+              Leave
             </button>
           </div>
 
-          <table v-if="tasks && tasks.length > 0" class="table">
-            <tbody>
-              <tr>
-                <th>S/N</th>
-                <th>Name</th>
-                <th>In-Charge</th>
-                <th>Deadline</th>
-                <th>Status</th>
-                <th>Functions</th>
-              </tr>
-              <tr v-for="(task, indx) in tasks" :key="task._id">
-                <td
-                  :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status, 'completed': task.status }">
-                  {{ indx + 1 }}
-                </td>
-                <td
-                  :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status, 'completed': task.status }">
-                  <span v-if="!task.isEditing">{{ task.taskName }}</span>
-                  <input v-else type="text" v-model="task.taskName" />
-                </td>
-                <td
-                  :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status, 'completed': task.status }">
-                  <span v-if="!task.isEditing">{{ task.membersInCharge.join(', ') }}</span>
-                  <input v-else type="text" v-model="task.membersInCharge"
-                    @input="task.membersInCharge = task.membersInCharge.split(',')"
-                    placeholder="Separate names with commas" />
-                </td>
-                <td
-                  :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status, 'completed': task.status }">
-                  <span v-if="!task.isEditing">{{ task.deadline }}</span>
-                  <input v-else type="date" v-model="task.deadline" />
-                </td>
-                <td
-                  :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status, 'completed': task.status }">
-                  <input type="checkbox" v-model="task.status" :disabled="!task.isEditing" />
-                </td>
-                <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">
-                  <span class="icon-btn edit-icon" v-if="!task.isEditing" @click="enableEditing(task)">
-                    <i class="pi pi-pencil" style="color: green;"></i>
-                  </span>
-                  <span class="icon-btn save-icon" v-else @click="saveChanges(task)">
-                    <i class="pi pi-check" style="color: green;"></i>
-                  </span>
-                  <span class="icon-btn delete-icon" @click="deleteTask(indx)">
-                    <i class="pi pi-trash" style="color: red;"></i>
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <h2 v-else>No tasks yet</h2>
-
         </div>
+
+        <table v-if="tasks && tasks.length > 0" class="table">
+          <tbody>
+          <tr>
+            <th>S/N</th>
+            <th>Name</th>
+            <th>In-Charge</th>
+            <th>Deadline</th>
+            <th>Status</th>
+            <th>Functions</th>
+          </tr>
+          <tr v-for="(task, indx) in tasks" :key="task._id">
+            <td
+                :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status, 'completed': task.status }">
+              {{ indx + 1 }}
+            </td>
+            <td
+                :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status, 'completed': task.status }">
+              <span v-if="!task.isEditing">{{ task.taskName }}</span>
+              <input v-else type="text" v-model="task.taskName" />
+            </td>
+            <td
+                :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status, 'completed': task.status }">
+              <span v-if="!task.isEditing">{{ task.membersInCharge.join(', ') }}</span>
+              <input v-else type="text" v-model="task.membersInCharge"
+                     @input="task.membersInCharge = task.membersInCharge.split(',')"
+                     placeholder="Separate names with commas" />
+            </td>
+            <td
+                :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status, 'completed': task.status }">
+              <span v-if="!task.isEditing">{{ task.deadline }}</span>
+              <input v-else type="date" v-model="task.deadline" />
+            </td>
+            <td
+                :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status, 'completed': task.status }">
+              <input type="checkbox" v-model="task.status" :disabled="!task.isEditing" />
+            </td>
+            <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">
+              <span class="icon-btn" v-if="!task.isEditing" @click="enableEditing(task)">✏️</span>
+              <span class="icon-btn" v-else @click="saveChanges(task)">
+                    ✅
+                  </span>
+              <span class="icon-btn" @click="deleteTask(indx)">🗑️</span>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+        <h2 v-else>No tasks yet</h2>
+
       </div>
     </div>
+  </div>
 </template>
 
 <script>
@@ -287,7 +290,7 @@ export default {
         customClass,
 
         didOpen: () => {
-          // Initialize 
+          // Initialize
           // Add member button handler
           document.getElementById('add-member').addEventListener('click', () => {
             const container = document.getElementById('team-members-container');
@@ -345,8 +348,8 @@ export default {
           const taskName = document.getElementById('task-name').value;
           const deadline = document.getElementById('deadline').value;
           const membersInCharge = Array.from(document.querySelectorAll('.team-member-input'))
-            .map(input => ({ name: input.value }))
-            .filter(member => member.name.trim() !== '');
+              .map(input => ({ name: input.value }))
+              .filter(member => member.name.trim() !== '');
 
           if (!taskName) {
             this.$swal.showValidationMessage('Please enter a task name');
@@ -488,11 +491,11 @@ export default {
     },
     async addTask() {
       const taskIdList = await axios.get('/api/task')
-        .then(response => response.data.data.map(task => task.taskId))
-        .catch(error => {
-          console.error("Error fetching tasks:", error);
-          return [];
-        });
+          .then(response => response.data.data.map(task => task.taskId))
+          .catch(error => {
+            console.error("Error fetching tasks:", error);
+            return [];
+          });
       this.newTask.taskId = this.generateUniqueTaskId(taskIdList)
       this.newTask.groupId = this.groupId
       this.tasks.push(this.newTask)
@@ -621,8 +624,8 @@ export default {
       const remainingSpace = this.MAX_MESSAGE_LENGTH - (currentValue.length - (event.target.selectionEnd - currentPosition));
       const trimmedText = pastedText.slice(0, remainingSpace);
       this.newMessage = currentValue.slice(0, currentPosition) +
-        trimmedText +
-        currentValue.slice(event.target.selectionEnd);
+          trimmedText +
+          currentValue.slice(event.target.selectionEnd);
       if (pastedText.length > remainingSpace) {
         this.showError(`Pasted text was trimmed to fit ${this.MAX_MESSAGE_LENGTH} character limit`);
       }
@@ -870,13 +873,5 @@ export default {
   /* Scale 1.5 times its original size */
   transform-origin: center;
   /* Scale from the center */
-}
-
-.icon-btn.edit-icon {
-  padding-right: 8px; /* Adjust padding as needed */
-}
-
-.icon-btn.save-icon {
-  padding-right: 8px; /* Adjust padding as needed */
 }
 </style>
