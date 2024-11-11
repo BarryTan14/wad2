@@ -668,9 +668,6 @@ export default {
   background: none;
   border:none;
 }
-.btn-actions:hover {
-
-}
 
 .transcriptions-container {
   margin-top: 2rem;

@@ -4,12 +4,7 @@
     <div class="group-section">
       <h1 v-if="group && group.length > 0" style="text-align:center;text-decoration: underline">{{ group[0].moduleName +  "(Group "+ group[0].groupId + ")"
         || 'Module name not available' }}
-        <button
-            class="btn btn-danger leave-grp-btn"
-            @click.stop="showLeaveGroupModal"
-        >
-          Leave
-        </button></h1>
+        </h1>
       <h1 v-else>Loading module data...</h1>
       <div class="header">
         </div>
@@ -19,7 +14,16 @@
         <div class="task-container">
           <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
             <h4 style="margin: 0;">Task Lists</h4>
-            <button style="margin-bottom: 10px;" @click="openAddTaskModal" class="add-task-button">➕ Add Task</button>
+            <div >
+              <button style="margin-bottom: 10px;margin-right: 5px;" @click="openAddTaskModal" class="add-task-button">➕ Add Task</button>
+            <button
+            class="add-task-button" style="background-color: red;"
+            @click.stop="showLeaveGroupModal"
+        >
+          Leave
+        </button>
+            </div>
+          
           </div>
 
           <table v-if="tasks && tasks.length > 0" class="table">

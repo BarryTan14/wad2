@@ -21,36 +21,47 @@
               <form @submit.prevent="handleEventSubmit">
                 <div class="mb-4">
                   <label for="eventSummary" class="form-label">Event Name</label>
-                  <input type="text" style="background-color: white; color: black;" id="eventSummary" v-model="eventForm.summary"
-                    class="form-control form-control-lg" placeholder="Enter event title" required />
+                  <input type="text" style="background-color: white; color: black;" id="eventSummary"
+                    v-model="eventForm.summary" class="form-control form-control-lg" placeholder="Enter event title"
+                    required />
                 </div>
 
-                <div class="mb-4">
-                  <label for="eventStart" class="form-label">Start Date & Time</label>
-                  <div class="input-group " >
-                    <input type="text" id="eventStart" class="form-control" v-model="eventForm.start"
-                      placeholder="YYYY-MM-DD HH:MM" style="color: black;"  required readonly />
-                    <button class="btn btn-outline"  type="button" @click="openStartPicker" style="background-color:#6f42c1">
-                      <i class="fas fa-calendar" ></i>
-                    </button>
+                <div class="max-w-md space-y-6 p-6 bg-white rounded-lg shadow-sm">
+                  <!-- Start Date & Time -->
+                  <div class="space-y-2">
+                    <label for="eventStart" class="block text-sm font-medium text-gray-700">
+                      Start Date & Time
+                    </label>
+                    <div class="relative">
+                      <input type="text" id="eventStart" v-model="eventForm.start"
+                        class="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-center text-gray-900 placeholder-gray-500 focus:border-purple-500 focus:ring-purple-500 pr-10"
+                        placeholder="YYYY-MM-DD HH:MM" readonly @click="openStartPicker" />
+                      <i
+                        class="fas fa-calendar absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 pointer-events-none"></i>
+                    </div>
                   </div>
                 </div>
 
-                <div class="mb-4">
-                  <label for="eventEnd" class="form-label">End Date & Time</label>
-                  <div class="input-group">
-                    <input type="text" id="eventEnd" class="form-control" v-model="eventForm.end"
-                      placeholder="YYYY-MM-DD HH:MM" style="color: black;" required readonly />
-                    <button class="btn btn-outline-primary" type="button" @click="openEndPicker" style="background-color:#6f42c1">
-                      <i class="fas fa-calendar"></i>
-                    </button>
+
+                <!-- End Date & Time -->
+                <div class="space-y-2">
+                  <label for="eventEnd" class="block text-sm font-medium text-gray-700">
+                    End Date & Time
+                  </label>
+                  <div class="relative">
+                    <input type="text" id="eventEnd" v-model="eventForm.end"
+                      class="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-center text-gray-900 placeholder-gray-500 focus:border-purple-500 focus:ring-purple-500 pr-10"
+                      placeholder="YYYY-MM-DD HH:MM" readonly @click="openEndPicker" />
+                    <i
+                      class="fas fa-calendar absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 pointer-events-none"></i>
                   </div>
                 </div>
 
                 <div class="mb-4">
                   <label for="eventDescription" class="form-label">Description</label>
-                  <textarea style="background-color: white; color: black;" id="eventDescription" v-model="eventForm.description"
-                    class="form-control" rows="4" placeholder="Enter event description"></textarea>
+                  <textarea style="background-color: white; color: black;" id="eventDescription"
+                    v-model="eventForm.description" class="form-control" rows="4"
+                    placeholder="Enter event description"></textarea>
                 </div>
 
                 <div class="d-flex gap-3 justify-content-between align-items-center">
@@ -77,7 +88,7 @@
             <div class="card-body p-4">
               <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="h4 text-primary mb-0"><span style="color:#6f42c1">Your Events</span></h2>
-                <button @click="listEvents" class="btn btn-outline"  style="background-color:#6f42c1" >
+                <button @click="listEvents" class="btn btn-outline" style="background-color:#6f42c1">
                   <i class="fas fa-sync-alt me-2" style="color: white;"></i> <span style="color: white;">Refresh</span>
                 </button>
               </div>
@@ -100,7 +111,7 @@
                     :endDate="formatDateTime(event.end.dateTime || event.end.date)">
                     <template #backActions>
                       <button @click.stop="selectEvent(event)" class="btn"
-                        style="background-color: var(--bs-purple);  margin-bottom: 20px;"> 
+                        style="background-color: var(--bs-purple);  margin-bottom: 20px;">
                         <i class="fas fa-edit me-2" style="color: white;"></i><span style="color: white;">Edit</span>
                       </button>
                     </template>
@@ -1169,18 +1180,21 @@ You are invited by ${this.email}
   gap: 1.5rem;
   width: 100%;
 }
+
 .event-item {
-  min-width: 0; /* Ensures proper flex behavior */
+  min-width: 0;
+  /* Ensures proper flex behavior */
 }
 
 .event-item.full-width {
   grid-column: 1 / -1;
 }
+
 @media (max-width: 768px) {
   .events-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .event-item {
     grid-column: 1 / -1;
   }
