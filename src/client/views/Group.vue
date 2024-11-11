@@ -7,7 +7,7 @@
       <div class="header">
         <div v-if="group && group.length > 0">
           <h2>Group Number: {{ group[0].groupId || 'Module name not available' }}</h2>
-          <p>ChatRoom ID: {{room._id}}
+<!--          <p>ChatRoom ID: {{room._id}}
             <svg
               style="cursor: pointer;"
               xmlns="http://www.w3.org/2000/svg"
@@ -24,7 +24,7 @@
               @click="copyToClipboard"
             >
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></p>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></p>-->
         </div>
         <h2 v-else>Loading module data...</h2>
       </div>
