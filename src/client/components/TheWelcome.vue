@@ -110,6 +110,7 @@ export default {
     };
   },
   async mounted() {
+    this.listEvents()
     this.updateDate();
     await axios
       .get("/api/task/getByUser/" + this.$authStore.currentUser.displayName)
@@ -119,28 +120,28 @@ export default {
   },
 
   methods: {
-    // async listEvents() {
-    //   try {
-    //     await axios.get(`/api/calendar-email/events?email=${this.email}`).then(res => {
-    //       this.events = res.data.map(event => ({
-    //         id: event.id,
-    //         summary: event.summary,
-    //         description: event.description || 'No description',
-    //         start: event.start,
-    //         end: event.end
-    //       })
-    //       )
-    //       console.log(this.events)
-    //     }).catch(error => {
-    //     })
-    //   } catch (error) {
-    //     this.$swal.fire({
-    //       icon: 'error',
-    //       title: 'Error Fetching Events',
-    //       text: error.message,
-    //     });
-    //   }
-    // },
+    async listEvents() {
+      try {
+        await axios.get(`/api/calendar-email/events?email=${this.$authStore.currentUser.email}`).then(res => {
+          this.events = res.data.map(event => ({
+            id: event.id,
+            summary: event.summary,
+            description: event.description || 'No description',
+            start: event.start,
+            end: event.end
+          })
+          )
+          console.log(this.events)
+        }).catch(error => {
+        })
+      } catch (error) {
+        this.$swal.fire({
+          icon: 'error',
+          title: 'Error Fetching Events',
+          text: error.message,
+        });
+      }
+    },
     getFormattedDate() {
       const today = new Date();
       return today.toLocaleDateString("en-GB", {
