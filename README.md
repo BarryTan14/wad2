@@ -1,4 +1,5 @@
 # SMU Buddy
+https://smu-buddy.site
 # Environment variables
 ```
 MONGODB_URI= <mongodb atlas url>
