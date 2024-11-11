@@ -35,7 +35,7 @@
                       <input type="text" id="eventStart" v-model="eventForm.start"
                         class="form-control form-control-lg w-full px-4 py-2 text-black bg-white border border-gray-300 rounded"
                         placeholder="YYYY-MM-DD HH:MM" required readonly />
-                      
+
                     </div>
                   </div>
 
@@ -46,7 +46,7 @@
                       <input type="text" id="eventEnd" v-model="eventForm.end"
                         class="form-control form-control-lg w-full px-4 py-2 text-black bg-white border border-gray-300 rounded"
                         placeholder="YYYY-MM-DD HH:MM" required readonly />
-                      
+
                     </div>
                   </div>
 
@@ -145,7 +145,7 @@
     </div>
 
     <!-- Event Action Modal -->
-    <div class="modal fade" id="eventActionModal" tabindex="-1">
+    <div class="modal fade" id="eventActionModal" tabindex="10">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header border-bottom-0">
@@ -182,7 +182,7 @@
     </div>
 
     <!-- Email Invitation Modal -->
-    <div class="modal fade" id="emailModal" tabindex="-1">
+    <div class="modal fade" id="emailModal" tabindex="10">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header border-bottom-0">
@@ -231,11 +231,11 @@
 
 <script>
 import axios from 'axios'
+// import 'bootstrap/dist/css/bootstrap.min.css'
 import { Modal } from 'bootstrap'
 import flatpickr from 'flatpickr'
-import 'flatpickr/dist/flatpickr.min.css'
+// import 'flatpickr/dist/flatpickr.min.css'
 import FlipCard from '../components/FlipCard.vue'
-import 'bootstrap/dist/css/bootstrap.min.css'
 import '@fortawesome/fontawesome-free/css/all.min.css'
 
 export default {
@@ -274,7 +274,12 @@ export default {
       return this.$authStore.currentUser.email
     }
   },
-  mounted() {
+  async mounted() {
+    document.addEventListener('DOMNodeInserted', (event) => {
+    if (event.target.classList && event.target.classList.contains('modal-backdrop')) {
+      event.target.remove();
+    }
+  });
     this.getGroup();
     if (this.email) {
       this.listEvents()
@@ -397,20 +402,25 @@ export default {
         let res
         if (this.selectedEvent) {
           this.isNewEvent = false
-          res = await axios.put(`/api/calendar-email/events/${this.selectedEvent.id}?email=${this.email}`, eventData)
-          this.showEventActionModal('Success', res.data)
+          res = await axios.put(`/api/calendar-email/events/${this.selectedEvent.id}?email=${this.email}`, eventData).then(resp => {
+            this.showEventActionModal('Success', resp.data)
+            this.listEvents()
+            this.selectedEvent = null
+            this.resetEventForm()
+          })
+
         } else {
           this.isNewEvent = true
           res = await axios.post(`/api/calendar-email/events?email=${this.email}`, eventData)
-          this.createdEvent = res.data
-          this.showEventActionModal('Success', res.data)
+            .then(resp => {
+              this.createdEvent = resp.data
+              this.showEventActionModal('Success', resp.data)
+            })
         }
 
-        await this.listEvents()
-        this.selectedEvent = null
-        this.resetEventForm()
-        this.scrollToTop()
+
       } catch (error) {
+        console.log(error)
         this.$swal.fire({
           icon: 'error',
           title: 'Error submitting event',
@@ -537,20 +547,12 @@ You are invited by ${this.email}
       }
     },
     showEventActionModal(action, event) {
-      /*this.$swal.fire({
-        icon: action === 'Success' ? 'success' : 'warning',
-        title: action === 'Success' ? 'Event Action Successful' : 'Event Action Failed',
-        html:`
-                <p><strong>Event:</strong>${event.summary}</p>
-              <p><strong>Start:</strong>${this.formatDateTime(event.start?.dateTime || event.start?.date)}</p>
-              <p><strong>End:</strong>${this.formatDateTime(event.end?.dateTime || event.end?.date)}</p>
-            `,
-        text: event?.message,
-      });*/
+      console.log(action,event)
       this.modalTitle = action === 'Success' ? 'Event Action Successful' : 'Event Action Failed'
+      this.eventActionModal.show()
       this.modalAction = action
       this.modalEvent = event
-      this.eventActionModal.show()
+      
     },
 
     closeEventActionModal() {
@@ -722,8 +724,12 @@ You are invited by ${this.email}
 
 /* Ensure modals appear above everything else */
 .modal {
-  z-index: 1050;
+  z-index: 1051;
 }
+.modal-backdrop.fade.show{
+  z-index: 1 !important;
+}
+
 
 /* Override flatpickr styling to match Bootstrap */
 .flatpickr-input {
