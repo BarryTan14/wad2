@@ -2,12 +2,12 @@
   <div class="group-container">
     <!-- Left side: Group Assignments -->
     <div class="group-section">
-      <h1 v-if="group && group.length > 0">Module Name: {{ group[0].moduleName || 'Module name not available' }}</h1>
+      <h1 v-if="group && group.length > 0" style="text-align:center;text-decoration: underline">{{ group[0].moduleName +  "(Group "+ group[0].groupId + ")"
+        || 'Module name not available' }}</h1>
       <h1 v-else>Loading module data...</h1>
-      <div class="header">
-        <div v-if="group && group.length > 0">
-          <h2>Group Number: {{ group[0].groupId || 'Module name not available' }}</h2>
-<!--          <p>ChatRoom ID: {{room._id}}
+      <!-- <div class="header">
+        
+        <p style="text-align: center;">ChatRoom ID: {{room._id}}
             <svg
               style="cursor: pointer;"
               xmlns="http://www.w3.org/2000/svg"
@@ -24,124 +24,67 @@
               @click="copyToClipboard"
             >
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></p>-->
-        </div>
-        <h2 v-else>Loading module data...</h2>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></p>
+        </div> -->
       </div>
       <div id="app">
         <div class="task-container">
-          <h2>Task Lists</h2>
+          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <h4 style="margin: 0;">Task Lists</h4>
+            <button style="margin-bottom: 10px;" @click="openAddTaskModal" class="add-task-button">➕ Add Task</button>
+          </div>
+
           <table v-if="tasks && tasks.length > 0" class="table">
             <tbody>
               <tr>
                 <th>S/N</th>
                 <th>Name</th>
-                <th>Members in Charge</th>
+                <th>In-Charge</th>
                 <th>Deadline</th>
-                <th>Done</th>
+                <th>Status</th>
                 <th>Functions</th>
               </tr>
               <tr v-for="(task, indx) in tasks" :key="task._id">
-                <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">{{ indx + 1 }}</td>
-                <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">
+                <td
+                  :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status, 'completed': task.status }">
+                  {{ indx + 1 }}
+                </td>
+                <td
+                  :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status, 'completed': task.status }">
                   <span v-if="!task.isEditing">{{ task.taskName }}</span>
                   <input v-else type="text" v-model="task.taskName" />
                 </td>
-                <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">
+                <td
+                  :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status, 'completed': task.status }">
                   <span v-if="!task.isEditing">{{ task.membersInCharge.join(', ') }}</span>
                   <input v-else type="text" v-model="task.membersInCharge"
                     @input="task.membersInCharge = task.membersInCharge.split(',')"
                     placeholder="Separate names with commas" />
                 </td>
-                <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">
+                <td
+                  :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status, 'completed': task.status }">
                   <span v-if="!task.isEditing">{{ task.deadline }}</span>
                   <input v-else type="date" v-model="task.deadline" />
                 </td>
-                <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">
+                <td
+                  :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status, 'completed': task.status }">
                   <input type="checkbox" v-model="task.status" :disabled="!task.isEditing" />
                 </td>
                 <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">
-                  <button v-if="!task.isEditing" @click="enableEditing(task)" class="btn btn-sm btn-primary">
-                    Update
-                  </button>
-                  <button v-else @click="saveChanges(task)" class="btn btn-sm btn-success">
-                    Save
-                  </button>
-                  <button @click="deleteTask(indx)" class="btn btn-sm btn-danger">
-                    Delete
-                  </button>
+                  <span class="icon-btn" v-if="!task.isEditing" @click="enableEditing(task)">✏️</span>
+                  <span class="icon-btn" v-else @click="saveChanges(task)">
+                    ✅
+                  </span>
+                  <span class="icon-btn" @click="deleteTask(indx)">🗑️</span>
                 </td>
               </tr>
             </tbody>
           </table>
           <h2 v-else>No tasks yet</h2>
-          <button @click="openAddTaskModal" class="add-task-button">Add New Task</button>
+
         </div>
       </div>
     </div>
-
-<div v-if="showAddTaskModal" class="modal-overlay">
-      <div class="modal-content">
-        <h2>Add New Task</h2>
-        <form>
-          <label>
-            Task Name:
-            <input type="text" v-model="newTask.taskName" required />
-          </label>
-          <h3>Team Members</h3>
-          <div v-for="(member, index) in newTask.membersInCharge" :key="index" class="team-member-row">
-            <label>
-              Team Member:
-              <div class="input-wrapper">
-                <input type="text" v-model="member.name" @input="fetchMemberSuggestions(member.name, index)"
-                  @focus="showSuggestions[index] = true" @blur="closeSuggestions(index)"
-                  placeholder="Type to search team members" required />
-                <ul v-if="showSuggestions[index]" class="suggestions-list">
-                  <li v-for="suggestion in suggestions[index]" :key="suggestion.displayName"
-                    @click="selectSuggestion(index, suggestion)">
-                    {{ suggestion.displayName }}
-                  </li>
-                </ul>
-              </div>
-            </label>
-            <button type="button" @click="removeTeamMember(index)" class="remove-member-button">
-              Remove
-            </button>
-          </div>
-          <button type="button" @click="addTeamMember" class="add-member-button">
-            Add Team Member
-          </button>
-
-          <div class="form-section">
-            <label class="form-label">
-              Deadline
-              <span class="required">*</span>
-            </label>
-            <div class="input-group">
-              <input
-                ref="flatpickrInput"
-                type="text"
-                class="form-control flatpickr-input"
-                placeholder="Select deadline"
-                :value="newTask.deadline"
-                @input="updateDeadline"
-              />
-              <div class="input-group-append">
-                <button class="btn btn-outline-secondary calendar-button" type="button" @click="openDatePicker">
-                  <i class="fas fa-calendar"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="modal-buttons">
-            <button type="submit" @click.prevent="addTask" class="btn btn-primary">Add Task</button>
-            <button type="button" @click="closeModal" class="btn btn-secondary">Cancel</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
 </template>
 
 <script>
@@ -160,7 +103,6 @@ export default {
       tasks: [],
       groupId: '',
       group: null,
-      showAddTaskModal: false,
       newTask: {
         taskName: '',
         membersInCharge: [{ name: '' }],
@@ -176,7 +118,7 @@ export default {
       router: null,
       groupSocket: io(),
       flatpickrInstance: null,
-      room:null,
+      room: null,
     };
   },
   created() {
@@ -202,15 +144,7 @@ export default {
       },
       immediate: true
     },
-    showAddTaskModal(newValue) {
-      if (newValue) {
-        this.$nextTick(() => {
-          this.initFlatpickr();
-        });
-      } else {
-        this.destroyFlatpickr();
-      }
-    },
+
     isLoggedIn: {
       handler(isLoggedIn) {
         if (isLoggedIn) {
@@ -241,7 +175,7 @@ export default {
       try {
         await navigator.clipboard.writeText(this.room._id);
         this.$swal.fire({
-          toast:true,
+          toast: true,
           position: 'top-end',
           icon: 'success',
           title: 'ID Copied!',
@@ -249,10 +183,9 @@ export default {
           timer: 1500
         });
       } catch (err) {
-        if(err.message === "navigator.clipboard is undefined")
-        {
+        if (err.message === "navigator.clipboard is undefined") {
           this.$swal.fire({
-            toast:true,
+            toast: true,
             position: 'top-end',
             icon: 'error',
             title: 'Unable to copy',
@@ -296,33 +229,27 @@ export default {
         </div>
 
         <div class="form-section">
-          <label class="form-label">Team members</label>
-          <div id="team-members-container" class="team-members-container">
-            ${this.newTask.membersInCharge.map((member, index) => `
-              <div class="member-input-group">
-                <div class="input-wrapper">
-                  <input data-index="${index}"
-                    type="text"
-                    class="swal2-input custom-input team-member-input"
-                    placeholder="Type to search team members"
-                    style="width:300px; margin-right: 0"
-                    value="${member.name || ''}"
-                  >
-                  <button type="button" class="action-button remove-button remove-member btn">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12.6667 8L3.33333 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                  </button>
-                  <ul class="suggestions-list dropdown" id="suggestions-${index}" style="display: none;"></ul>
-                </div>
+              <div class="section-header">
+                <label class="form-label">
+                  Team Members
+                  <span class="required">*</span>
+                </label>
               </div>
-            `).join('')}
-          </div>
-          <button type="button" id="add-member" class="action-button add-button" style="text-align: left;">
-            Add Team Member
-          </button>
-        </div>
-
+        <div id="team-members-container" class="team-members-container">
+                ${this.newTask.membersInCharge.map((member, index) => `
+                  <div class="member-input-group" data-index="${index}">
+                    <div class="input-wrapper">
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+              <button type="button" id="add-member" class="action-button add-button">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 3.33334V12.6667" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12.6667 8L3.33333 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                  Add Member
+                </button>
         <div class="form-section text-center d-flex flex-column g-0">
           <label class="form-label d-flex text-center" for="deadline">
             Deadline
@@ -339,13 +266,49 @@ export default {
         </div>
       </form>
     `,
-    showCancelButton: true,
+        showCancelButton: true,
         confirmButtonText: 'Add Task',
         cancelButtonText: 'Cancel',
         customClass,
 
         didOpen: () => {
-          // Initialize Flatpickr
+          // Initialize 
+          // Add member button handler
+          document.getElementById('add-member').addEventListener('click', () => {
+            const container = document.getElementById('team-members-container');
+            const newIndex = container.children.length;
+            const newMemberDiv = document.createElement('div');
+            newMemberDiv.className = 'member-input-group';
+            newMemberDiv.setAttribute('data-index', newIndex);
+            newMemberDiv.innerHTML = `
+              <div class="input-wrapper">
+                <input
+                  type="text"
+                  class="swal2-input custom-input team-member-input"
+                  placeholder="Search"
+                        style="width:300px; margin-right: 0"
+                  data-index="${newIndex}"
+                >
+                <button type="button" class="action-button remove-button remove-member">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12.6667 8L3.33333 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </button>
+              </div>
+            `;
+            container.appendChild(newMemberDiv);
+            this.setupInputListeners(newMemberDiv.querySelector('.team-member-input'));
+          });
+          // Remove member button handler
+          document.addEventListener('click', (e) => {
+            if (e.target.closest('.remove-member')) {
+              e.target.closest('.member-input-group').remove();
+            }
+          });
+          // Setup input listeners for autocomplete
+          document.querySelectorAll('.team-member-input').forEach(input => {
+            this.setupInputListeners(input);
+          });
           const deadlineInput = document.getElementById('deadline');
           const fp = flatpickr(deadlineInput, {
             enableTime: false,
@@ -357,114 +320,11 @@ export default {
               }
             }
           });
-
-          const removeMemberInput = (memberDiv) => {
-            if (memberDiv) {
-              memberDiv.remove();
-            }
-          };
           // Function to handle suggestions
-          const fetchSuggestions = async (query, index) => {
-            if (!query) return;
-            try {
-              const response = await axios.get(`/api/user/searchDisplayName/${query}`);
-              const suggestions = response.data;
-              displaySuggestions(suggestions, index);
-            } catch (error) {
-              console.error("Error fetching suggestions:", error);
-            }
-          };
-
+          document.querySelectorAll('.team-member-input').forEach(input => {
+            this.setupInputListeners(input);
+          });
           // Display suggestions in dropdown
-          const displaySuggestions = (suggestions, index) => {
-            const suggestionsList = document.getElementById(`suggestions-${index}`);
-            if (!suggestionsList) {
-              console.warn(`Suggestions list with id "suggestions-${index}" not found.`);
-              return;
-            }
-
-            suggestionsList.innerHTML = '';
-            if (suggestions.length) {
-              suggestionsList.style.display = 'block';
-              suggestions.forEach((suggestion) => {
-                const listItem = document.createElement('li')
-                listItem.classList.add('suggestion-item');
-                listItem.style = "background: black;"
-                listItem.textContent = suggestion.displayName;
-                listItem.onclick = () => selectSuggestion(suggestion, index);
-                suggestionsList.appendChild(listItem);
-              });
-            } else {
-              suggestionsList.style.display = 'none';
-            }
-          };
-
-          // Select suggestion and close dropdown
-          const selectSuggestion = (suggestion, index) => {
-            // Select the input field by data index
-            const inputField = document.querySelector(`[data-index="${index}"]`);
-            if (inputField) {
-              // Set the input field value to the selected suggestion
-              inputField.value = suggestion.displayName;
-
-              // Trigger an input event to ensure Vue detects the change
-              inputField.dispatchEvent(new Event('input', { bubbles: true }));
-
-              // Hide the suggestions list for this input
-              const suggestionsList = document.getElementById(`suggestions-${index}`);
-              if (suggestionsList) {
-                suggestionsList.style.display = 'none';
-              }
-            } else {
-              console.error(`Input field with data-index "${index}" not found.`);
-            }
-          };
-
-          // Event listener for each input to fetch suggestions
-          document.querySelectorAll('.team-member-input').forEach((input) => {
-            const index = input.getAttribute('data-index');
-            input.addEventListener('keyup', () => fetchSuggestions(input.value, index));
-          });
-
-          // Add new team member input
-          document.getElementById('add-member').addEventListener('click', () => {
-            const container = document.getElementById('team-members-container');
-            const index = container.children.length;
-            const newMemberDiv = document.createElement('div');
-            newMemberDiv.innerHTML = `
-          <div class="input-wrapper">
-            <input
-              type="text"
-              class="swal2-input custom-input team-member-input"
-              placeholder="Type to search team members"
-                        style="width:300px; margin-right: 0"
-              data-index="${index}"
-              style="text-align: left;"
-            >
-                <button type="button" class="action-button remove-button remove-member">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12.6667 8L3.33333 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  </svg>
-                </button>
-            <ul class="suggestions-list" id="suggestions-${index}" style="display: none;"></ul>
-          </div>
-        `;
-            container.appendChild(newMemberDiv);
-
-            // Set up suggestion listener for new input
-            const newInput = newMemberDiv.querySelector('.team-member-input');
-            newInput.addEventListener('keyup', () => fetchSuggestions(newInput.value, index));
-
-            const newRemoveButton = newMemberDiv.querySelector('.remove-member');
-            newRemoveButton.addEventListener('click', () => removeMemberInput(newMemberDiv));
-          });
-
-          // Remove team member input
-          document.addEventListener('click', (e) => {
-            if (e.target.closest('.remove-member')) {
-              e.target.closest('.member-input-group').remove();
-            }
-          });
         },
         preConfirm: () => {
           const taskName = document.getElementById('task-name').value;
@@ -499,37 +359,110 @@ export default {
         await this.addTask();
       }
     },
-    addTeamMember() {
-      this.newTask.membersInCharge.push({ name: "" });
-      this.suggestions.push([]);
-      this.showSuggestions.push(false);
-    },
-    removeTeamMember(index) {
-      this.newTask.membersInCharge.splice(index, 1);
-      this.suggestions.splice(index, 1);
-      this.showSuggestions.splice(index, 1);
-    },
-    async fetchMemberSuggestions(query, index) {
-      if (query.length < 1) {
-        this.suggestions[index] = [];
-        return;
-      }
-      try {
-        const response = await axios.get(`/api/user/searchDisplayName/${query}`,);
-        this.suggestions[index] = response.data;
-        this.showSuggestions[index] = true;
-      } catch (error) {
-        console.error("Error fetching suggestions:", error);
-      }
-    },
-    selectSuggestion(index, suggestion) {
-      this.newTask.membersInCharge[index].name = suggestion.displayName;
-      this.showSuggestions[index] = false;
-    },
-    closeSuggestions(index) {
-      setTimeout(() => {
-        this.showSuggestions[index] = false;
-      }, 100);
+    setupInputListeners(input) {
+      let suggestionsDiv;
+
+      input.addEventListener('input', async () => {
+        const query = input.value;
+
+        if (query.length < 1) {
+          if (suggestionsDiv) suggestionsDiv.remove();
+          return;
+        }
+
+        try {
+          const response = await axios.get(`/api/user/searchDisplayName/${query}`);
+
+          // Remove existing suggestions
+          if (suggestionsDiv) suggestionsDiv.remove();
+
+          // Find the Swal modal container - using more reliable selectors
+          const modalContainer = document.querySelector('.swal2-html-container');
+          if (!modalContainer) return; // Exit if modal isn't available
+
+          // Create new suggestions div
+          suggestionsDiv = document.createElement('div');
+          suggestionsDiv.className = 'suggestions-dropdown';
+
+          // Calculate position relative to input
+          const inputRect = input.getBoundingClientRect();
+
+          // Position the suggestions div
+          suggestionsDiv.style.cssText = `
+          position: fixed;
+          top: ${inputRect.bottom + window.scrollY}px;
+          left: ${inputRect.left}px;
+          width: ${inputRect.width}px;
+          max-height: 200px;
+          overflow-y: auto;
+          background: var(--dropdown-bg, white);
+          border: 1px solid var(--border-color, #e5e7eb);
+          border-radius: 0.375rem;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+          z-index: 99999;
+        `;
+
+          // Append to body
+          document.body.appendChild(suggestionsDiv);
+
+          // Add suggestions
+          response.data.forEach(suggestion => {
+            const item = document.createElement('div');
+            item.className = 'suggestion-item';
+            item.textContent = suggestion.displayName;
+            item.addEventListener('click', () => {
+              input.value = suggestion.displayName;
+              suggestionsDiv.remove();
+            });
+            suggestionsDiv.appendChild(item);
+          });
+
+          // Adjust dropdown position if it goes below viewport
+          const dropdownRect = suggestionsDiv.getBoundingClientRect();
+          const viewportHeight = window.innerHeight;
+          if (dropdownRect.bottom > viewportHeight) {
+            const topPosition = inputRect.top - dropdownRect.height + window.scrollY;
+            suggestionsDiv.style.top = `${topPosition}px`;
+          }
+
+          // Handle window scroll and resize
+          const updatePosition = () => {
+            if (suggestionsDiv) {
+              const newInputRect = input.getBoundingClientRect();
+              suggestionsDiv.style.top = `${newInputRect.bottom + window.scrollY}px`;
+              suggestionsDiv.style.left = `${newInputRect.left}px`;
+            }
+          };
+
+          window.addEventListener('scroll', updatePosition, true);
+          window.addEventListener('resize', updatePosition);
+
+          // Cleanup event listeners when suggestions are removed
+          const originalRemove = suggestionsDiv.remove.bind(suggestionsDiv);
+          suggestionsDiv.remove = () => {
+            window.removeEventListener('scroll', updatePosition, true);
+            window.removeEventListener('resize', updatePosition);
+            originalRemove();
+          };
+
+        } catch (error) {
+          console.error("Error fetching suggestions:", error);
+        }
+      });
+      const handleOutsideClick = (e) => {
+        if (suggestionsDiv && e.target !== input && !suggestionsDiv.contains(e.target)) {
+          suggestionsDiv.remove();
+        }
+      };
+
+      document.addEventListener('click', handleOutsideClick);
+
+      // Handle Escape key
+      const handleEscape = (e) => {
+        if (e.key === 'Escape' && suggestionsDiv) {
+          suggestionsDiv.remove();
+        }
+      };
     },
     generateUniqueTaskId(taskIdList) {
       let newTaskId;
@@ -557,30 +490,12 @@ export default {
         });
 
         this.$toast.fire({
-          icon:'success',
-          title:'Task Created!',
+          icon: 'success',
+          title: 'Task Created!',
         })
       } catch (error) {
         console.error('Error adding workspace:', error);
       }
-      this.closeModal()
-    },
-    openModal() {
-      this.showAddTaskModal = true;
-    },
-    closeModal() {
-      this.showAddTaskModal = false;
-      this.resetNewTask();
-      // this.destroyFlatpickr();
-      
-    },
-    resetNewTask() {
-      this.newTask = {
-        taskName: '',
-        membersInCharge: [{ name: '' }],
-        deadline: '',
-        status: false
-      };
     },
     enableEditing(task) {
       task.isEditing = true;
@@ -610,21 +525,21 @@ export default {
           this.tasks.splice(index, 1);
 
           this.$toast.fire({
-            icon:'success',
-            title:'Task Deleted!',
+            icon: 'success',
+            title: 'Task Deleted!',
           })
         } else {
 
           this.$toast.fire({
-            icon:'error',
-            title:'Failed to delete task',
+            icon: 'error',
+            title: 'Failed to delete task',
           })
         }
       } catch (error) {
 
         this.$toast.fire({
-          icon:'error',
-          title:'Failed to delete task',
+          icon: 'error',
+          title: 'Failed to delete task',
         })
       }
     },
@@ -766,13 +681,16 @@ export default {
   background-color: #fff;
   overflow: hidden;
   margin: 0;
+  border: lightgrey 1px solid;
+  border-radius: 8px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
 }
 
 /* Table cell styles for text wrapping and spacing */
 .table th,
 .table td {
   padding: 0.5rem;
-  text-align: left;
+  text-align: center;
   vertical-align: middle;
   word-wrap: break-word;
   white-space: normal;
@@ -916,8 +834,26 @@ export default {
     transform: scaleY(1);
   }
 }
+
+.completed {
+  color: grey;
+}
+
 .highlight-row {
-  background-color: lightcoral; /* Light yellow background */
+  background-color: #ffe2e2;
+  /* Light yellow background */
+  color: black;
   transition: background-color 0.3s ease;
+  font-weight: bold;
+}
+
+.icon-btn:hover {
+  cursor: pointer;
+  display: inline-block;
+  /* Ensures the transform will apply properly */
+  transform: scale(1.5);
+  /* Scale 1.5 times its original size */
+  transform-origin: center;
+  /* Scale from the center */
 }
 </style>

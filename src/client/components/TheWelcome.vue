@@ -14,24 +14,12 @@
         <div class="section-header">
           <h2>Today's Schedule</h2>
         </div>
-        <div v-for="(task, index) in scheduleTasks" :key="task.id" class="schedule-item">
-          <span class="time">{{ task.time }}</span>
-          <span class="description">{{ task.description }}</span>
-          <div class="button-group">
-            <button @click="editTask(index)" class="btn">Edit</button>
-            <button @click="deleteTask(index)" class="btn">Delete</button>
-          </div>
+        <div v-for="(task, index) in events" :key="task.id" class="schedule-item">
+          <span class="time">{{ formatDate(task.start.dateTime) +" - " + formatDate(task.end.dateTime)  }}</span>
+          
+          <span class="description">{{ task.summary }}</span>
         </div>
-        <div v-if="editingTaskIndex === null" class="new-task">
-          <input v-model="newTaskTime" placeholder="Time (e.g., 09:00)" />
-          <input v-model="newTaskDescription" placeholder="Description" />
-          <button @click="addTask" class="btn">Add Task</button>
-        </div>
-        <div v-else class="edit-task">
-          <input v-model="editTaskTime" />
-          <input v-model="editTaskDescription" />
-          <button @click="saveTask" class="btn">Save</button>
-        </div>
+
       </div>
 
       <!-- Project Work Progress Section -->
@@ -44,35 +32,6 @@
           </div>
           <p>{{ progressPercentage().toFixed(0) }}% of tasks completed.</p>
         </div>
-      </div>
-
-      <!-- Top Priorities Section -->
-      <div class="priorities-section planner-section">
-        <h2>Top Priorities</h2>
-        <div v-for="(priority, index) in topPriorities" :key="index" class="priority-item">
-          <span>{{ priority }}</span>
-          <div class="button-group">
-            <button @click="editPriority(index)" class="btn">Edit</button>
-            <button @click="deletePriority(index)" class="btn">Delete</button>
-          </div>
-        </div>
-        <input v-model="newPriority" placeholder="New Priority" @keyup.enter="addPriority" />
-        <button @click="addPriority" class="btn">Add Priority</button>
-      </div>
-
-      <!-- To-Do List Section -->
-      <div class="todo-section planner-section">
-        <h2>To Do List</h2>
-        <div v-for="(todo, index) in toDoList" :key="todo.id" class="todo-item">
-          <input type="checkbox" v-model="todo.completed" @change="updateProgress" />
-          <label>{{ todo.text }}</label>
-          <div class="button-group">
-            <button @click="editTodoItem(index)" class="btn">Edit</button>
-            <button @click="deleteTodoItem(index)" class="btn">Delete</button>
-          </div>
-        </div>
-        <input v-model="newTodoText" placeholder="New To-Do" @keyup.enter="addTodoItem" />
-        <button @click="addTodoItem" class="btn">Add To-Do</button>
       </div>
     </div>
   </div>
@@ -120,6 +79,16 @@ export default {
   },
 
   methods: {
+    formatDate(toFormat) {
+      const date = new Date(toFormat);
+
+      // Format to get the time in a readable format (e.g., "12:00 PM")
+      const options = { hour: 'numeric', minute: 'numeric', hour12: true };
+      const timeString = date.toLocaleTimeString('en-US', options);
+
+      console.log(timeString);
+      return timeString
+    },
     async listEvents() {
       try {
         await axios.get(`/api/calendar-email/events?email=${this.$authStore.currentUser.email}`).then(res => {
@@ -187,39 +156,6 @@ export default {
     deleteTask(index) {
       this.scheduleTasks.splice(index, 1);
     },
-    addPriority() {
-      if (this.newPriority) {
-        this.topPriorities.push(this.newPriority);
-        this.newPriority = "";
-      }
-    },
-    editPriority(index) {
-      const updatedPriority = prompt("Edit Priority", this.topPriorities[index]);
-      if (updatedPriority !== null) this.topPriorities[index] = updatedPriority;
-    },
-    deletePriority(index) {
-      this.topPriorities.splice(index, 1);
-    },
-    addTodoItem() {
-      if (this.newTodoText) {
-        this.toDoList.push({
-          id: Date.now(),
-          text: this.newTodoText,
-          completed: false,
-        });
-        this.newTodoText = "";
-      }
-    },
-    editTodoItem(index) {
-      const updatedTodo = prompt("Edit To-Do", this.toDoList[index].text);
-      if (updatedTodo !== null) this.toDoList[index].text = updatedTodo;
-    },
-    deleteTodoItem(index) {
-      this.toDoList.splice(index, 1);
-    },
-    updateProgress() {
-      // Logic for progress update
-    },
     progressPercentage() {
       let count = 0;
       for (let i = 0; i < this.userTask.length; i++) {
@@ -250,7 +186,7 @@ h2 {
 
 .planner-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 20px;
 }
 
@@ -277,13 +213,20 @@ h2 {
   margin-right: 8px;
 }
 
-.schedule-item,
-.priority-item,
-.todo-item {
+.schedule-item {
   display: flex;
   justify-content: space-between;
   padding: 5px 0;
 }
+
+/* .schedule-item,
+.priority-item,
+.todo-item
+{
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+} */
 
 .new-task,
 .edit-task {
@@ -301,9 +244,9 @@ h2 {
   gap: 5px;
 }
 
-.todo-item input[type="checkbox"] {
+/* .todo-item input[type="checkbox"] {
   margin-right: 10px;
-}
+} */
 
 .btn {
   display: flex;
