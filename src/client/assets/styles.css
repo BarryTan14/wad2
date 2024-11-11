@@ -508,6 +508,7 @@ button:disabled {
     left: -280px;
     z-index: 1000;
     transition: left 0.3s ease;
+    background-color: #9e96dd;
   }
   
   .sidebar-open {
@@ -522,6 +523,14 @@ button:disabled {
     padding: 0.5rem;
     cursor: pointer;
   }
+
+  .menu-button.closed {
+    color: var(--bs-purple);
+}
+
+.menu-button.closed:hover {
+  color: #9e96dd;
+}
   
   .team-members {
     display: none;
@@ -690,10 +699,11 @@ button:disabled {
   top: 1rem;
   right: 1rem;
   transition: color 0.3s ease;
+  color: var(--bs-purple);
 }
 
 .close-button:hover {
-  color: var(--bs-gray-400);
+  color: var(--bs-danger);
 }
 
 .todo-item {

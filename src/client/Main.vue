@@ -1,6 +1,6 @@
 <script>
-import {RouterLink, RouterView} from 'vue-router'
-import {Menu, Moon, Sun} from 'lucide-vue-next'
+import { RouterLink, RouterView } from 'vue-router'
+import { Menu, Moon, Sun } from 'lucide-vue-next'
 import './assets/styles.css'
 import ChatWindow from './components/ChatWindow.vue'
 import AuthDropdown from './components/AuthDropdown.vue'
@@ -28,16 +28,16 @@ export default {
       newModule: {
         groupId: '',
         moduleTitle: '',
-        teamMembers: [{name: ''}],
+        teamMembers: [{ name: '' }],
         // Initial team member input
       },
       isDarkTheme: false,
       isSidebarOpen: false,
       searchQuery: '',
       navigationRoutes: [
-        {path: '/dashboard', name: 'Dashboard', icon: 'pi pi-chart-bar'},
-        {path: '/transcribe', name: 'Class Participation', icon: 'pi pi-users'},
-        {path: '/calendaremailview', name: 'Event Planner', icon: 'pi pi-calendar'}
+        { path: '/dashboard', name: 'Dashboard', icon: 'pi pi-chart-bar' },
+        { path: '/transcribe', name: 'Class Participation', icon: 'pi pi-users' },
+        { path: '/calendaremailview', name: 'Event Planner', icon: 'pi pi-calendar' }
         // { path: '/progress', name: 'Progress', icon: '📈' },
         // { path: '/team', name: 'Team Members', icon: '👥' },
         // { path: '/messages', name: 'Messages', icon: '💬' }
@@ -48,9 +48,9 @@ export default {
       //   { name: 'Web Application & Development', icon: '💻', groupId: 103, path: '/group' }
       // ],
       teamMembers: [
-        {id: 1, profilePic: '/profilepicture/avatar.png'},
-        {id: 2, profilePic: '/profilepicture/avatar.png'},
-        {id: 3, profilePic: '/profilepicture/avatar.png'}
+        { id: 1, profilePic: '/profilepicture/avatar.png' },
+        { id: 2, profilePic: '/profilepicture/avatar.png' },
+        { id: 3, profilePic: '/profilepicture/avatar.png' }
       ],
       fallbackImage: 'avatar.png',
       chatKey: 0,
@@ -100,7 +100,7 @@ export default {
     },
     // Add a new team member input
     addTeamMember() {
-      this.newModule.teamMembers.push({name: ""});
+      this.newModule.teamMembers.push({ name: "" });
       this.suggestions.push([]); // Initialize suggestions for new input
       this.showSuggestions.push(false); // Initialize visibility control for new input
     },
@@ -114,7 +114,7 @@ export default {
     resetForm() {
       this.newModule = {
         moduleName: "",
-        teamMembers: [{name: ""}]
+        teamMembers: [{ name: "" }]
       };
       this.suggestions = [[]];
       this.showSuggestions = [false];
@@ -157,18 +157,18 @@ export default {
         }).then(async resp => {
 
           const groupId = resp.data.data;
-          const groupObj = {groupId: groupId, moduleTitle: this.newModule.moduleName}
-          this.userGroups.push({groupId: groupId, moduleTitle: this.newModule.moduleName})
+          const groupObj = { groupId: groupId, moduleTitle: this.newModule.moduleName }
+          this.userGroups.push({ groupId: groupId, moduleTitle: this.newModule.moduleName })
           for (let i = 0; i < this.newModule.teamMembers.length; i++) {
             console.log(this.newModule.teamMembers[i])
             const member = this.newModule.teamMembers[i];
             // Post request to add the group ID to each team member
             await axios.post(`/api/user/addToGroup/${member.name}`, groupObj,
-                {
-                  headers: {
-                    'Content-Type': 'application/json'
-                  }
-                });
+              {
+                headers: {
+                  'Content-Type': 'application/json'
+                }
+              });
 
             console.log(`Added group to member: ${member.name}`);
           }
@@ -178,10 +178,10 @@ export default {
             }
           });
           this.$socket.emit('create-room-group',
-              {
-                name: this.newModule.moduleName,
-                description: this.newModule.moduleName + ' Chatroom',
-              }, resp.data.uId)
+            {
+              name: this.newModule.moduleName,
+              description: this.newModule.moduleName + ' Chatroom',
+            }, resp.data.uId)
         })
 
         this.$toast.fire({
@@ -328,8 +328,8 @@ export default {
         preConfirm: () => {
           const moduleTitle = document.getElementById('module-title').value;
           const teamMembers = Array.from(document.querySelectorAll('.team-member-input'))
-              .map(input => ({name: input.value}))
-              .filter(member => member.name.trim() !== '');
+            .map(input => ({ name: input.value }))
+            .filter(member => member.name.trim() !== '');
 
           if (!moduleTitle) {
             this.$swal.showValidationMessage('Please enter a module title');
@@ -341,7 +341,7 @@ export default {
             return false;
           }
 
-          return {moduleTitle, teamMembers};
+          return { moduleTitle, teamMembers };
         }
       });
 
@@ -541,7 +541,7 @@ export default {
 </script>
 
 <template>
-  <ChatWindow v-if="showChat" :key="chatKey" @reinitialize="reinitializeChat"/>
+  <ChatWindow v-if="showChat" :key="chatKey" @reinitialize="reinitializeChat" />
   <div class="layout-wrapper" :class="{ 'theme-light': !isDarkTheme }">
     <!-- Sidebar -->
     <aside class="sidebar" :class="{ 'sidebar-open': isSidebarOpen }">
@@ -566,18 +566,18 @@ export default {
       <!-- Workspaces -->
       <div class="workspaces">
         <h2 class="section-title"
-            style="display: flex; align-items: center; justify-content: space-between; padding: 5px 0;">
+          style="display: flex; align-items: center; justify-content: space-between; padding: 5px 0;">
           <span style="font-weight: bold; font-size: 1.5rem;">Groups</span>
           <button class="add-btn"
-                  style="color: var(--bs-purple);background-color:transparent; padding: 8px 16px; font-size: 1rem; margin: 0; border-radius: 8px;  border: solid 1px var(--bs-purple);"
-                  @click="openSwalModal">
+            style="color: var(--bs-purple);background-color:transparent; padding: 8px 16px; font-size: 1rem; margin: 0; border-radius: 8px;  border: solid 1px var(--bs-purple);"
+            @click="openSwalModal">
             Add <i class="fa fa-plus"></i>
           </button>
         </h2>
         <ul class="nav-list">
           <li v-for="group in userGroups">
             <RouterLink :to="'/group/' + group.groupId" class="nav-link"
-                        :class="{ 'active': $route.path === '/group/' + group.groupId }">
+              :class="{ 'active': $route.path === '/group/' + group.groupId }">
               <!-- <span class="nav-icon">{{ workspace.icon }}</span> -->
               {{ group.moduleTitle }}
             </RouterLink>
@@ -599,8 +599,9 @@ export default {
       <!-- Top Navigation -->
       <nav class="top-nav">
         <div class="top-nav-left">
-          <button @click="toggleSidebar" class="menu-button">
-            <Menu class="icon"/>
+
+          <button @click="toggleSidebar" class="menu-button" :class="{ 'closed': !isSidebarOpen }">
+            <Menu class="icon" />
           </button>
           <!-- <div class="search-container">
             <input type="text" v-model="searchQuery" placeholder="Search" class="search-input">
@@ -612,7 +613,7 @@ export default {
               :alt="'Team Member ' + member.id" class="team-member-avatar">
             <button class="more-members">+2</button>
           </div> -->
-          <AuthDropdown/>
+          <AuthDropdown />
         </div>
       </nav>
 
@@ -621,7 +622,7 @@ export default {
         <!--<RouterView />-->
         <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">
-            <component :is="Component" :key="$route.path"/>
+            <component :is="Component" :key="$route.path" />
           </transition>
         </router-view>
       </main>
@@ -714,5 +715,4 @@ export default {
   background-color: var(--bs-purple) !important;
   color: white !important;
 }
-
 </style>
