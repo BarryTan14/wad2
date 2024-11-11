@@ -47,7 +47,7 @@
       </div>
 
       <!-- Top Priorities Section -->
-      <div class="priorities-section planner-section">
+      <!-- <div class="priorities-section planner-section">
         <h2>Top Priorities</h2>
         <div v-for="(priority, index) in topPriorities" :key="index" class="priority-item">
           <span>{{ priority }}</span>
@@ -58,10 +58,10 @@
         </div>
         <input v-model="newPriority" placeholder="New Priority" @keyup.enter="addPriority" />
         <button @click="addPriority" class="btn">Add Priority</button>
-      </div>
+      </div> -->
 
       <!-- To-Do List Section -->
-      <div class="todo-section planner-section">
+      <!-- <div class="todo-section planner-section">
         <h2>To Do List</h2>
         <div v-for="(todo, index) in toDoList" :key="todo.id" class="todo-item">
           <input type="checkbox" v-model="todo.completed" @change="updateProgress" />
@@ -73,7 +73,7 @@
         </div>
         <input v-model="newTodoText" placeholder="New To-Do" @keyup.enter="addTodoItem" />
         <button @click="addTodoItem" class="btn">Add To-Do</button>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
@@ -187,38 +187,38 @@ export default {
     deleteTask(index) {
       this.scheduleTasks.splice(index, 1);
     },
-    addPriority() {
-      if (this.newPriority) {
-        this.topPriorities.push(this.newPriority);
-        this.newPriority = "";
-      }
-    },
-    editPriority(index) {
-      const updatedPriority = prompt("Edit Priority", this.topPriorities[index]);
-      if (updatedPriority !== null) this.topPriorities[index] = updatedPriority;
-    },
-    deletePriority(index) {
-      this.topPriorities.splice(index, 1);
-    },
-    addTodoItem() {
-      if (this.newTodoText) {
-        this.toDoList.push({
-          id: Date.now(),
-          text: this.newTodoText,
-          completed: false,
-        });
-        this.newTodoText = "";
-      }
-    },
-    editTodoItem(index) {
-      const updatedTodo = prompt("Edit To-Do", this.toDoList[index].text);
-      if (updatedTodo !== null) this.toDoList[index].text = updatedTodo;
-    },
-    deleteTodoItem(index) {
-      this.toDoList.splice(index, 1);
-    },
+    // addPriority() {
+    //   if (this.newPriority) {
+    //     this.topPriorities.push(this.newPriority);
+    //     this.newPriority = "";
+    //   }
+    // },
+    // editPriority(index) {
+    //   const updatedPriority = prompt("Edit Priority", this.topPriorities[index]);
+    //   if (updatedPriority !== null) this.topPriorities[index] = updatedPriority;
+    // },
+    // deletePriority(index) {
+    //   this.topPriorities.splice(index, 1);
+    // },
+    // addTodoItem() {
+    //   if (this.newTodoText) {
+    //     this.toDoList.push({
+    //       id: Date.now(),
+    //       text: this.newTodoText,
+    //       completed: false,
+    //     });
+    //     this.newTodoText = "";
+    //   }
+    // },
+    // editTodoItem(index) {
+    //   const updatedTodo = prompt("Edit To-Do", this.toDoList[index].text);
+    //   if (updatedTodo !== null) this.toDoList[index].text = updatedTodo;
+    // },
+    // deleteTodoItem(index) {
+    //   this.toDoList.splice(index, 1);
+    // },
     updateProgress() {
-      // Logic for progress update
+
     },
     progressPercentage() {
       let count = 0;
@@ -250,7 +250,7 @@ h2 {
 
 .planner-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 20px;
 }
 
@@ -277,13 +277,21 @@ h2 {
   margin-right: 8px;
 }
 
-.schedule-item,
-.priority-item,
-.todo-item {
+.schedule-item
+{
   display: flex;
   justify-content: space-between;
   padding: 5px 0;
 }
+
+/* .schedule-item,
+.priority-item,
+.todo-item
+{
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+} */
 
 .new-task,
 .edit-task {
@@ -301,9 +309,9 @@ h2 {
   gap: 5px;
 }
 
-.todo-item input[type="checkbox"] {
+/* .todo-item input[type="checkbox"] {
   margin-right: 10px;
-}
+} */
 
 .btn {
   display: flex;
