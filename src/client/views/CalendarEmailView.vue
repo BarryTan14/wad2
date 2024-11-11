@@ -1,10 +1,13 @@
 <template>
-  <div class="calendar-app bg-light min-vh-100 py-4">
+  <div class="calendar-app bg-light min-vh-100 py-4" :class="{ 'dark-mode': isDarkMode }">
     <div class="container">
       <!-- Header Section -->
       <header class="row mb-5">
         <div class="col-12 text-center">
-          <h1 class="display-4 text-primary fw-bold"><span style="color:#6f42c1">Calendar & Event Manager</span></h1>
+          <h1 class="display-4 text-primary fw-bold">
+            <span style="color: var(--color-accent)">Calendar & Event Manager</span>
+          </h1>
+          <button @click="toggleTheme">Toggle Theme</button>
         </div>
       </header>
 
@@ -12,12 +15,13 @@
       <div v-if="email" class="row g-4">
         <!-- Create/Edit Event Form -->
         <div class="col-12 col-lg-5">
-          <section class="card border-0 shadow-sm h-100" style="background-color: white;">
+          <section class="card border-0 shadow-sm h-100">
             <div class="card-body p-4">
               <h2 class="card-title h4 mb-4 text-primary">
-                <span style="color:#6f42c1">{{ selectedEvent ? 'Edit Event' : 'Create New Event' }} </span>
+                {{ selectedEvent ? 'Edit Event' : 'Create New Event' }}
               </h2>
 
+              <!-- Form for event data input -->
               <form @submit.prevent="handleEventSubmit">
                 <div class="space-y-4">
                   <!-- Event Name -->
@@ -266,6 +270,7 @@ export default {
       isNewEvent: true,
       invitationsSent: false,
       selectedGroup: null,
+      isDarkMode: false,
       groups: [{ id: '', name: '', membersInCharge: [] }],
     }
   },
@@ -284,6 +289,10 @@ export default {
     this.initDateTimePickers()
   },
   methods: {
+    toggleTheme() {
+      this.isDarkMode = !this.isDarkMode;
+      console.log(this.isDarkMode)
+    },
     async getGroup() {
       this.isLoading = true
       try {
@@ -696,11 +705,26 @@ You are invited by ${this.email}
 </script>
 
 <style scoped>
-/* Existing styles */
+
+:root {
+  --background-color: #fff;
+  --text-color: #000;
+  --button-bg-color: #007bff;
+}
+
+.dark-mode {
+  --background-color: #333;
+  --text-color: #ccc;
+  --button-bg-color: #666;
+}
+
 .calendar-app {
-  background-color: #ffffff;
-  min-height: 100vh;
-  padding: 2rem 1rem;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.button {
+  background-color: var(--button-bg-color);
 }
 
 .app-title {
@@ -1104,7 +1128,8 @@ You are invited by ${this.email}
 
 .card {
   border: none;
-  background: #ffffff;
+  background-color: var(--background-color);
+  color: var(--text-color);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.3s ease;
 }
