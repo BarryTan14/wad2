@@ -94,7 +94,7 @@
           <div v-else class="no-events">
             <i class="far fa-calendar-times"></i>
             <p>No events found</p>
-            <span>Create your first event to get started!</span>
+            <span>Link your google calendar here <a href="https://calendar.google.com/"> https://calendar.google.com/<br><br></a> Start viewing by adding the service account: <br>"gabriel-neo@rock-fountain-439607-n0.iam.gserviceaccount.com"<br> into your google calendar!   </span>
           </div>
         </section>
       </div>
@@ -361,7 +361,7 @@ export default {
         this.$swal.fire({
           icon: 'error',
           title: 'Error submitting event',
-          text: error.message,
+          text: "Please provide access to your google calendar with the service account!",
         });
         //this.showEventActionModal('Failure', this.eventForm)
       }
@@ -605,7 +605,7 @@ You are invited by ${this.email}
             await this.sendInvitations(selectedGroupId);
             return true;
           } catch (error) {
-            this.$swal.showValidationMessage(error.message || 'Failed to send invitations');
+            this.$swal.showValidationMessage(error.message || 'Failed to send invitations as your email is not valid :(');
             return false;
           }
         }

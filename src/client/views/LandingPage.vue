@@ -30,6 +30,7 @@
           <router-link
               to="/Register"
               class="cta-button"
+              style="margin-bottom: 20px;"
           >
             Get Started
           </router-link>
