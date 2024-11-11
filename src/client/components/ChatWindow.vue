@@ -450,7 +450,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 
 .chatwindow {
   backdrop-filter: blur(6px);
