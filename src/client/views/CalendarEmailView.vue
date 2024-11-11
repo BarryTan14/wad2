@@ -26,34 +26,22 @@
                     required />
                 </div>
 
-                <div class="max-w-md space-y-6 p-6 bg-white rounded-lg shadow-sm">
-                  <!-- Start Date & Time -->
-                  <div class="space-y-2">
-                    <label for="eventStart" class="block text-sm font-medium text-gray-700">
-                      Start Date & Time
-                    </label>
-                    <div class="relative">
-                      <input type="text" id="eventStart" v-model="eventForm.start"
-                        class="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-center text-gray-900 placeholder-gray-500 focus:border-purple-500 focus:ring-purple-500 pr-10"
-                        placeholder="YYYY-MM-DD HH:MM" readonly @click="openStartPicker" />
-                      <i
-                        class="fas fa-calendar absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 pointer-events-none"></i>
-                    </div>
-                  </div>
+                <div class="mb-4">
+                  <label for="eventStart" class="form-label"  >Start Date & Time</label>
+                 
+                    <input type="text" id="eventStart" class="form-control" v-model="eventForm.start"
+                      placeholder="YYYY-MM-DD HH:MM" style="color: black;"  required readonly />
+                    
                 </div>
 
-
-                <!-- End Date & Time -->
-                <div class="space-y-2">
-                  <label for="eventEnd" class="block text-sm font-medium text-gray-700">
-                    End Date & Time
-                  </label>
-                  <div class="relative">
-                    <input type="text" id="eventEnd" v-model="eventForm.end"
-                      class="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-center text-gray-900 placeholder-gray-500 focus:border-purple-500 focus:ring-purple-500 pr-10"
-                      placeholder="YYYY-MM-DD HH:MM" readonly @click="openEndPicker" />
-                    <i
-                      class="fas fa-calendar absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 pointer-events-none"></i>
+                <div class="mb-4">
+                  <label for="eventEnd" class="form-label">End Date & Time</label>
+                  <div class="input-group">
+                    <input type="text" id="eventEnd" class="form-control" v-model="eventForm.end"
+                      placeholder="YYYY-MM-DD HH:MM" style="color: black;" required readonly />
+                    <button class="btn btn-outline-primary" type="button" @click="openEndPicker" style="background-color:#6f42c1">
+                      <i class="fas fa-calendar"></i>
+                    </button>
                   </div>
                 </div>
 
@@ -238,9 +226,9 @@
 import axios from 'axios'
 import { Modal } from 'bootstrap'
 import flatpickr from 'flatpickr'
-import 'flatpickr/dist/flatpickr.min.css'
+// import 'flatpickr/dist/flatpickr.min.css'
 import FlipCard from '../components/FlipCard.vue'
-import 'bootstrap/dist/css/bootstrap.min.css'
+// import 'bootstrap/dist/css/bootstrap.min.css'
 import '@fortawesome/fontawesome-free/css/all.min.css'
 
 export default {
