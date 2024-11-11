@@ -2,7 +2,8 @@
   <div class="group-container">
     <!-- Left side: Group Assignments -->
     <div class="group-section">
-      <h1 v-if="group && group.length > 0" style="text-align:center">{{ group[0].moduleName || 'Module name not available' }}</h1>
+      <h1 v-if="group && group.length > 0" style="text-align:center;text-decoration: underline">{{ group[0].moduleName
+        || 'Module name not available' }}</h1>
       <h1 v-else>Loading module data...</h1>
       <div class="header">
         <div v-if="group && group.length > 0">
@@ -30,7 +31,11 @@
       </div>
       <div id="app">
         <div class="task-container">
-          <h2>Task Lists</h2>
+          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <h2 style="margin: 0;">Task Lists</h2>
+            <button style="margin-bottom: 10px;" @click="openAddTaskModal" class="add-task-button">➕ Add Task</button>
+          </div>
+
           <table v-if="tasks && tasks.length > 0" class="table">
             <tbody>
               <tr>
@@ -42,23 +47,29 @@
                 <th>Functions</th>
               </tr>
               <tr v-for="(task, indx) in tasks" :key="task._id">
-                <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">{{ indx + 1 }}
+                <td
+                  :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status, 'completed': task.status }">
+                  {{ indx + 1 }}
                 </td>
-                <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">
+                <td
+                  :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status, 'completed': task.status }">
                   <span v-if="!task.isEditing">{{ task.taskName }}</span>
                   <input v-else type="text" v-model="task.taskName" />
                 </td>
-                <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">
+                <td
+                  :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status, 'completed': task.status }">
                   <span v-if="!task.isEditing">{{ task.membersInCharge.join(', ') }}</span>
                   <input v-else type="text" v-model="task.membersInCharge"
                     @input="task.membersInCharge = task.membersInCharge.split(',')"
                     placeholder="Separate names with commas" />
                 </td>
-                <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">
+                <td
+                  :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status, 'completed': task.status }">
                   <span v-if="!task.isEditing">{{ task.deadline }}</span>
                   <input v-else type="date" v-model="task.deadline" />
                 </td>
-                <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">
+                <td
+                  :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status, 'completed': task.status }">
                   <input type="checkbox" v-model="task.status" :disabled="!task.isEditing" />
                 </td>
                 <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">
@@ -72,7 +83,7 @@
             </tbody>
           </table>
           <h2 v-else>No tasks yet</h2>
-          <button @click="openAddTaskModal" class="add-task-button">Add New Task</button>
+
         </div>
       </div>
     </div>
@@ -673,7 +684,7 @@ export default {
   background-color: #fff;
   overflow: hidden;
   margin: 0;
-  border:lightgrey 1px solid;
+  border: lightgrey 1px solid;
   border-radius: 8px;
   box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
 }
@@ -827,20 +838,25 @@ export default {
   }
 }
 
+.completed {
+  color: grey;
+}
+
 .highlight-row {
-  background-color:  #ffe2e2;
+  background-color: #ffe2e2;
   /* Light yellow background */
   color: black;
   transition: background-color 0.3s ease;
   font-weight: bold;
 }
-.icon-btn:hover{
-  cursor:pointer;
-  display: inline-block; /* Ensures the transform will apply properly */
-  transform: scale(1.5); /* Scale 1.5 times its original size */
-  transform-origin: center; /* Scale from the center */
-}
-td{
-  text-align: center;
+
+.icon-btn:hover {
+  cursor: pointer;
+  display: inline-block;
+  /* Ensures the transform will apply properly */
+  transform: scale(1.5);
+  /* Scale 1.5 times its original size */
+  transform-origin: center;
+  /* Scale from the center */
 }
 </style>
