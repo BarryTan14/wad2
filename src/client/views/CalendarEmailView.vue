@@ -200,7 +200,7 @@
               <h6 class="mb-3">Group Members:</h6>
               <div class="list-group">
                 <div v-for="member in selectedGroup.membersInCharge" :key="member" class="list-group-item">
-                  {{ member }}
+                  {{ member.name }}
                 </div>
               </div>
             </div>
@@ -232,7 +232,6 @@ import { Modal } from 'bootstrap'
 import flatpickr from 'flatpickr'
 // import 'flatpickr/dist/flatpickr.min.css'
 import FlipCard from '../components/FlipCard.vue'
-import 'bootstrap/dist/css/bootstrap.min.css'
 import '@fortawesome/fontawesome-free/css/all.min.css'
 
 export default {
