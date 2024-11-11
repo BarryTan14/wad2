@@ -21,5 +21,8 @@ GOOGLE_CALENDAR_PRIVATE_KEY_FILE=./key.json
 Debian 12 with Node, NPM, Mongodb (for local db)
 Cloudflare Always HTTPS
 ```
-## Commands to run
-Please run ```npm i```, ```npm run build```, ```npm run start``` on the command lind to deploy
+## How to deploy
+```
+Make sure your server can be accessed from the internet. There may be problems using the app on non-https setting.
+Please run npm i, npm run build, npm run start, on the command line after cloning or unzipping to deploy
+```
