@@ -14,16 +14,9 @@
         <div class="task-container">
           <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
             <h4 style="margin: 0;">Task Lists</h4>
-            <div >
-              <button style="margin-bottom: 10px;margin-right: 5px;" @click="openAddTaskModal" class="add-task-button">➕ Add Task</button>
-            <button
-            class="add-task-button" style="background-color: red;"
-            @click.stop="showLeaveGroupModal"
-        >
-          Leave
-        </button>
-            </div>
-          
+            <button style="margin-bottom: 10px;" @click="openAddTaskModal" class="add-task-button">
+              <i class="pi pi-plus"></i> Add Task
+            </button>
           </div>
 
           <table v-if="tasks && tasks.length > 0" class="table">
@@ -63,11 +56,15 @@
                   <input type="checkbox" v-model="task.status" :disabled="!task.isEditing" />
                 </td>
                 <td :class="{ 'highlight-row': isDeadlineApproaching(task.deadline) && !task.status }">
-                  <span class="icon-btn" v-if="!task.isEditing" @click="enableEditing(task)">✏️</span>
-                  <span class="icon-btn" v-else @click="saveChanges(task)">
-                    ✅
+                  <span class="icon-btn edit-icon" v-if="!task.isEditing" @click="enableEditing(task)">
+                    <i class="pi pi-pencil" style="color: green;"></i>
                   </span>
-                  <span class="icon-btn" @click="deleteTask(indx)">🗑️</span>
+                  <span class="icon-btn save-icon" v-else @click="saveChanges(task)">
+                    <i class="pi pi-check" style="color: green;"></i>
+                  </span>
+                  <span class="icon-btn delete-icon" @click="deleteTask(indx)">
+                    <i class="pi pi-trash" style="color: red;"></i>
+                  </span>
                 </td>
               </tr>
             </tbody>
@@ -873,5 +870,13 @@ export default {
   /* Scale 1.5 times its original size */
   transform-origin: center;
   /* Scale from the center */
+}
+
+.icon-btn.edit-icon {
+  padding-right: 8px; /* Adjust padding as needed */
+}
+
+.icon-btn.save-icon {
+  padding-right: 8px; /* Adjust padding as needed */
 }
 </style>
