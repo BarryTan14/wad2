@@ -11,10 +11,10 @@ MAILGUN_DOMAIN=
 PORT=3000
 RATE_LIMIT_WINDOW_MS=900000  # 15 minutes in milliseconds
 RATE_LIMIT_MAX_REQUESTS=100
-```
 
 GOOGLE_CALENDAR_PRIVATE_KEY_FILE=./key.json
 
+```
 ## Recommended deployment
 ```
 Debian 12 with Node, NPM, Mongodb (for local db)
