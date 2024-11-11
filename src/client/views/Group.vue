@@ -5,6 +5,8 @@
       <h1 v-if="group && group.length > 0" style="text-align:center;text-decoration: underline">{{ group[0].moduleName +  "(Group "+ group[0].groupId + ")"
         || 'Module name not available' }}</h1>
       <h1 v-else>Loading module data...</h1>
+      <div class="header">
+        </div>
       
       </div>
       <div id="app">

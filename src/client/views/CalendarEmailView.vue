@@ -1,134 +1,173 @@
 <template>
-  <div class="calendar-app">
-    <div class="calendar-container">
-      <header class="app-header">
-        <h1 class="app-title">Calendar & Event Manager</h1>
-        <!-- <div v-if="email" class="user-info">
-          <span class="welcome-message">
-            Welcome, <strong>{{ email }}</strong>
-          </span>
-        </div> -->
+  <div class="calendar-app bg-light min-vh-100 py-4">
+    <div class="container">
+      <!-- Header Section -->
+      <header class="row mb-5">
+        <div class="col-12 text-center">
+          <h1 class="display-4 text-primary fw-bold"><span style="color:#6f42c1">Calendar & Event Manager</span></h1>
+        </div>
       </header>
 
-      <div v-if="email" class="main-content">
-        <section class="event-form-section">
-          <div class="form-card">
-            <h2 class="form-title">{{ selectedEvent ? 'Edit Event' : 'Create New Event' }}</h2>
-            <form @submit.prevent="handleEventSubmit" class="event-form">
-              <div class="form-group">
-                <label for="eventSummary">Summary</label>
-                <input type="text" id="eventSummary" v-model="eventForm.summary" required
-                  placeholder="Enter event title" class="form-control" />
-              </div>
-              <div class="form-group">
-                <label for="eventStart">Start Time</label>
-                <div class="input-group">
-                  <input type="text" id="eventStart" class="form-control flatpickr-input" v-model="eventForm.start"
-                    data-input required readonly />
-                  <div class="input-group-append">
-                    <button class="btn btn-primary" type="button" @click="openStartPicker">
+      <!-- Main Content -->
+      <div v-if="email" class="row g-4">
+        <!-- Create/Edit Event Form -->
+        <div class="col-12 col-lg-5">
+          <section class="card border-0 shadow-sm h-100" style="background-color: white;">
+            <div class="card-body p-4">
+              <h2 class="card-title h4 mb-4 text-primary">
+                <span style="color:#6f42c1">{{ selectedEvent ? 'Edit Event' : 'Create New Event' }} </span>
+              </h2>
+
+              <form @submit.prevent="handleEventSubmit">
+                <div class="mb-4">
+                  <label for="eventSummary" class="form-label">Event ID</label>
+                  <input type="text" style="background-color: white;" id="eventSummary" v-model="eventForm.summary"
+                    class="form-control form-control-lg" placeholder="Enter event title" required />
+                </div>
+
+                <div class="mb-4">
+                  <label for="eventStart" class="form-label">Start Date & Time</label>
+                  <div class="input-group " >
+                    <input type="text" id="eventStart" class="form-control" v-model="eventForm.start"
+                      placeholder="YYYY-MM-DD HH:MM"  required readonly />
+                    <button class="btn btn-outline"  type="button" @click="openStartPicker" style="background-color:#6f42c1">
+                      <i class="fas fa-calendar" ></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="mb-4">
+                  <label for="eventEnd" class="form-label">End Date & Time</label>
+                  <div class="input-group">
+                    <input type="text" id="eventEnd" class="form-control" v-model="eventForm.end"
+                      placeholder="YYYY-MM-DD HH:MM" required readonly />
+                    <button class="btn btn-outline-primary" type="button" @click="openEndPicker" style="background-color:#6f42c1">
                       <i class="fas fa-calendar"></i>
                     </button>
                   </div>
                 </div>
-              </div>
-              <div class="form-group">
-                <label for="eventEnd">End Time</label>
-                <div class="input-group">
-                  <input type="text" id="eventEnd" class="form-control flatpickr-input" v-model="eventForm.end"
-                    data-input required readonly />
-                  <div class="input-group-append">
-                    <button class="btn btn-primary" type="button" @click="openEndPicker">
-                      <i class="fas fa-calendar"></i>
-                    </button>
-                  </div>
+
+                <div class="mb-4">
+                  <label for="eventDescription" class="form-label">Description</label>
+                  <textarea style="background-color: white;" id="eventDescription" v-model="eventForm.description"
+                    class="form-control" rows="4" placeholder="Enter event description"></textarea>
                 </div>
-              </div>
-              <div class="form-group">
-                <label for="eventDescription">Description</label>
-                <textarea id="eventDescription" v-model="eventForm.description" rows="3"
-                  placeholder="Enter event description" class="form-control"></textarea>
-              </div>
-              <div class="form-actions">
-                <button type="submit" class="btn btn-primary submit-btn">
-                  <i class="fas fa-save"></i> {{ selectedEvent ? 'Update Event' : 'Create Event' }}
-                </button>
-                <button v-if="selectedEvent" type="button" @click="deleteEvent" class="btn btn-danger delete-btn">
-                  <i class="fas fa-trash-alt"></i> Delete Event
-                </button>
-              </div>
-            </form>
-            <button v-if="selectedEvent" @click="backToCreate" class="btn btn-link back-btn">
-              <i class="fas fa-arrow-left"></i> Back to Create
-            </button>
-          </div>
-        </section>
 
-        <section class="events-section">
-          <div class="section-header">
-            <h2 class="section-title">Your Events</h2>
-            <button @click="listEvents" class="refresh-btn">
-              <i class="fas fa-sync-alt"></i> Refresh
-            </button>
-          </div>
-
-          <div v-if="isLoading" class="loading-indicator">
-            <div class="spinner"></div>
-            <p>Loading...</p>
-          </div>
-
-          <div v-else-if="events.length" class="events-list">
-            <div v-for="event in events" :key="event.id" class="event-card">
-              <FlipCard :frontTitle="event.summary" :frontDescription="event.description || 'No description'"
-                :backTitle="'Event Details'" :eventId="event.id"
-                :startDate="formatDateTime(event.start.dateTime || event.start.date)"
-                :endDate="formatDateTime(event.end.dateTime || event.end.date)">
-                <template #backActions>
-                  <button @click.stop="selectEvent(event)" class="edit-btn">
-                    <i class="fas fa-edit"></i> Edit
+                <div class="d-flex gap-3 justify-content-between align-items-center">
+                  <button type="submit" class="btn btn-primary btn-lg" style="background-color: var(--bs-purple);">
+                    <i class="fas fa-plus me-2"></i>
+                    {{ selectedEvent ? 'Update Event' : 'Create Event' }}
                   </button>
-                </template>
-              </FlipCard>
+                  <button v-if="selectedEvent" type="button" @click="deleteEvent" class="btn btn-danger btn-lg">
+                    <i class="fas fa-trash-alt me-2"></i>Delete Event
+                  </button>
+                </div>
+              </form>
+
+              <button v-if="selectedEvent" @click="backToCreate" class="btn btn-link text-decoration-none mt-4">
+                <i class="fas fa-arrow-left me-2"></i>Back to Create
+              </button>
             </div>
-          </div>
-          <div v-else class="no-events">
-            <i class="far fa-calendar-times"></i>
-            <p>No events found</p>
-            <span>Link your google calendar here <a href="https://calendar.google.com/"> https://calendar.google.com/<br><br></a> Start viewing by adding the service account: <br>"gabriel-neo@rock-fountain-439607-n0.iam.gserviceaccount.com"<br> into your google calendar!   </span>
-          </div>
-        </section>
+          </section>
+        </div>
+
+        <!-- Events List -->
+        <div class="col-12 col-lg-7">
+          <section class="card border-0 shadow-sm h-100" style="background-color: white;">
+            <div class="card-body p-4">
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="h4 text-primary mb-0"><span style="color:#6f42c1">Your Events</span></h2>
+                <button @click="listEvents" class="btn btn-outline"  style="background-color:#6f42c1" >
+                  <i class="fas fa-sync-alt me-2" style="color: white;"></i> <span style="color: white;">Refresh</span>
+                </button>
+              </div>
+
+              <!-- Loading State -->
+              <div v-if="isLoading" class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="text-muted mt-3">Loading your events...</p>
+              </div>
+
+              <!-- Events Grid -->
+              <div v-else-if="events.length" class="events-grid">
+                <div v-for="event in events" :key="event.id"
+                  :class="['event-item', { 'full-width': event.description?.length > 150 }]">
+                  <FlipCard :frontTitle="event.summary" :frontDescription="event.description || 'No description'"
+                    :backTitle="'Event Details'" :eventId="event.id"
+                    :startDate="formatDateTime(event.start.dateTime || event.start.date)"
+                    :endDate="formatDateTime(event.end.dateTime || event.end.date)">
+                    <template #backActions>
+                      <button @click.stop="selectEvent(event)" class="btn"
+                        style="background-color: var(--bs-purple);  margin-bottom: 20px;"> 
+                        <i class="fas fa-edit me-2" style="color: white;"></i><span style="color: white;">Edit</span>
+                      </button>
+                    </template>
+                  </FlipCard>
+                </div>
+              </div>
+
+              <!-- Empty State -->
+              <div v-else class="text-center py-5">
+                <i class="far fa-calendar-times fs-1 text-muted mb-3"></i>
+                <p class="h5 mb-3">No events found</p>
+                <div class="text-muted">
+                  <p class="mb-2">Link your google calendar here
+                    <a href="https://calendar.google.com/" class="text-decoration-none">
+                      https://calendar.google.com/
+                    </a>
+                  </p>
+                  <p class="small">
+                    Start viewing by adding the service account:<br>
+                    <span class="fw-bold">gabriel-neo@rock-fountain-439607-n0.iam.gserviceaccount.com</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
       </div>
 
-      <div v-else class="login-prompt">
-        <i class="fas fa-lock"></i>
-        <p>Please log in to access the Calendar Manager</p>
+      <!-- Login Required State -->
+      <div v-else class="row">
+        <div class="col-12 text-center py-5">
+          <i class="fas fa-lock fs-1 text-muted mb-3"></i>
+          <p class="lead">Please log in to access the Calendar Manager</p>
+        </div>
       </div>
     </div>
 
     <!-- Event Action Modal -->
-    <div class="modal fade custom-modal" id="eventActionModal" tabindex="-1">
+    <div class="modal fade" id="eventActionModal" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-          <div class="modal-header">
+          <div class="modal-header border-bottom-0">
             <h5 class="modal-title">{{ modalTitle }}</h5>
-            <button type="button" class="btn-close" @click="closeEventActionModal" aria-label="Close"></button>
+            <button type="button" class="btn-close" @click="closeEventActionModal"></button>
           </div>
           <div class="modal-body">
-            <div v-if="modalAction" class="status-badge" :class="modalAction.toLowerCase()">
+            <div v-if="modalAction" class="alert" :class="modalAction === 'Success' ? 'alert-success' : 'alert-danger'">
               {{ modalAction }}
             </div>
             <div class="event-details">
-              <p><strong>Event:</strong> {{ modalEvent.summary }}</p>
-              <p><strong>Start:</strong> {{ formatDateTime(modalEvent.start?.dateTime || modalEvent.start?.date) }}</p>
-              <p><strong>End:</strong> {{ formatDateTime(modalEvent.end?.dateTime || modalEvent.end?.date) }}</p>
+              <p class="mb-2"><strong>Event:</strong> {{ modalEvent.summary }}</p>
+              <p class="mb-2">
+                <strong>Start:</strong>
+                {{ formatDateTime(modalEvent.start?.dateTime || modalEvent.start?.date) }}
+              </p>
+              <p class="mb-0">
+                <strong>End:</strong>
+                {{ formatDateTime(modalEvent.end?.dateTime || modalEvent.end?.date) }}
+              </p>
             </div>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn-secondary" @click="closeEventActionModal">
+          <div class="modal-footer border-top-0">
+            <button type="button" class="btn btn-secondary" @click="closeEventActionModal">
               Close
             </button>
-            <button v-if="modalAction === 'Success' && isNewEvent && !invitationsSent" type="button" class="btn-primary"
-              @click="showEmailModal">
+            <button v-if="modalAction === 'Success' && isNewEvent && !invitationsSent" type="button"
+              class="btn btn-primary" @click="showEmailModal">
               Send Invitations
             </button>
           </div>
@@ -137,40 +176,43 @@
     </div>
 
     <!-- Email Invitation Modal -->
-    <div class="modal fade custom-modal" id="emailModal" tabindex="-1">
+    <div class="modal fade" id="emailModal" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-          <div class="modal-header">
+          <div class="modal-header border-bottom-0">
             <h5 class="modal-title">Send Email Invitations</h5>
             <button type="button" class="btn-close" @click="closeEmailModal" :disabled="isLoading"></button>
           </div>
           <div class="modal-body">
-            <div class="form-group">
-              <label>Select Group</label>
-              <select v-model="selectedGroup" class="form-control" :disabled="isLoading">
+            <div class="mb-4">
+              <label class="form-label">Select Group</label>
+              <select v-model="selectedGroup" class="form-select" :disabled="isLoading">
                 <option value="">Choose a group</option>
                 <option v-for="group in groups" :key="group.id" :value="group">
                   {{ group.name }} ({{ group.membersInCharge.length }} members)
                 </option>
               </select>
             </div>
-            <div v-if="selectedGroup" class="mt-3">
-              <h6>Group Members:</h6>
-              <div class="member-list">
-                <div v-for="member in selectedGroup.membersInCharge" :key="member" class="member-item">
+
+            <div v-if="selectedGroup" class="mt-4">
+              <h6 class="mb-3">Group Members:</h6>
+              <div class="list-group">
+                <div v-for="member in selectedGroup.membersInCharge" :key="member" class="list-group-item">
                   {{ member }}
                 </div>
               </div>
             </div>
-            <div v-if="emailError" class="alert alert-danger mt-2">
+
+            <div v-if="emailError" class="alert alert-danger mt-4">
               {{ emailError }}
             </div>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn-secondary" @click="closeEmailModal" :disabled="isLoading">
+          <div class="modal-footer border-top-0">
+            <button type="button" class="btn btn-secondary" @click="closeEmailModal" :disabled="isLoading">
               Cancel
             </button>
-            <button type="button" class="btn-primary" @click="sendInvitations" :disabled="!selectedGroup || isLoading">
+            <button type="button" class="btn btn-primary" @click="sendInvitations"
+              :disabled="!selectedGroup || isLoading">
               <span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
               {{ isLoading ? 'Sending...' : 'Send Invitations' }}
             </button>
@@ -187,6 +229,8 @@ import { Modal } from 'bootstrap'
 import flatpickr from 'flatpickr'
 import 'flatpickr/dist/flatpickr.min.css'
 import FlipCard from '../components/FlipCard.vue'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import '@fortawesome/fontawesome-free/css/all.min.css'
 
 export default {
   name: 'CalendarEmailView',
@@ -257,10 +301,15 @@ export default {
     },
 
     initDateTimePickers() {
-      this.startPicker = flatpickr('#eventStart', {
+      const commonConfig = {
         enableTime: true,
         dateFormat: 'Y-m-d H:i',
         time_24hr: true,
+        static: true
+      }
+
+      this.startPicker = flatpickr('#eventStart', {
+        ...commonConfig,
         onChange: (selectedDates, dateStr) => {
           this.eventForm.start = dateStr
           if (this.endPicker) {
@@ -270,9 +319,7 @@ export default {
       })
 
       this.endPicker = flatpickr('#eventEnd', {
-        enableTime: true,
-        dateFormat: 'Y-m-d H:i',
-        time_24hr: true,
+        ...commonConfig,
         onChange: (selectedDates, dateStr) => {
           this.eventForm.end = dateStr
         }
@@ -296,18 +343,18 @@ export default {
     async listEvents() {
       try {
         await axios.get(`/api/calendar-email/events?email=${this.email}`)
-        .then(res => {
-          this.events = res.data.map(event => ({
-            id: event.id,
-            summary: event.summary,
-            description: event.description || 'No description',
-            start: event.start,
-            end: event.end
+          .then(res => {
+            this.events = res.data.map(event => ({
+              id: event.id,
+              summary: event.summary,
+              description: event.description || 'No description',
+              start: event.start,
+              end: event.end
+            })
+            )
+            // console.log(this.events)
+          }).catch(error => {
           })
-          )
-          // console.log(this.events)
-        }).catch(error => {
-        })
       } catch (error) {
         this.$swal.fire({
           icon: 'error',
@@ -643,6 +690,71 @@ You are invited by ${this.email}
 </script>
 
 <style scoped>
+/* Existing styles */
+.calendar-app {
+  background-color: #ffffff;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
+
+.app-title {
+  color: #2c3e50;
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.event-form-section,
+.events-section {
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+.event-form-section:hover,
+.events-section:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Ensure modals appear above everything else */
+.modal {
+  z-index: 1050;
+}
+
+/* Override flatpickr styling to match Bootstrap */
+.flatpickr-input {
+  background-color: white !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 991.98px) {
+  .calendar-app {
+    padding: 1rem 0.5rem;
+  }
+
+  .app-title {
+    font-size: 2rem;
+  }
+
+  .event-form-section,
+  .events-section {
+    margin-bottom: 1rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .app-title {
+    font-size: 1.75rem;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}
+
 .member-list {
   max-height: 150px;
   overflow-y: auto;
@@ -747,7 +859,7 @@ You are invited by ${this.email}
 }
 
 .refresh-btn:hover {
-  background-color: #2980b9;
+  background-color: #6f42c1;
 }
 
 .events-list {
@@ -942,8 +1054,8 @@ You are invited by ${this.email}
 }
 
 .custom-modal .btn-primary:hover {
-  background-color: #2980b9;
-  border-color: #2980b9;
+  background-color: #6f42c1;
+  border-color: #6f42c1;
 }
 
 .custom-modal .btn-secondary {
@@ -975,5 +1087,180 @@ You are invited by ${this.email}
 
 .custom-modal {
   animation: fadeIn 0.3s ease-out;
+}
+
+/* New and modified styles */
+.h2 {
+  font-size: 1.75rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.card {
+  border: none;
+  background: #ffffff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.form-control {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 0.625rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.input-group .form-control {
+  border-right: none;
+}
+
+.input-group .btn {
+  border-left: none;
+  background-color: #ffffff;
+}
+
+.input-group .btn:hover {
+  background-color: #f8f9fa;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.btn-primary:hover {
+  background-color: #6f42c1;
+  border-color: #6f42c1;
+}
+
+.btn-outline-primary {
+  color: #007bff;
+  border-color: #007bff;
+}
+
+.btn-outline-primary:hover {
+  background-color: #6f42c1;
+  color: #ffffff;
+}
+
+.btn-outline-danger {
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  color: #ffffff;
+}
+
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+}
+.event-item {
+  min-width: 0; /* Ensures proper flex behavior */
+}
+
+.event-item.full-width {
+  grid-column: 1 / -1;
+}
+@media (max-width: 768px) {
+  .events-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .event-item {
+    grid-column: 1 / -1;
+  }
+}
+
+.event-card-wrapper {
+  height: 200px;
+}
+
+@media (max-width: 768px) {
+  .calendar-app {
+    padding: 1rem 0.5rem;
+  }
+
+  .events-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Ensure all inputs have the same width */
+.form-control,
+.input-group {
+  width: 100%;
+}
+
+/* Dark mode styles */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #e1e1e1;
+  }
+
+  .card {
+    background: #2a2a2a;
+    color: #e1e1e1;
+  }
+
+  .form-control {
+    background-color: #333333;
+    border-color: #444444;
+    color: #e1e1e1;
+  }
+
+  .form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+  }
+
+  .input-group .btn {
+    background-color: #333333;
+    color: #e1e1e1;
+  }
+
+  .input-group .btn:hover {
+    background-color: #444444;
+  }
+
+  .btn-outline-secondary {
+    color: #e1e1e1;
+    border-color: #444444;
+  }
+
+  .btn-outline-secondary:hover {
+    background-color: #444444;
+    color: #ffffff;
+  }
+
+  .text-muted {
+    color: #adb5bd !important;
+  }
+
+  .h2 {
+    background: linear-gradient(45deg, #64b5f6, #2196f3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
 }
 </style>
