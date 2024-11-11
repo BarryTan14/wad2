@@ -20,8 +20,8 @@
 
               <form @submit.prevent="handleEventSubmit">
                 <div class="mb-4">
-                  <label for="eventSummary" class="form-label">Event ID</label>
-                  <input type="text" style="background-color: white;" id="eventSummary" v-model="eventForm.summary"
+                  <label for="eventSummary" class="form-label">Event Name</label>
+                  <input type="text" style="background-color: white; color: black;" id="eventSummary" v-model="eventForm.summary"
                     class="form-control form-control-lg" placeholder="Enter event title" required />
                 </div>
 
@@ -29,7 +29,7 @@
                   <label for="eventStart" class="form-label">Start Date & Time</label>
                   <div class="input-group " >
                     <input type="text" id="eventStart" class="form-control" v-model="eventForm.start"
-                      placeholder="YYYY-MM-DD HH:MM"  required readonly />
+                      placeholder="YYYY-MM-DD HH:MM" style="color: black;"  required readonly />
                     <button class="btn btn-outline"  type="button" @click="openStartPicker" style="background-color:#6f42c1">
                       <i class="fas fa-calendar" ></i>
                     </button>
@@ -40,7 +40,7 @@
                   <label for="eventEnd" class="form-label">End Date & Time</label>
                   <div class="input-group">
                     <input type="text" id="eventEnd" class="form-control" v-model="eventForm.end"
-                      placeholder="YYYY-MM-DD HH:MM" required readonly />
+                      placeholder="YYYY-MM-DD HH:MM" style="color: black;" required readonly />
                     <button class="btn btn-outline-primary" type="button" @click="openEndPicker" style="background-color:#6f42c1">
                       <i class="fas fa-calendar"></i>
                     </button>
@@ -49,7 +49,7 @@
 
                 <div class="mb-4">
                   <label for="eventDescription" class="form-label">Description</label>
-                  <textarea style="background-color: white;" id="eventDescription" v-model="eventForm.description"
+                  <textarea style="background-color: white; color: black;" id="eventDescription" v-model="eventForm.description"
                     class="form-control" rows="4" placeholder="Enter event description"></textarea>
                 </div>
 
@@ -1259,7 +1259,7 @@ You are invited by ${this.email}
 
   .h2 {
     background: linear-gradient(45deg, #64b5f6, #2196f3);
-    -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 }

@@ -45,6 +45,7 @@
 
 <script>
 import axios from "axios";
+import { Button } from "primevue";
 
 export default {
   name: "TheWelcome",
