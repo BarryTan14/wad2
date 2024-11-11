@@ -1,10 +1,10 @@
 # SMU Buddy
 # Environment variables
 ```
-MONGODB_URI=
-JWT_SECRET=
-SESSION_SECRET=
-NODE_ENV=development
+MONGODB_URI= <mongodb atlas url>
+JWT_SECRET= <generated jsonwebtoken secret>
+SESSION_SECRET= <generated jsonwebtoken session secret>
+NODE_ENV=development // npm run start uses production by default
 
 MAILGUN_API_KEY=
 MAILGUN_DOMAIN=
