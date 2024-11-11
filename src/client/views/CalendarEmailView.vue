@@ -26,25 +26,19 @@
                 </div>
 
                 <div class="mb-4">
-                  <label for="eventStart" class="form-label">Start Date & Time</label>
-                  <div class="input-group " >
+                  <label for="eventStart" class="form-label"  >Start Date & Time</label>
+                 
                     <input type="text" id="eventStart" class="form-control" v-model="eventForm.start"
                       placeholder="YYYY-MM-DD HH:MM" style="color: black;"  required readonly />
-                    <button class="btn btn-outline"  type="button" @click="openStartPicker" style="background-color:#6f42c1">
-                      <i class="fas fa-calendar" ></i>
-                    </button>
-                  </div>
+                    
                 </div>
 
                 <div class="mb-4">
                   <label for="eventEnd" class="form-label">End Date & Time</label>
-                  <div class="input-group">
+                  
                     <input type="text" id="eventEnd" class="form-control" v-model="eventForm.end"
                       placeholder="YYYY-MM-DD HH:MM" style="color: black;" required readonly />
-                    <button class="btn btn-outline-primary" type="button" @click="openEndPicker" style="background-color:#6f42c1">
-                      <i class="fas fa-calendar"></i>
-                    </button>
-                  </div>
+                    
                 </div>
 
                 <div class="mb-4">
@@ -54,7 +48,7 @@
                 </div>
 
                 <div class="d-flex gap-3 justify-content-between align-items-center">
-                  <button type="submit" class="btn btn-primary btn-lg" style="background-color: var(--bs-purple);">
+                  <button type="submit" class="btn btn-lg" style="background-color: var(--bs-purple); color: white;">
                     <i class="fas fa-plus me-2"></i>
                     {{ selectedEvent ? 'Update Event' : 'Create Event' }}
                   </button>
@@ -227,9 +221,9 @@
 import axios from 'axios'
 import { Modal } from 'bootstrap'
 import flatpickr from 'flatpickr'
-import 'flatpickr/dist/flatpickr.min.css'
+// import 'flatpickr/dist/flatpickr.min.css'
 import FlipCard from '../components/FlipCard.vue'
-import 'bootstrap/dist/css/bootstrap.min.css'
+// import 'bootstrap/dist/css/bootstrap.min.css'
 import '@fortawesome/fontawesome-free/css/all.min.css'
 
 export default {
