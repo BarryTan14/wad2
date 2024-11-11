@@ -555,7 +555,7 @@ export default {
       <nav class="main-nav">
         <ul class="nav-list">
           <li v-for="route in navigationRoutes" :key="route.path">
-            <RouterLink :to="route.path" class="nav-link">
+            <RouterLink :to="route.path" class="nav-link" :class="{ 'active': $route.path === route.path }">
               <i :class="route.icon"></i>
               {{ route.name }}
             </RouterLink>
@@ -714,4 +714,5 @@ export default {
   background-color: var(--bs-purple) !important;
   color: white !important;
 }
+
 </style>
