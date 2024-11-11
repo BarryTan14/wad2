@@ -86,9 +86,7 @@ GOOGLE_CALENDAR_PRIVATE_KEY_FILE=./key.json
 
 ```
 ## Recommended deployment
-```
-Debian 12 with Node, NPM, Mongodb (for local db)
-Cloudflare Always HTTPS
-```
+- Debian 12 with Node, NPM, Mongodb (for local db)
+- Cloudflare Always HTTPS
 ## Running the Application to start the application locally:
 Please run ```npm i```, ```npm run build```, ```npm run start``` on the command lind to deploy
