@@ -1,5 +1,7 @@
 # SMU Buddy
-https://smu-buddy.site
+https://smu-buddy.site (De-activated)
+link to demo: https://www.youtube.com/watch?v=T6MAR-52Hf4
+
 
 ## Project Overview
 SMU Buddy is an all-in-one school assistant which offers a comprehensive solution to improve group project task tracking, class participation tracking, scheduling, communication and information dissemination.
