@@ -1,6 +1,6 @@
 # SMU Buddy
 https://smu-buddy.site (De-activated)
-link to demo: https://www.youtube.com/watch?v=T6MAR-52Hf4
+<br/>link to demo: https://www.youtube.com/watch?v=T6MAR-52Hf4
 
 
 ## Project Overview
